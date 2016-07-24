@@ -13,7 +13,7 @@ umount_all() {
     local msg=$"One or more partitions on device %s are mounted at"
     force umount || yes_NO_fatal "umount" \
         $"Do you want those partitions unmounted?" \
-        "$(printf $"Use %s to always have us unmount mounted target partitions" "$(pq "--force=umount")" )" \
+        $"Use %s to always have us unmount mounted target partitions" \
         "$msg:\n  %s" "$dev" "$(echo $mounted)"
 
     local i part
@@ -130,7 +130,7 @@ do_flock() {
 
     yes_NO_fatal "flock" \
         $"Do you want to continue without locking?" \
-        "$(printf $"Use %s to always ignore this warning" "$(pq "--force=flock")" )" \
+        $"Use %s to always ignore this warning"     \
         $"The %s program was not found." "flock"
 }
 
@@ -298,6 +298,9 @@ yes_NO_fatal() {
     local code=$1  question=$2  continuation=$3  fmt=$4
     shift 4
     local msg=$(printf "$fmt" "$@")
+
+    [ -n "$continuation" -a -z "${continuation##*%s*}" ] \
+        && continuation=$(printf "$continuation" "$(pq "--force=$code")")
 
     if [ "$AUTO_MODE" ]; then
         FATAL_QUESTION=$question
