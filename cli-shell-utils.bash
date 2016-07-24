@@ -132,6 +132,13 @@ do_flock() {
         $"Do you want to continue without locking?" \
         $"Use %s to always ignore this warning"     \
         $"The %s program was not found." "flock"
+
+    [ ${#WORK_DIR} -gt 0 ] || return
+    local temp_dir=$(mktemp "$WORK_DIR"-XXXXXX)
+    [ ${#temp_dir} -gt 0 ] \
+        || fatal "Could not create a temporary directory in '%s'" "$(dirname "$WORK_DIR")"
+
+    WORK_DIR=$temp_dir
 }
 
 get_drive() {
