@@ -455,9 +455,11 @@ plural() {
         1) local s=  ies=y   are=is   were=was  es= num=one;;
         *) local s=s ies=ies are=are  were=were es=es num=$n;;
     esac
+
     case $n in
-        0) num=no
+        0) num=no ;;
     esac
+
     echo -n "$str" | sed -e "s/%s\>/$s/g" -e "s/%ies\>/$ies/g" \
         -e "s/%are\>/$are/g" -e "s/%n\>/$num/g" -e "s/%were\>/$were/g" \
         -e "s/%es\>/$es/g" -e "s/%3d\>/$(printf "%3d" $n)/g"
