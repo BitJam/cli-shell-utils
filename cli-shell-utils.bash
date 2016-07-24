@@ -173,6 +173,14 @@ get_partition() {
     esac
 }
 
+its_alive() {
+    local root_fstype=$(sed -rn "s|^([a-z]+) / .*|\1|p" /proc/mounts)
+    case $root_fstype in
+        aufs|overlay) return 0 ;;
+                   *) return 1 ;;
+    esac
+}
+
 read_early_params() {
     local arg SHIFT
 
