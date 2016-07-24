@@ -134,7 +134,7 @@ do_flock() {
         $"The %s program was not found." "flock"
 
     [ ${#WORK_DIR} -gt 0 ] || return
-    local temp_dir=$(mktemp "$WORK_DIR"-XXXXXX)
+    local temp_dir=$(mktemp -d "$WORK_DIR"-XXXXXX)
     [ ${#temp_dir} -gt 0 ] \
         || fatal "Could not create a temporary directory in '%s'" "$(dirname "$WORK_DIR")"
 
