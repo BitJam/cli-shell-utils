@@ -119,6 +119,7 @@ is_usb_or_removeable() {
 
 do_flock() {
     file=$1  me=$2
+    unset FLOCK_FAILED
 
     if which flock &> /dev/null; then
         exec 18> $file
@@ -134,6 +135,10 @@ do_flock() {
         $"Use %s to always ignore this warning"     \
         $"The %s program was not found." "flock"
 
+    FLOCK_FAILED=true
+}
+
+random_work_dir() {
     [ ${#WORK_DIR} -gt 0 ] || return
     local temp_dir=$(mktemp -d "$WORK_DIR"-XXXXXX)
     [ ${#temp_dir} -gt 0 ] \
