@@ -40,10 +40,11 @@ umount_all() {
 
 my_mount() {
     local dev=$1  dir=$2
-    is_mountpoint $dir           && fatal $"Directory '%s' is already a mountpoint" "$dir"
-    PRETEND= cmd mkdir -p $dir   || fatal $"Failed to create directory '%s'" "$dir"
-    PRETEND= cmd mount $dev $dir || fatal $"Could not mount %s at %s" "$dev" "$dir"
-    is_mountpoint $dir           || fatal $"Failed to mount %s at %s" "$dev" "$dir"
+    shift 2
+    is_mountpoint $dir              && fatal $"Directory '%s' is already a mountpoint" "$dir"
+    always_cmd mkdir -p $dir        || fatal $"Failed to create directory '%s'" "$dir"
+    always_cmd mount "$@" $dev $dir || fatal $"Could not mount %s at %s" "$dev" "$dir"
+    is_mountpoint $dir              || fatal $"Failed to mount %s at %s" "$dev" "$dir"
 }
 
 need() {
@@ -257,6 +258,8 @@ read_params() {
         eval_argument "$arg" "$val"
     done
 }
+
+always_cmd() { PRETEND= cmd "$@" ;}
 
 cmd() {
     echo " > $*" >> $LOG_FILE
