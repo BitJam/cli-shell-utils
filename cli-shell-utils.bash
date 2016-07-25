@@ -54,6 +54,12 @@ need() {
     return 0
 }
 
+given_cmd() {
+    local cmd=$1
+    echo "$CMDS" | egrep -q "(^| )$cmd( |$)" || return 1
+    return 0
+}
+
 force() {
     local this=$1  option_list=${2:-$FORCE}
     case ,$option_list, in
