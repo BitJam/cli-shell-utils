@@ -68,13 +68,36 @@ force() {
     return 1
 }
 
-check_force() {
-    local cmds=$1  all=$2  force_opt
-    for force_opt in ${cmds//,/ }; do
-        force $force_opt "$all" || fatal $"Unknown force option: %s" "$force_opt"
-    done
+pause() {
+    local here=$1  ans
+    case ,$PAUSE, in
+        *,$here,*)        ;;
+          *,all,*)        ;;
+                *) return ;;
+    esac
+
+    msg "Paused at '%s'" $here
+    quest "Press <Enter> to continue "
+    read ans
 }
 
+check_force() { _check_any force "$@"  ;}
+check_pause() { _check_any pause "$@"  ;}
+
+_check_any() {
+    local type=$1  name=$2  all=$3  opt
+    eval "local opts=\$$name"
+    # Convert spaces to commas
+    opts=${opts// /,}
+    eval $name=\$opts
+
+    for opt in ${opts//,/ }; do
+        case ,$all, in
+            *,$opt,*) continue ;;
+                   *) fatal $"Unknown %s option: %s" "$type" "$opt" ;;
+        esac
+    done
+}
 
 # Test for valid commands and process cmd+ commands
 # Allow a trailing "+" if ordered is given and use that to add all commands
