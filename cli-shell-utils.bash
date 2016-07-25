@@ -592,8 +592,13 @@ fatal() {
     fmt=$(echo "$fmt" | sed 's/\\n/ /g')
     printf "$code:$fmt\n" "$@"        | strip_color >> $ERR_FILE
     [ -n "$FATAL_QUESTION" ] && echo "Q:$FATAL_QUESTION" >> $ERR_FILE
+    pipe_up "fatal: $fmt" "$@"
+    FIFO_MODE=
     my_exit ${EXIT_NUM:-100}
 }
+
+fatal_z() { [ ${#1} -gt 0 ] && return; shift; fatal "$@" ;}
+fatal_0() { [ $1 -ne 0    ] && return; shift; fatal "$@" ;}
 
 strip_color() {
     local e=$(printf "\e")
