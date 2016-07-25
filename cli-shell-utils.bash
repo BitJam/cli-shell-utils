@@ -371,14 +371,22 @@ _yes_no() {
     local answer default=$1  question=$2
 
     [ "$AUTO_MODE" ] && return $default
-    local yes=$"yes"  no=$"no"  quit=$"quit"  default=$"default"
-    local menu def_entry
-    case default in
-        0) menu=$(printf "  1) $yes ($default)\n  2) $no\n  0) $quit") ; def_entry=1;;
-        *) menu=$(printf "  1) $yes\n  2) $no (default)\n  0) $quit")  ; def_entry=2;;
-    esac
-    local data=$(printf "1:1\n2:2\n0:0")
-    my_select_2 "$quest_co$question$nc_co" answer $def_entry "$data" "$menu"
+
+    if [ "$FIFO_MODE" ]; then
+        pipe_up "yes-no:$((default + 1)): $question"
+        pipe_dn answer
+        echo "answer: $answer"
+    else
+        local yes=$"yes"  no=$"no"  quit=$"quit"  default=$"default"
+        local menu def_entry
+        case default in
+            0) menu=$(printf "  1) $yes ($default)\n  2) $no\n  0) $quit") ; def_entry=1;;
+            *) menu=$(printf "  1) $yes\n  2) $no (default)\n  0) $quit")  ; def_entry=2;;
+        esac
+        local data=$(printf "1:1\n2:2\n0:0")
+        my_select_2 "$quest_co$question$nc_co" answer $def_entry "$data" "$menu"
+    fi
+
     case $answer in
         1) return 0 ;;
         2) return 1 ;;
@@ -517,17 +525,50 @@ plural() {
         -e "s/%es\>/$es/g" -e "s/%3d\>/$(printf "%3d" $n)/g"
 }
 
+quest() {
+    local fmt=$1
+    shift
+    printf "$quest_co$fmt$nc_co" "$@"
+}
+
+start_fifo() {
+    local name=${1:-$WORK_DIR/fifo}
+    my_mkdir $WORK_DIR
+    mkfifo "$name-up"   || fatal "Could not create fifo '$name-up'"
+    mkfifo "$name-dn"   || fatal "Could not create fifo '$name-dn'"
+    FIFO_UP="$name-up"
+    FIFO_DN="$name-dn"
+}
+
 Msg() {
     local fmt=$1
     shift
     printf "$fmt\n" "$@" | strip_color >> $LOG_FILE
     printf "$m_co$fmt$nc_co\n" "$@"
+    pipe_up "info: $fmt" "$@"
+}
+
+pipe_up() {
+    [ "$FIFO_MODE" ] || return
+    fmt=$1
+    shift
+    if [ ${#FIFO_UP} -gt 0 ] && test -p "$FIFO_UP" ; then
+        printf "$fmt\n" "$@" | strip_color > $FIFO_UP
+    else
+        exit 117
+    fi
+}
+
+pipe_dn() {
+    name=$1
+    [ "$FIFO_MODE" ] || return
+    read $name < $FIFO_DN
 }
 
 msg() {
     local fmt=$1
     shift
-    printf "$fmt\n" "$@" | strip_color >> $LOG_FILE
+    printf "$fmt" "$@" | strip_color >> $LOG_FILE
     [ -z "$QUIET" ] && printf "$m_co$fmt$nc_co\n" "$@"
 }
 
@@ -564,6 +605,7 @@ warn() {
     shift
     printf "${warn_co}Warning:$hi_co $fmt$nc_co\n" "$@" >&2
     printf "${warn_co}Warning:$hi_co $fmt$nc_co\n" "$@" | strip_color >> $LOG_FILE
+    pipe_up "warn: $fmt" "$@"
 }
 
 reset_conf() {
