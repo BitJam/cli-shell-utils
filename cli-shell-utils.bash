@@ -9,12 +9,22 @@
 # This is the oldest part of the code base.  Thie idea is to make it was for
 # programs that use this library to provide an easy and intuitive and clear
 # command line user interface.
-#==============================================================================
-#------------------------------------------------------------------------------
 #
+#   SHORT_STACK               variable, list of single chars that stack
+#   fatal(msg)                routine,  fatal([errnum] [errlabel] "error message")
+#   takes_param(arg)          routine,  true if arg takes a value
+#   eval_argument(arg, [val]) routine,  do whatever you want with $arg and $val
+#
+#==============================================================================
+
+#------------------------------------------------------------------------------
+# Sometimes it's useful to process some arguments (-h --help, for example)
+# Before others.  This can let normal users get simple usage.
+# This relies on $SHORT_STACK, takes_param(), and eval_early_arguments()
+# Only works on flags, not parameters that take options.
 #------------------------------------------------------------------------------
 read_early_params() {
-    local arg SHIFT
+    local arg
 
     while [ $# -gt 0 ]; do
         arg=$1
@@ -27,7 +37,6 @@ read_early_params() {
                 if echo "$arg" | grep -q "^[$SHORT_STACK]\+$"; then
                     local old_cnt=$#
                     set -- $(echo $arg | sed -r 's/([a-zA-Z])/ -\1 /g') "$@"
-                    SHIFT=$((SHIFT - $# + old_cnt))
                     continue
                 fi;;
         esac
@@ -37,7 +46,9 @@ read_early_params() {
 }
 
 #------------------------------------------------------------------------------
-#
+# This will read all command line parameters.  Ones that start with "-" are
+# evaluated one at a time by eval_arguments().  All others are evaluated by
+# assign_parameter() which is given a count and a value.
 #------------------------------------------------------------------------------
 read_all_cmdline_mingled() {
 
@@ -55,14 +66,11 @@ read_all_cmdline_mingled() {
 }
 
 #-------------------------------------------------------------------------------
-# Send "$@".  Expects
-#
-#   SHORT_STACK               variable, list of single chars that stack
-#   fatal(msg)                routine,  fatal([errnum] [errlabel] "error message")
-#   takes_param(arg)          routine,  true if arg takes a value
-#   eval_argument(arg, [val]) routine,  do whatever you want with $arg and $val
-#
 # Sets "global" variable SHIFT to the number of arguments that have been read.
+# Reads a series of "$@" arguments stacking short parameters and dealing with
+# options that take arguments.  Use global SHORT_STACK for stacking and calls
+# eval_argument() and takes_param() which should be provided by the calling
+# program.  The SHIFT variable tells how many parameters we grabbed.
 #-------------------------------------------------------------------------------
 read_params() {
     # Most of this code is boiler-plate for parsing cmdline args
@@ -124,7 +132,8 @@ need() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Return true if $cmd is in $CMD.  Unlike need(), ignore "all" and don't
+# print anything extra.
 #------------------------------------------------------------------------------
 given_cmd() {
     local cmd=$1
@@ -133,18 +142,18 @@ given_cmd() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Returns true if $here or "all" are in the comma delimited list $FORCE
 #------------------------------------------------------------------------------
 force() {
-    local this=$1  option_list=${2:-$FORCE}
+    local here=$1  option_list=${2:-$FORCE}
     case ,$option_list, in
-        *,$this,*|*,all,*) return 0 ;;
+        *,$here,*|*,all,*) return 0 ;;
     esac
     return 1
 }
 
 #------------------------------------------------------------------------------
-#
+# Pause execution if $here or "all" are in comma delimited $PAUSE
 #------------------------------------------------------------------------------
 pause() {
     local here=$1  ans
@@ -160,13 +169,15 @@ pause() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Make sure all force or pause options are valid
+# First param is the name of the list variable so we can transform all spaces
+# to commas.  See force() and pause()
 #------------------------------------------------------------------------------
 check_force() { _check_any force "$@"  ;}
 check_pause() { _check_any pause "$@"  ;}
 
 #------------------------------------------------------------------------------
-#
+# Shared functionality of two commands above
 #------------------------------------------------------------------------------
 _check_any() {
     local type=$1  name=$2  all=$3  opt
@@ -184,9 +195,10 @@ _check_any() {
 }
 
 #------------------------------------------------------------------------------
-# Test for valid commands and process cmd+ commands
-# Allow a trailing "+" if ordered is given and use that to add all commands
-# after the given one
+# Test for valid commands and all process cmd+ commands if $ordered is given.
+# If $ordered is not given then cmd+ is not allowed.  If it is given then
+# "cmd+" will add cmd and everything after it in $ordered to the variable
+# named as the first argument.  See need() NOT cmd() which is different (sorry)
 #------------------------------------------------------------------------------
 check_cmds() {
     local cmds_nam=$1  all=" $2 "  ordered=$3 cmds_in cmds_out
@@ -214,14 +226,17 @@ check_cmds() {
     [ ${#cmds_out} -gt 0 ] && eval "$cmds_nam=\"$cmds_in \$cmds_out\""
 }
 
-
 #------------------------------------------------------------------------------
-#
+# Works like cmd() below but ignores the $PRETEND variable.  This can be useful
+# if you want to always run a command but also want to record the call.
 #------------------------------------------------------------------------------
 always_cmd() { PRETEND= cmd "$@" ;}
 
 #------------------------------------------------------------------------------
-#
+# Always send the command line and all output to the log file.  Set the log
+# file to /dev/null to disable this feature.  If BE_VERBOSE then also echo
+# the command line to the screen.  If PRETEND then don't actually run the
+# command.
 #------------------------------------------------------------------------------
 cmd() {
     echo " > $*" >> $LOG_FILE
@@ -232,6 +247,14 @@ cmd() {
     return ${PIPESTATUS[0]}
 }
 
+#==============================================================================
+# BASIC TEXT UI ELEMENTS 
+#
+# These are meant to provide easy and consistent text UI elements.  In addition
+# the plan is to automatically switch over to letting a GUI control the UI,
+# perhaps by sending menus and questions and so on to the GUI.  Ideally one
+# set of calls in the script will suffice for both purposes.
+#==============================================================================
 #------------------------------------------------------------------------------
 # The order is weird but it allows the *error* message to work like printf
 # The purpose is to make it easy to put questions into the error log.
@@ -255,7 +278,12 @@ yes_NO_fatal() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Simple "yes" "no" questions.  Ask a question, wait for a valid response.  The
+# responses are all numbers which might be better for internationalizations.
+# I'm not sure if we should include the "quit" option or not.  The difference
+# between the two routines is the default:
+#       yes_NO() default is "no"
+#       YES_no() default is "yes"
 #------------------------------------------------------------------------------
 yes_NO() { _yes_no 0 "$1" ;}
 YES_no() { _yes_no 0 "$1" ;}
@@ -289,7 +317,9 @@ _yes_no() {
 }
 
 #------------------------------------------------------------------------------
-#
+# This may not be used yet.  It was an early attempt to provide a simple menu
+# interface. I think the guts in my_select_2() (or routines that use them) are
+# more often used now.
 #------------------------------------------------------------------------------
 my_select() {
     local title=$1  var=$2  width=${3:-0}  default=$4
@@ -312,7 +342,18 @@ my_select() {
 }
 
 #------------------------------------------------------------------------------
+# This is the workhorse for several of my menu systems (in other codes).
 #
+#   $title:    the question asked
+#   $var:      the name of the variable the answer goes in
+#   $default:  the default selection (a number)
+#   $data:     A string of lines of $NUM:$VALUE:$menu_value
+#              The number select by the user gets converted to the value
+#              The third field is used to mimic the value in the menu
+#              for the initrd text menus but that may not be used here.
+#   $menu      A multi-line string that is the menu to be displayed.  It
+#              The callers job to make sure it is properly aligned with
+#              the contents of $data.
 #------------------------------------------------------------------------------
 my_select_2() {
     local title=$1  var=$2  default=$3  data=$4  menu=$5
@@ -351,11 +392,12 @@ my_select_2() {
 }
 
 #==============================================================================
-# Fun with Colors!  (and aliggn unicode test)
+# Fun with Colors!  (and align unicode test)
 #
 #==============================================================================
 #------------------------------------------------------------------------------
-#
+# Defines a bunch of (lowercase!) globals for colors.  In some versions, $noco
+# and $loco are used to control what colors get assigned, if any.
 #------------------------------------------------------------------------------
 set_colors() {
     local noco=$1  loco=$2
@@ -373,6 +415,11 @@ set_colors() {
        to_co=$lt_green;  warn_co=$yellow;  bold_co=$yellow;
 }
 
+#------------------------------------------------------------------------------
+# These are designed to "quote" strings with colors so there is always a
+# leading color, all the args, and then a trailing color.  This is easier and
+# more compact that using colors as strings.
+#------------------------------------------------------------------------------
 pq()  { echo "$hi_co$*$m_co"           ;}
 pqw() { echo "$warn_co$*$hi_co"        ;}
 pqe() { echo "$hi_co$*$err_co"         ;}
@@ -381,7 +428,7 @@ bq()  { echo "$yellow$*$m_co"          ;}
 cq()  { echo "$cheat_co$*$m_co"        ;}
 
 #------------------------------------------------------------------------------
-#
+# Intended to add colors to menus used by my_select_2() menus.
 #------------------------------------------------------------------------------
 colorize_menu() {
     sed -r -e "s/(^| )([0-9]+)\)/\1$green\2$white)$cyan/g" \
@@ -389,7 +436,8 @@ colorize_menu() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Pad a (possibly unicode) string on the RIGHT so it is total length $width.
+# Unfortunately printf is problem with multi-byte unicode but wc -m is not. 
 #------------------------------------------------------------------------------
 rpad() {
     local width=$1  str=$2
@@ -399,7 +447,7 @@ rpad() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Same as above but pad on the LEFT.
 #------------------------------------------------------------------------------
 lpad() {
     local width=$1  str=$2
@@ -409,7 +457,8 @@ lpad() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Remove all ANSI color escape sequences that are created in set_colors().
+# This is NOT a general purpose routine for removing all ANSI escapes.
 #------------------------------------------------------------------------------
 strip_color() {
     local e=$(printf "\e")
@@ -417,7 +466,7 @@ strip_color() {
 }
 
 #==============================================================================
-# Mesages, Warnings and Errors
+# Messages, Warnings and Errors
 #
 #==============================================================================
 
@@ -692,8 +741,10 @@ reset_conf() {
 # These usually either provide a useful feature or wrap a bunch of error checks
 # around standard system calls.  Some of them are for convenience.
 #==============================================================================
+
 #------------------------------------------------------------------------------
-#
+# The normal mountpoint command can fail on symlinks and in other situations.
+# This is intended to be more robust. (sorry Jerry and Gaer Boy!)
 #------------------------------------------------------------------------------
 is_mountpoint() {
     local file=$1
@@ -702,7 +753,8 @@ is_mountpoint() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Needs a better name.  Requires all the programs on the list to be on the PATH
+# or use returns false and says it is Skipping $stage.
 #------------------------------------------------------------------------------
 require() {
     local stage=$1  prog ret=0
@@ -716,7 +768,8 @@ require() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Throw a fatal error if any of the programs are missing.  Again, need better
+# naming.
 #------------------------------------------------------------------------------
 need_prog() {
     local prog
@@ -727,7 +780,8 @@ need_prog() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Test if a directory is writable by making a temporary file in it.  May not
+# be elegant but it is pretty darned robust IMO.
 #------------------------------------------------------------------------------
 is_writable() {
     local dir=$1
@@ -738,7 +792,7 @@ is_writable() {
 }
 
 #------------------------------------------------------------------------------
-#
+# A nice wrapper around is_writable()
 #------------------------------------------------------------------------------
 check_writable() {
     local dir=$1  type=$2
@@ -748,7 +802,8 @@ check_writable() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Only used in conjunction with cmd() which does not handle io-redirect well.
+# Using write_file() allows both PRETEND and BE_VERBOSE to work.
 #------------------------------------------------------------------------------
 write_file() {
     file=$1
@@ -757,9 +812,11 @@ write_file() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Slightly heuristic way of trying to see if a drive or partition is usb or
+# is removable.  This information has never been 100% reliable across all
+# hardware.  This is my best shot.  Maybe there will be something better someday.
 #------------------------------------------------------------------------------
-is_usb_or_removeable() {
+is_usb_or_removable() {
     test -b $1 || return 1
     local drive=$(get_drive $1)
     local dir=/sys/block/$drive flag
@@ -771,9 +828,8 @@ is_usb_or_removeable() {
     return $?
 }
 
-
 #------------------------------------------------------------------------------
-# Mount dev at dir or know the reason way.  All failures are fatal
+# Mount dev at dir or know the reason why.  All failures are fatal
 #------------------------------------------------------------------------------
 my_mount() {
     local dev=$1  dir=$2
@@ -785,7 +841,8 @@ my_mount() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Returns true on a live antiX/MX system, returns false otherwise.  May work
+# correctly on other live systems but has not been tested.
 #------------------------------------------------------------------------------
 its_alive() {
     local root_fstype=$(sed -rn "s|^([a-z]+) / .*|\1|p" /proc/mounts)
@@ -796,7 +853,9 @@ its_alive() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Create a work directory with mktemp. Not used!  The idea was that we might
+# be able to avoid some conflicts with this if flock is not available.  It
+# may just be a bad idea.
 #------------------------------------------------------------------------------
 random_work_dir() {
     [ ${#WORK_DIR} -gt 0 ] || return
@@ -808,7 +867,7 @@ random_work_dir() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Given a partition, echo the canonical name for the drive.
 #------------------------------------------------------------------------------
 get_drive() {
     local drive part=${1##*/}
@@ -819,7 +878,7 @@ get_drive() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Allow users to use abbreviations like sdd1 or /sdd1 or dev/sdd1
 #------------------------------------------------------------------------------
 expand_device() {
     case $1 in
@@ -831,7 +890,7 @@ expand_device() {
 }
 
 #------------------------------------------------------------------------------
-#
+# echo the canonical name for the Nth partition on a drive.
 #------------------------------------------------------------------------------
 get_partition() {
     local dev=$1  num=$2
@@ -843,7 +902,11 @@ get_partition() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Simple mkdir -p with simple error checking.  If it is likely that a directory
+# cannot be made then check it yourself explicitly instead of using this
+# routine.  This is to provide some breadcrumbs but I don't expect it to fail
+# very often.  If we cannot make a directory then usually something is very
+# wrong.
 #------------------------------------------------------------------------------
 my_mkdir() {
     dir=$1
@@ -851,7 +914,7 @@ my_mkdir() {
 }
 
 #------------------------------------------------------------------------------
-#
+#  Report the size of all the directories and files give in MiB.
 #------------------------------------------------------------------------------
 du_size() {
     du --apparent-size -scm "$@" 2>/dev/null | tail -n 1 | cut -f1
