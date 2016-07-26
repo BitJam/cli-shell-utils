@@ -391,6 +391,48 @@ my_select_2() {
     done
 }
 
+#------------------------------------------------------------------------------
+# Present a menu for user to select a kernel.  the list input should be the
+# output of: "vmlinuz-version -nsd : <files>" or something like that.  You
+# can set the delimiter with a 4th argument but it must be a single character
+#------------------------------------------------------------------------------
+select_kernel() {
+    local title=$1 var=$2 list=$3  sep=${4:-:}
+
+    # Get field widths
+    local line f1 f2  w1=10 w2=10
+    while read line; do
+        f1=$(echo "$line" | cut -d "$sep" -f2)
+        f2=$(echo "$line" | cut -d "$sep" -f1,2 --complement)
+        [ $w1 -lt ${#f1} ] && w1=${#f1}
+        [ $w2 -lt ${#f2} ] && w2=${#f2}
+    done<<Widths
+$(echo "$list")
+Widths
+
+    local fmt=" %2s) $green%-${w1}s $white%-${w2}s$nc_co\n"
+    local hfmt=" %3s $white%-${w1}s $white%-${w2}s$nc_co\n"
+    local menu=$(printf "$hfmt" "" "Version" "Date")
+    data="0:quit"
+    local cnt=1 default
+    while read line; do
+        f1=$(echo "$line" | cut -d "$sep" -f2)
+        f2=$(echo "$line" | cut -d "$sep" -f1,2 --complement)
+        menu="$menu\n$(printf "$fmt" "$cnt" "$f1" "$f2")"
+        data="$data\n$cnt:$f1"
+        [ $cnt -eq 1 ] && default=$f1
+        cnt=$((cnt + 1))
+    done<<Print
+$(echo "$list")
+Print
+
+title="$title  (the default is${bold_co} $default$white)"
+    menu="$menu\n$(printf " %2s) $bold_co%s$nc_co\n" 0 "quit")"
+    my_select_2 "$title" $var 1 "$data" "$menu"
+}
+
+
+
 #==============================================================================
 # Fun with Colors!  (and align unicode test)
 #
