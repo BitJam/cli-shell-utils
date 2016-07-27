@@ -380,7 +380,9 @@ my_select_2() {
             continue
         fi
 
-        val=$(echo -e "$data" | sed -n "s/^$input://p" | cut -d: -f1)
+        # Note the initrd text menus assume no : in the payload hence the cut
+        #val=$(echo -e "$data" | sed -n "s/^$input://p" | cut -d: -f1)
+        val=$(echo -e "$data" | sed -n "s/^$input://p")
 
         if [ -z "$val" ]; then
             err_msg=$(printf "The number <%s> is out of range" "$(pqe $input)")
