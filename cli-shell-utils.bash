@@ -248,7 +248,7 @@ cmd() {
 }
 
 #==============================================================================
-# BASIC TEXT UI ELEMENTS 
+# BASIC TEXT UI ELEMENTS
 #
 # These are meant to provide easy and consistent text UI elements.  In addition
 # the plan is to automatically switch over to letting a GUI control the UI,
@@ -285,24 +285,25 @@ yes_NO_fatal() {
 #       yes_NO() default is "no"
 #       YES_no() default is "yes"
 #------------------------------------------------------------------------------
-yes_NO() { _yes_no 0 "$1" ;}
+yes_NO() { _yes_no 1 "$1" ;}
 YES_no() { _yes_no 0 "$1" ;}
 
 _yes_no() {
-    local answer default=$1  question=$2
+    local answer ret=$1  question=$2  def_entry=$(($1 + 1))
 
-    [ "$AUTO_MODE" ] && return $default
+    [ "$AUTO_MODE" ] && return $ret
 
     if [ "$FIFO_MODE" ]; then
-        pipe_up "yes-no:$((default + 1)): $question"
+        pipe_up "yes-no:$def_entry: $question"
         pipe_dn answer
         echo "answer: $answer"
     else
         local yes=$"yes"  no=$"no"  quit=$"quit"  default=$"default"
         local menu def_entry
-        case default in
-            0) menu=$(printf "  1) $yes ($default)\n  2) $no\n  0) $quit") ; def_entry=1;;
-            *) menu=$(printf "  1) $yes\n  2) $no (default)\n  0) $quit")  ; def_entry=2;;
+        case $def_entry in
+            1) menu=$(printf "  1) $yes ($default)\n  2) $no\n  0) $quit") ;;
+            2) menu=$(printf "  1) $yes\n  2) $no (default)\n  0) $quit")  ;;
+            *) fatal "Internal error in _yes_no()"                         ;;
         esac
         local data=$(printf "1:1\n2:2\n0:0")
         my_select_2 "$quest_co$question$nc_co" answer $def_entry "$data" "$menu"
