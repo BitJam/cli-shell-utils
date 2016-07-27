@@ -1031,10 +1031,10 @@ is_usb_or_removable() {
 my_mount() {
     local dev=$1  dir=$2
     shift 2
-    is_mountpoint $dir              && fatal $"Directory '%s' is already a mountpoint" "$dir"
-    always_cmd mkdir -p $dir        || fatal $"Failed to create directory '%s'" "$dir"
-    always_cmd mount "$@" $dev $dir || fatal $"Could not mount %s at %s" "$dev" "$dir"
-    is_mountpoint $dir              || fatal $"Failed to mount %s at %s" "$dev" "$dir"
+    is_mountpoint "$dir"              && fatal $"Directory '%s' is already a mountpoint" "$dir"
+    always_cmd mkdir -p "$dir"        || fatal $"Failed to create directory '%s'" "$dir"
+    always_cmd mount "$@" $dev "$dir" || fatal $"Could not mount %s at %s" "$dev" "$dir"
+    is_mountpoint "$dir"              || fatal $"Failed to mount %s at %s" "$dev" "$dir"
 }
 
 #------------------------------------------------------------------------------
