@@ -749,12 +749,13 @@ quest() {
 #
 #------------------------------------------------------------------------------
 start_fifo() {
-    local name=${1:-$WORK_DIR/fifo}
+    local fifo
     my_mkdir $WORK_DIR
-    mkfifo "$name-up"   || fatal "Could not create fifo '$name-up'"
-    mkfifo "$name-dn"   || fatal "Could not create fifo '$name-dn'"
-    FIFO_UP="$name-up"
-    FIFO_DN="$name-dn"
+    FIFO_UP="$WORK_DIR/to-gui"
+    FIFO_DN="$WORK_DIR/to-cli"
+    for fifo in $FIFO_UP $FIFO_DN; do
+        mkfifo "$fifo"   || fatal "Could not create fifo ''" "$fifo"
+    done
 }
 
 #------------------------------------------------------------------------------
