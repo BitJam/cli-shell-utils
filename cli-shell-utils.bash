@@ -1003,9 +1003,9 @@ check_writable() {
 # Using write_file() allows both PRETEND and BE_VERBOSE to work.
 #------------------------------------------------------------------------------
 write_file() {
-    file=$1
+    local file=$1
     shift
-    echo "$*" > $file
+    echo "$*" > "$file"
 }
 
 #------------------------------------------------------------------------------
