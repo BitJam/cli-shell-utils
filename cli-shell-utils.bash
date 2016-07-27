@@ -1067,7 +1067,7 @@ random_work_dir() {
 # Given a partition, echo the canonical name for the drive.
 #------------------------------------------------------------------------------
 get_drive() {
-    local drive part=${1##*/}
+    local drive part=$1
     case $part in
         mmcblk*) echo ${part%p[0-9]}                       ;;
               *) drive=${part%[0-9]} ; echo ${drive%[0-9]} ;;
