@@ -394,47 +394,189 @@ my_select_2() {
     done
 }
 
+#==============================================================================
+# Kernel Tables!
+#==============================================================================
 #------------------------------------------------------------------------------
 # Present a menu for user to select a kernel.  the list input should be the
 # output of: "vmlinuz-version -nsd : <files>" or something like that.  You
 # can set the delimiter with a 4th argument but it must be a single character
+#
+# This is the two column version:  Version  Date
 #------------------------------------------------------------------------------
-select_kernel() {
-    local title=$1 var=$2 list=$3  sep=${4:-:}
+select_kernel_2() {
+    local title=$1 var=$2 list=$3  ifs=${4:-:} orig_ifs=$IFS
+    IFS=$ifs
 
     # Get field widths
-    local line f1 f2  w1=10 w2=10
-    while read line; do
-        f1=$(echo "$line" | cut -d "$sep" -f2)
-        f2=$(echo "$line" | cut -d "$sep" -f1,2 --complement)
+    local f1 f2 f3  w1=5
+    while read f1 f2 f3; do
         [ $w1 -lt ${#f1} ] && w1=${#f1}
-        [ $w2 -lt ${#f2} ] && w2=${#f2}
     done<<Widths
 $(echo "$list")
 Widths
 
-    local fmt=" %2s) $green%-${w1}s $white%-${w2}s$nc_co\n"
-    local hfmt=" %3s $white%-${w1}s $white%-${w2}s$nc_co\n"
+    local fmt=" %2s) $green%-${w1}s $white%s$nc_co\n"
+    local hfmt=" %3s $white%-${w1}s $white%s$nc_co\n"
     local menu=$(printf "$hfmt" "" "Version" "Date")
-    data="0:quit"
+    local data="0:quit"
     local cnt=1 default
-    while read line; do
-        f1=$(echo "$line" | cut -d "$sep" -f2)
-        f2=$(echo "$line" | cut -d "$sep" -f1,2 --complement)
-        menu="$menu\n$(printf "$fmt" "$cnt" "$f1" "$f2")"
-        data="$data\n$cnt:$f1"
+    while read f1 f2 f3; do
+        menu="$menu\n$(printf "$fmt" "$cnt" "$f1" "$f3")"
+        data="$data\n$cnt:$f1$IFS$f2$IFS$f3"
         [ $cnt -eq 1 ] && default=$f1
         cnt=$((cnt + 1))
     done<<Print
 $(echo "$list")
 Print
 
-title="$title  (the default is${bold_co} $default$white)"
+    IFS=$orig_ifs
+title="$title\n(the default is${bold_co} $default$white)"
     menu="$menu\n$(printf " %2s) $bold_co%s$nc_co\n" 0 "quit")"
     my_select_2 "$title" $var 1 "$data" "$menu"
+
+    eval "local ans=\$$var"
+    [ "$ans" = 'quit' ] && my_exit
+
 }
 
+#------------------------------------------------------------------------------
+# This is the three column version:  Fname Version  Date
+#------------------------------------------------------------------------------
+select_kernel_3() {
+    local title=$1 var=$2 list=$3  ifs=${4:-:}  orig_ifs=$IFS
+    IFS=$ifs
 
+    # Get field widths
+    local f1 f2 f3  w1=5 w2=5
+    while read f1 f2 f3; do
+        [ $w1 -lt ${#f1} ] && w1=${#f1}
+        [ $w2 -lt ${#f2} ] && w2=${#f2}
+    done<<Widths
+$(echo "$list")
+Widths
+
+    local fmt=" %2s) $cyan%-${w2}s $green%-${w1}s $white%-s$nc_co\n"
+    local hfmt=" %3s $white%-${w2}s $white%-${w1}s %-s$nc_co\n"
+    local menu=$(printf "$hfmt" "" "File" "Version" "Date")
+    local data="0:quit"
+    local cnt=1 default
+    while read f1 f2 f3; do
+        menu="$menu\n$(printf "$fmt" "$cnt" "$f2" "$f1" "$f3")"
+        data="$data\n$cnt:$f1$IFS$f2$IFS$f3"
+        [ $cnt -eq 1 ] && default=$f2
+        cnt=$((cnt + 1))
+    done<<Print
+$(echo "$list")
+Print
+
+    IFS=$orig_ifs
+
+title="$title\n(the default is${bold_co} $default$white)"
+    menu="$menu\n$(printf " %2s) $bold_co%s$nc_co\n" 0 "quit")"
+    my_select_2 "$title" $var 1 "$data" "$menu"
+
+    eval "local ans=\$$var"
+    [ "$ans" = 'quit' ] && my_exit
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+show_kernel_2() {
+    local list=$1  ifs=${2:-:}  orig_ifs=$IFS
+    IFS=$ifs
+
+    # Get field widths
+    local  f1 f2 f3  w1=5
+    while read f1 f2 f3; do
+        [ $w1 -lt ${#f1} ] && w1=${#f1}
+    done<<Widths
+$(echo "$list")
+Widths
+
+    local  fmt=" $green%-${w1}s $white%s$nc_co\n"
+    local hfmt=" $white%-${w1}s $white%s$nc_co\n"
+    printf "$hfmt" "Version" "Date"
+    while read  f1 f2 f3; do
+        printf "$fmt" "$f1" "$f3"
+    done<<Print
+$(echo "$list")
+Print
+    IFS=$orig_ifs
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+show_kernel_3() {
+    local list=$1  ifs=${2:-:} orig_ifs=$IFS
+    IFS=$ifs
+
+    # Get field widths
+    local f1 f2 f3  w1=5 w2=5
+    while read f1 f2 f3; do
+        [ $w1 -lt ${#f1} ] && w1=${#f1}
+        [ $w2 -lt ${#f2} ] && w2=${#f2}
+    done<<Widths
+$(echo "$list")
+Widths
+
+    local fmt=" $cyan%-${w2}s $green%-${w1}s $white%-s$nc_co\n"
+    local hfmt=" $white%-${w2}s $white%-${w1}s %-s$nc_co\n"
+    printf "$hfmt" "File" "Version" "Date"
+    while read f1 f2 f3; do
+        printf "$fmt" "$f2" "$f1" "$f3"
+    done<<Print
+$(echo "$list")
+Print
+
+    IFS=$orig_ifs
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+kernel_stats() {
+    local list=$1  ifs=${2:-:} orig_ifs=$IFS
+    IFS=$ifs
+
+    # Get field widths
+    local f1 f2 f3 f4 f5 f6 w1=5 w2=5 w3=5 w4=5 w6=5
+    while read f1 f2 f3 f4 f5 f6; do
+        [ ${#f1} -gt 0 ] || continue
+        [ $w1 -lt ${#f1} ] && w1=${#f1}
+        [ $w2 -lt ${#f2} ] && w2=${#f2}
+        [ $w3 -lt ${#f3} ] && w3=${#f3}
+        [ $w4 -lt ${#f4} ] && w4=${#f4}
+        [ $w6 -lt ${#f6} ] && w6=${#f6}
+    done<<Widths
+$(echo -e "$list")
+Widths
+
+    #echo "$w1:$w4:$w6:$w2"
+
+    local hfmt=" $white%s $white%s  %s  %s %s$nc_co\n"
+    local  fmt=" $m_co%s $lt_blue%s  $lt_green%s  $nc_co%s %s$nc_co\n"
+    f1=$(lpad $w1 "")
+    f4=$(rpad $w4 "Version")
+    f6=$(rpad $w6 "Date")
+    f2=$(rpad $w2 "From")
+    printf "$hfmt" "$f1" "$f4" "$f6" "$f2" "To"
+
+    while read f1 f2 f3 f4 f5 f6; do
+        [ ${#f1} -gt 0 ] || continue
+        f1=$(lpad $w1 "$f1")
+        f2=$(rpad $w2 "$f2")
+        f4=$(rpad $w4 "$f4")
+        f6=$(rpad $w6 "$f6")
+        printf "$fmt" "$f1" "$f4" "$f6" "$f2" "$f3"
+    done<<Print
+$(echo -e "$list")
+Print
+
+    IFS=$orig_ifs
+}
 
 #==============================================================================
 # Fun with Colors!  (and align unicode test)
@@ -482,11 +624,11 @@ colorize_menu() {
 
 #------------------------------------------------------------------------------
 # Pad a (possibly unicode) string on the RIGHT so it is total length $width.
-# Unfortunately printf is problem with multi-byte unicode but wc -m is not. 
+# Unfortunately printf is problem with multi-byte unicode but wc -m is not.
 #------------------------------------------------------------------------------
 rpad() {
     local width=$1  str=$2
-    local pad=$((width - $(echo $str | wc -m)))
+    local pad=$((width - ${#str}))
     [ $pad -le 0 ] && pad=0
     printf "%s%${pad}s" "$str" ""
 }
@@ -496,7 +638,7 @@ rpad() {
 #------------------------------------------------------------------------------
 lpad() {
     local width=$1  str=$2
-    local pad=$((width - $(echo $str | wc -m)))
+    local pad=$((width - ${#str}))
     [ $pad -le 0 ] && pad=0
     printf "%${pad}s%s" "" "$str"
 }
