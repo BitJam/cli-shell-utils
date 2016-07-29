@@ -955,7 +955,7 @@ reset_conf() {
     local temp_file=$(mktemp /tmp/$ME-config-XXXXXX) \
         || fatal $"Could not make a temporary file under %s" "/tmp"
 
-    sed -rn "/^#=+\s*BEGIN_CONFIG/,/^#=+\s*END_CONFIG/p" "$ME" > $temp_file
+    sed -rn "/^#=+\s*BEGIN_CONFIG/,/^#=+\s*END_CONFIG/p" "$0" > $temp_file
     source $temp_file
     rm -f $temp_file || fatal $"Could not remove temporary file %s" "$temp_file"
 }
