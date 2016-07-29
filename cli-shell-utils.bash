@@ -360,8 +360,15 @@ my_select() {
 #              the contents of $data.
 #------------------------------------------------------------------------------
 my_select_2() {
-    local title=$1  var=$2  default=$3  data=$4  menu=$5
-    local def_prompt=$(printf "Press <%s> for the default selection" "$(cq "enter")")
+    local title=$1  var=$2  default=$3  data=$4  menu=$5  def_str=$6
+
+    if [ -n "$def_str" ]; then
+        def_str="($bold_co$def_str$quest_co)"
+    else
+        def_str="selection"
+    fi
+
+    local def_prompt=$(printf $"Press <%s> for the default %s" "$(cq "enter")" "$def_str")
 
     local val input err_msg
     while [ -z "$val" ]; do
@@ -371,15 +378,15 @@ my_select_2() {
         printf "$menu\n" | colorize_menu
         [ "$err_msg" ] && printf "$err_co%s$nc_co\n" "$err_msg"
         [ "$default" ] && printf "$m_co%s$nc_co\n" "$def_prompt"
-        echo -n "$green>$nc_co "
+        echo -n "$quest_co>$nc_co "
 
         read input
         err_msg=
         [ -z "$input" -a -n "$default" ] && input=$default
 
         if ! echo "$input" | grep -q "^[0-9]\+$"; then
-            err_msg="You must enter a number"
-            [ "$default" ] && err_msg="You must enter a number or press <enter>"
+            err_msg=$"You must enter a number"
+            [ "$default" ] && err_msg=$"You must enter a number or press <enter>"
             continue
         fi
 
