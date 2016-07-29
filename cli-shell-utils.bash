@@ -300,6 +300,8 @@ _yes_no() {
         echo "answer: $answer"
     else
         local yes=$"yes"  no=$"no"  quit=$"quit"  default=$"default"
+        quit="$bold_co$quit"
+
         local menu def_entry
         case $def_entry in
             1) menu=$(printf "  1) $yes ($default)\n  2) $no\n  0) $quit") ;;
