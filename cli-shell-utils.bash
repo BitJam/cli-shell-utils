@@ -395,7 +395,7 @@ my_select_2() {
         val=$(echo -e "$data" | sed -n "s/^$input://p")
 
         if [ -z "$val" ]; then
-            err_msg=$(printf "The number <%s> is out of range" "$(pqe $input)")
+            err_msg=$(printf $"The number <%s> is out of range" "$(pqe $input)")
             continue
         fi
 
@@ -569,10 +569,10 @@ Widths
     local hfmt=" $white%s $white%s  %s  %s %s$nc_co\n"
     local  fmt=" $m_co%s $lt_blue%s  $lt_green%s  $nc_co%s %s$nc_co\n"
     f1=$(lpad $w1 "")
-    f4=$(rpad $w4 "Version")
-    f6=$(rpad $w6 "Date")
-    f2=$(rpad $w2 "From")
-    printf "$hfmt" "$f1" "$f4" "$f6" "$f2" "To"
+    f4=$(rpad $w4 $"Version")
+    f6=$(rpad $w6 $"Date")
+    f2=$(rpad $w2 $"From")
+    printf "$hfmt" "$f1" "$f4" "$f6" "$f2" $"To"
 
     while read f1 f2 f3 f4 f5 f6; do
         [ ${#f1} -gt 0 ] || continue
@@ -1003,9 +1003,9 @@ is_writable() {
 #------------------------------------------------------------------------------
 check_writable() {
     local dir=$1  type=$2
-    test -e "$dir"     || fatal "The %s directory '%s' does not exist"     "$type" "$dir"
-    test -d "$dir"     || fatal "The %s directory '%s' is not a directory" "$type" "$dir"
-    is_writable "$dir" || fatal "The %s directory '%s' is not writable"    "$type" "$dir"
+    test -e "$dir"     || fatal $"The %s directory '%s' does not exist"     "$type" "$dir"
+    test -d "$dir"     || fatal $"The %s directory '%s' is not a directory" "$type" "$dir"
+    is_writable "$dir" || fatal $"The %s directory '%s' is not writable"    "$type" "$dir"
 }
 
 #------------------------------------------------------------------------------
@@ -1068,7 +1068,7 @@ random_work_dir() {
     [ ${#WORK_DIR} -gt 0 ] || return
     local temp_dir=$(mktemp -d "$WORK_DIR"-XXXXXX)
     [ ${#temp_dir} -gt 0 ] \
-        || fatal "Could not create a temporary directory in '%s'" "$(dirname "$WORK_DIR")"
+        || fatal $"Could not create a temporary directory in '%s'" "$(dirname "$WORK_DIR")"
 
     WORK_DIR=$temp_dir
 }
