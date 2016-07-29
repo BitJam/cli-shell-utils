@@ -503,9 +503,9 @@ show_kernel_2() {
 $(echo "$list")
 Widths
 
-    local  fmt=" $green%-${w1}s $white%s$nc_co\n"
+    local  fmt=" $lt_green%-${w1}s $white%s$nc_co\n"
     local hfmt=" $white%-${w1}s $white%s$nc_co\n"
-    printf "$hfmt" "Version" "Date"
+    printf "$hfmt" $"Version" $"Date"
     while read  f1 f2 f3; do
         printf "$fmt" "$f1" "$f3"
     done<<Print
@@ -530,9 +530,9 @@ show_kernel_3() {
 $(echo "$list")
 Widths
 
-    local fmt=" $cyan%-${w2}s $green%-${w1}s $white%-s$nc_co\n"
+    local fmt=" $lt_cyan%-${w2}s $lt_green%-${w1}s $white%-s$nc_co\n"
     local hfmt=" $white%-${w2}s $white%-${w1}s %-s$nc_co\n"
-    printf "$hfmt" "File" "Version" "Date"
+    printf "$hfmt" $"File" $"Version" $"Date"
     while read f1 f2 f3; do
         printf "$fmt" "$f2" "$f1" "$f3"
     done<<Print
@@ -980,7 +980,7 @@ need_prog() {
     local prog
     for prog; do
         which $prog &>/dev/null && continue
-        fatal "Could not find required program '%s'" "$(pqh $prog)"
+        fatal $"Could not find required program '%s'" "$(pqh $prog)"
     done
 }
 
@@ -990,7 +990,7 @@ need_prog() {
 #------------------------------------------------------------------------------
 is_writable() {
     local dir=$1
-    test -d "$dir" || fatal "Directory %s does not exist" "$dir"
+    test -d "$dir" || fatal $"Directory %s does not exist" "$dir"
     local temp=$(mktemp -p $dir 2> /dev/null) || return 1
     rm -f "$temp"
     return 0
