@@ -901,10 +901,10 @@ umount_all() {
     mount | egrep -q "^$dev[^ ]*" || return 0
 
     for i in $(seq 1 10); do
-        mount | egrep -q "^$dev[^ ]*" || return 0
         for part in $(mount | egrep -o "^$dev[^ ]*"); do
             umount $part 2>/dev/null
         done
+        mount | egrep -q "^$dev[^ ]*" || return 0
         sleep .1
     done
 
