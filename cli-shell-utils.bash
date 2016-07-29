@@ -339,7 +339,7 @@ my_select() {
 
         [ "$lab" = "quit" ] && lab=$bold_co$lab$nc_co
         [ $cnt = "$default" ] && lab=$(printf "%${width}s (%s)" "$lab" "$(cq "default")")
-        menu="${menu}$(printf "$quest_co%2d$white)$cyan %${width}s" $dcnt "$lab")\n"
+        menu="${menu}$(printf "$quest_co%2d$white)$lt_cyan %${width}s" $dcnt "$lab")\n"
     done
 
     my_select_2 "$title" $var "$default" "$data" "$menu"
@@ -419,9 +419,9 @@ select_kernel_2() {
 $(echo "$list")
 Widths
 
-    local fmt=" %2s) $green%-${w1}s $white%s$nc_co\n"
+    local fmt=" %2s) $lt_green%-${w1}s $white%s$nc_co\n"
     local hfmt=" %3s $white%-${w1}s $white%s$nc_co\n"
-    local menu=$(printf "$hfmt" "" "Version" "Date")
+    local menu=$(printf "$hfmt" "" $"Version" $"Date")
     local data="0:quit"
     local cnt=1 default
     while read f1 f2 f3; do
@@ -459,9 +459,9 @@ select_kernel_3() {
 $(echo "$list")
 Widths
 
-    local fmt=" %2s) $cyan%-${w2}s $green%-${w1}s $white%-s$nc_co\n"
+    local fmt=" %2s) $lt_cyan%-${w2}s $lt_green%-${w1}s $white%-s$nc_co\n"
     local hfmt=" %3s $white%-${w2}s $white%-${w1}s %-s$nc_co\n"
-    local menu=$(printf "$hfmt" "" "File" "Version" "Date")
+    local menu=$(printf "$hfmt" "" $"File" $"Version" $"Date")
     local data="0:quit"
     local cnt=1 default
     while read f1 f2 f3; do
@@ -599,7 +599,7 @@ set_colors() {
     lt_red="$e[1;31m"; magenta="$e[1;35m";   yellow="$e[1;33m";   white="$e[1;37m";
      nc_co="$e[0m";
 
-    cheat_co=$white;      err_co=$red;       hi_co=$white;   quest_co=$green;
+    cheat_co=$white;      err_co=$red;       hi_co=$white;   quest_co=$lt_green;
       cmd_co=$white;     from_co=$lt_green;  mp_co=$magenta;   num_co=$magenta;
       dev_co=$magenta;   head_co=$yellow;     m_co=$lt_cyan;    ok_co=$lt_green;
        to_co=$lt_green;  warn_co=$yellow;  bold_co=$yellow;
@@ -621,8 +621,8 @@ cq()  { echo "$cheat_co$*$m_co"        ;}
 # Intended to add colors to menus used by my_select_2() menus.
 #------------------------------------------------------------------------------
 colorize_menu() {
-    sed -r -e "s/(^| )([0-9]+)\)/\1$green\2$white)$cyan/g" \
-        -e "s/\(([^)]+)\)/($white\1$cyan)/g" -e "s/$/$nc_co/"
+    sed -r -e "s/(^| )([0-9]+)\)/\1$quest_co\2$white)$lt_cyan/g" \
+        -e "s/\(([^)]+)\)/($white\1$lt_cyan)/g" -e "s/$/$nc_co/"
 }
 
 #------------------------------------------------------------------------------
