@@ -441,9 +441,8 @@ $(echo "$list")
 Print
 
     IFS=$orig_ifs
-title="$title\n(the default is${bold_co} $default$white)"
     menu="$menu\n$(printf " %2s) $bold_co%s$nc_co\n" 0 "quit")"
-    my_select_2 "$title" $var 1 "$data" "$menu"
+    my_select_2 "$title" $var 1 "$data" "$menu" "$default"
 
     eval "local ans=\$$var"
     [ "$ans" = 'quit' ] && my_exit
@@ -482,9 +481,8 @@ Print
 
     IFS=$orig_ifs
 
-title="$title\n(the default is${bold_co} $default$white)"
     menu="$menu\n$(printf " %2s) $bold_co%s$nc_co\n" 0 "quit")"
-    my_select_2 "$title" $var 1 "$data" "$menu"
+    my_select_2 "$title" $var 1 "$data" "$menu" "$default"
 
     eval "local ans=\$$var"
     [ "$ans" = 'quit' ] && my_exit
