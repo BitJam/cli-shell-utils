@@ -182,6 +182,7 @@ check_pause() { _check_any pause "$@"  ;}
 _check_any() {
     local type=$1  name=$2  all=$3  opt
     eval "local opts=\$$name"
+
     # Convert spaces to commas
     opts=${opts// /,}
     eval $name=\$opts
