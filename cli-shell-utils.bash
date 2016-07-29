@@ -1035,7 +1035,7 @@ write_file() {
 is_usb_or_removable() {
     test -b $1 || return 1
     local drive=$(get_drive $1)
-    local dir=/sys/block/$drive flag
+    local dir=/sys/block/${drive##*/} flag
     read flag 2>/dev/null < $dir/removable
     [ "$flag" = 1 ] && return 0
     local devpath=$(readlink -f $dir/device)
