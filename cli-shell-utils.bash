@@ -516,14 +516,17 @@ Widths
 $(echo "$list")
 Print
     IFS=$orig_ifs
+    echo
 }
 
 #------------------------------------------------------------------------------
 # Show a 3-column table of a list of kernels (fname, version, date)
 #------------------------------------------------------------------------------
 show_kernel_3() {
-    local list=$1  ifs=${2:-:} orig_ifs=$IFS
+    local title=$1  list=$2  ifs=${3:-$K_IFS} orig_ifs=$IFS
     IFS=$ifs
+
+    [ "$title" ] && echo "$m_co$title$nc_co"
 
     # Get field widths
     local f1 f2 f3  w1=5 w2=5
@@ -544,6 +547,7 @@ $(echo "$list")
 Print
 
     IFS=$orig_ifs
+    echo
 }
 
 #------------------------------------------------------------------------------
