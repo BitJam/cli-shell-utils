@@ -17,6 +17,8 @@
 #
 #==============================================================================
 
+: ${K_IFS:=|}
+
 #------------------------------------------------------------------------------
 # Sometimes it's useful to process some arguments (-h --help, for example)
 # Before others.  This can let normal users get simple usage.
