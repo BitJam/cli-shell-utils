@@ -417,7 +417,7 @@ my_select_2() {
 # This is the two column version:  Version  Date
 #------------------------------------------------------------------------------
 select_kernel_2() {
-    local title=$1 var=$2 list=$3  ifs=${4:-:} orig_ifs=$IFS
+    local title=$1 var=$2 list=$3  ifs=${4:-$K_IFS} orig_ifs=$IFS
     IFS=$ifs
 
     # Get field widths
@@ -428,8 +428,8 @@ select_kernel_2() {
 $(echo "$list")
 Widths
 
-    local fmt=" %2s) $lt_green%-${w1}s $white%s$nc_co\n"
-    local hfmt=" %3s $white%-${w1}s $white%s$nc_co\n"
+    local fmt=" %2s) $version_co%-${w1}s $date_co%s$nc_co\n"
+    local hfmt=" %3s $hfmt_co%-${w1}s %s$nc_co\n"
     local menu=$(printf "$hfmt" "" $"Version" $"Date")
     local data="0:quit"
     local cnt=1 default
@@ -455,7 +455,7 @@ Print
 # This is the three column version:  Fname Version  Date
 #------------------------------------------------------------------------------
 select_kernel_3() {
-    local title=$1 var=$2 list=$3  ifs=${4:-:}  orig_ifs=$IFS
+    local title=$1 var=$2 list=$3  ifs=${4:-$K_IFS}  orig_ifs=$IFS
     IFS=$ifs
 
     # Get field widths
@@ -467,8 +467,8 @@ select_kernel_3() {
 $(echo "$list")
 Widths
 
-    local fmt=" %2s) $lt_cyan%-${w2}s $lt_green%-${w1}s $white%-s$nc_co\n"
-    local hfmt=" %3s $white%-${w2}s $white%-${w1}s %-s$nc_co\n"
+    local fmt=" %2s) $fname_co%-${w2}s $version_co%-${w1}s $date_co%-s$nc_co\n"
+    local hfmt=" %3s $hfmt_co%-${w2}s %-${w1}s %-s$nc_co\n"
     local menu=$(printf "$hfmt" "" $"File" $"Version" $"Date")
     local data="0:quit"
     local cnt=1 default
@@ -494,8 +494,10 @@ Print
 # Display a 2-Column table (version, date) of a list of kernels
 #------------------------------------------------------------------------------
 show_kernel_2() {
-    local list=$1  ifs=${2:-:}  orig_ifs=$IFS
+    local title=$1  list=$2  ifs=${3:-$K_IFS}  orig_ifs=$IFS
     IFS=$ifs
+
+    [ "$title" ] && echo "$m_co$title$nc_co"
 
     # Get field widths
     local  f1 f2 f3  w1=5
@@ -505,8 +507,8 @@ show_kernel_2() {
 $(echo "$list")
 Widths
 
-    local  fmt=" $lt_green%-${w1}s $white%s$nc_co\n"
-    local hfmt=" $white%-${w1}s $white%s$nc_co\n"
+    local  fmt=" $version_co%-${w1}s $date_co%s$nc_co\n"
+    local hfmt=" $hfmt_co%-${w1}s %s$nc_co\n"
     printf "$hfmt" $"Version" $"Date"
     while read  f1 f2 f3; do
         printf "$fmt" "$f1" "$f3"
@@ -532,8 +534,8 @@ show_kernel_3() {
 $(echo "$list")
 Widths
 
-    local fmt=" $lt_cyan%-${w2}s $lt_green%-${w1}s $white%-s$nc_co\n"
-    local hfmt=" $white%-${w2}s $white%-${w1}s %-s$nc_co\n"
+    local fmt=" $fname_co%-${w2}s $version_co%-${w1}s $date_co%-s$nc_co\n"
+    local hfmt=" $hfmt_co%-${w2}s %-${w1}s %-s$nc_co\n"
     printf "$hfmt" $"File" $"Version" $"Date"
     while read f1 f2 f3; do
         printf "$fmt" "$f2" "$f1" "$f3"
@@ -549,7 +551,7 @@ Print
 #  label, version, date, from-fname, to-fname
 #------------------------------------------------------------------------------
 kernel_stats() {
-    local list=$1  ifs=${2:-:} orig_ifs=$IFS
+    local list=$1  ifs=${2:-$K_IFS} orig_ifs=$IFS
     IFS=$ifs
 
     # Get field widths
@@ -567,8 +569,8 @@ Widths
 
     #echo "$w1:$w4:$w6:$w2"
 
-    local hfmt=" $white%s $white%s  %s  %s %s$nc_co\n"
-    local  fmt=" $m_co%s $lt_blue%s  $lt_green%s  $nc_co%s %s$nc_co\n"
+    local hfmt=" $hfmt_co%s %s  %s  %s %s$nc_co\n"
+    local  fmt=" $lab_co%s $vesion_co%s  $date_co%s  $fname_co%s %s$nc_co\n"
     f1=$(lpad $w1 "")
     f4=$(rpad $w4 $"Version")
     f6=$(rpad $w6 $"Date")
@@ -607,9 +609,11 @@ set_colors() {
     lt_red="$e[1;31m"; magenta="$e[1;35m";   yellow="$e[1;33m";   white="$e[1;37m";
      nc_co="$e[0m";
 
-    cheat_co=$white;      err_co=$red;       hi_co=$white;   quest_co=$lt_green;
-      cmd_co=$white;     from_co=$lt_green;  mp_co=$magenta;   num_co=$magenta;
-      dev_co=$magenta;   head_co=$yellow;     m_co=$lt_cyan;    ok_co=$lt_green;
+     hfmt_co=$white;
+    fname_co=$lt_green;  date_co=$lt_cyan;  lab_co=$lt_blue; version_co=$magenta;
+    cheat_co=$white;      err_co=$red;       hi_co=$white;     quest_co=$lt_green;
+      cmd_co=$white;     from_co=$lt_green;  mp_co=$magenta;     num_co=$magenta;
+      dev_co=$magenta;   head_co=$yellow;     m_co=$lt_cyan;      ok_co=$lt_green;
        to_co=$lt_green;  warn_co=$yellow;  bold_co=$yellow;
 }
 
