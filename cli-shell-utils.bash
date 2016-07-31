@@ -324,28 +324,34 @@ _yes_no() {
 }
 
 #------------------------------------------------------------------------------
-# This may not be used yet.  It was an early attempt to provide a simple menu
-# interface. I think the guts in my_select_2() (or routines that use them) are
-# more often used now.
+# Generate a simple selection menu based on a data:label data structure.
+# The "1)" and so on get added automatically.
 #------------------------------------------------------------------------------
 my_select() {
-    local title=$1  var=$2  width=${3:-0}  default=$4
-    shift 4
-
-    local data menu lab cnt=0 dcnt
-    for lab; do
-        cnt=$((cnt+1))
+    local var=$1  title=$2  list=$3  default=${4:-1} orig_ifs=$IFS
+    local IFS=":"
+    local cnt=1 dcnt datum label data menu
+    while read datum label; do
+        [ ${#datum} -eq 0 ] && continue
         dcnt=$cnt
 
-        [ "$lab" = "quit" ] && dcnt=0
-        data="${data}$dcnt:$lab\n"
+        if [ "$datum" = "quit" ]; then
+            dcnt=0
+            label="$bold_co$label$nc_co"
+        fi
 
-        [ "$lab" = "quit" ] && lab=$bold_co$lab$nc_co
-        [ $cnt = "$default" ] && lab=$(printf "%${width}s (%s)" "$lab" "$(cq "default")")
-        menu="${menu}$(printf "$quest_co%2d$white)$lt_cyan %${width}s" $dcnt "$lab")\n"
-    done
+        [ $dcnt = "$default" ] && label=$(printf "%s (%s)" "$label" "$m_co$(cq "default")")
 
-    my_select_2 "$title" $var "$default" "$data" "$menu"
+        data="${data}$dcnt:$datum\n"
+        menu="${menu}$(printf "$quest_co%2d$white)$lt_cyan %${width}s" $dcnt "$label")\n"
+
+        cnt=$((cnt+1))
+    done<<My_Select
+$(echo -e "$list")
+My_Select
+
+    IFS=$orig_ifs
+    my_select_2 "$title" "$var" "$default" "$data" "$menu"
 }
 
 #------------------------------------------------------------------------------
