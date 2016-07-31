@@ -1104,8 +1104,9 @@ write_file() {
 # hardware.  This is my best shot.  Maybe there will be something better someday.
 #------------------------------------------------------------------------------
 is_usb_or_removable() {
-    test -b $1 || return 1
-    local drive=$(get_drive $1)
+    local dev=$(expand_device $1)
+    test -b $dev || return 1
+    local drive=$(get_drive $dev)
     local dir=/sys/block/${drive##*/} flag
     read flag 2>/dev/null < $dir/removable
     [ "$flag" = 1 ] && return 0
