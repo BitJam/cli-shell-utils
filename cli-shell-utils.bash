@@ -617,7 +617,7 @@ Widths
     #echo "$w1:$w4:$w6:$w2"
 
     local hfmt=" $hfmt_co%s %s  %s  %s %s$nc_co\n"
-    local  fmt=" $lab_co%s $vesion_co%s  $date_co%s  $fname_co%s %s$nc_co\n"
+    local  fmt=" $lab_co%s $version_co%s  $date_co%s  $fname_co%s %s$nc_co\n"
     f1=$(lpad $w1 "")
     f4=$(rpad $w4 $"Version")
     f6=$(rpad $w6 $"Date")
@@ -675,6 +675,7 @@ pqe() { echo "$hi_co$*$err_co"         ;}
 pqh() { echo "$m_co$*$hi_co"           ;}
 bq()  { echo "$yellow$*$m_co"          ;}
 cq()  { echo "$cheat_co$*$m_co"        ;}
+nq()  { echo "$num_co$*$m_co"          ;}
 
 #------------------------------------------------------------------------------
 # Intended to add colors to menus used by my_select_2() menus.
