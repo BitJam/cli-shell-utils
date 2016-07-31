@@ -18,6 +18,7 @@
 #==============================================================================
 
 : ${K_IFS:=|}
+: ${MAJOR_DEV_LIST:=3,8,22,179,259}
 
 #------------------------------------------------------------------------------
 # Sometimes it's useful to process some arguments (-h --help, for example)
@@ -404,6 +405,42 @@ my_select_2() {
         eval $var=\$val
         break
     done
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+drive_menu() {
+    local all=$1
+
+    local opts="--nodeps --include=$MAJOR_DEV_LIST"
+    local dev_width=$(get_lsblk_field_width name $opts)
+
+    local fmt="%s:$lt_green%-${dev_width}s$magenta %6s $lt_cyan%s$nc_co\n"
+    local NAME SIZE MODEL VENDOR dev
+    while read line; do
+        eval "$line"
+        dev=/dev/$NAME
+        [ "$all" ] || is_usb_or_removable "$dev" || continue
+        printf "$fmt\n" "$NAME" "$NAME" "$SIZE" "$(echo $VENDOR $MODEL)"
+    done<<Ls_Blk
+$(lsblk -no name,size,model,vendor --pairs $opts)
+Ls_Blk
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+get_lsblk_field_width() {
+    local name=$1  field fwidth width=0
+    shift
+    while read field; do
+        fwidth=${#field}
+        [ $width -lt $fwidth ] && width=$fwidth
+    done<<Get_Field_Width
+$(lsblk --output $name --list $*)
+Get_Field_Width
+    echo $width
 }
 
 #==============================================================================
