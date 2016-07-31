@@ -1140,6 +1140,13 @@ its_alive() {
     esac
 }
 
+its_alive_usb() {
+    its_alive || return 1
+    local dir=/live/boot-dev/antiX
+    test -d $dir || return 1
+    is_writable "$dir"
+    return $?
+}
 #------------------------------------------------------------------------------
 # Create a work directory with mktemp. Not used!  The idea was that we might
 # be able to avoid some conflicts with this if flock is not available.  It
