@@ -307,9 +307,9 @@ _yes_no() {
 
         local menu def_entry
         case $def_entry in
-            1) menu=$(printf "  1) $yes ($default)\n  2) $no\n  0) $quit") ;;
-            2) menu=$(printf "  1) $yes\n  2) $no (default)\n  0) $quit")  ;;
-            *) fatal "Internal error in _yes_no()"                         ;;
+            1) menu=$(printf "  1) $yes ($default)\n  2) $no\n  0) $quit\n") ;;
+            2) menu=$(printf "  1) $yes\n  2) $no (default)\n  0) $quit\n")  ;;
+            *) fatal "Internal error in _yes_no()"                           ;;
         esac
         local data=$(printf "1:1\n2:2\n0:0")
         my_select_2 "$quest_co$question$nc_co" answer $def_entry "$data" "$menu"
@@ -384,7 +384,7 @@ my_select_2() {
 
         echo -e "$hi_co$title$nc_co"
 
-        printf "$menu\n" | colorize_menu
+        echo -en "$menu" | colorize_menu
         [ "$err_msg" ] && printf "$err_co%s$nc_co\n" "$err_msg"
         [ "$default" ] && printf "$m_co%s$nc_co\n" "$def_prompt"
         echo -n "$quest_co>$nc_co "
