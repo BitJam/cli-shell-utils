@@ -428,8 +428,8 @@ my_select_2() {
 #------------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------------
-drive_menu() {
-    local all=$1
+cli_drive_menu() {
+    local exclude=$(get_drive ${1##*/})  all=$2
 
     local opts="--nodeps --include=$MAJOR_DEV_LIST"
     local dev_width=$(get_lsblk_field_width name $opts)
@@ -439,7 +439,10 @@ drive_menu() {
     while read line; do
         eval "$line"
         dev=/dev/$NAME
-        [ "$all" ] || is_usb_or_removable "$dev" || continue
+
+        [ "$all" ] || is_usb_or_removable "$dev"   || continue
+        [ "$exclude" ] && [ "$NAME" = "$exclude" ] && continue
+
         printf "$fmt\n" "$NAME" "$NAME" "$SIZE" "$(echo $VENDOR $MODEL)"
     done<<Ls_Blk
 $(lsblk -no name,size,model,vendor --pairs $opts)
