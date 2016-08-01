@@ -389,6 +389,8 @@ my_select_2() {
 
     local def_prompt=$(printf $"Press <%s> for the default %s" "$(cq "enter")" "$def_str")
 
+    echo
+
     local val input err_msg
     while [ -z "$val" ]; do
 
