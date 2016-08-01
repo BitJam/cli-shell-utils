@@ -1144,7 +1144,7 @@ its_alive() {
 
 its_alive_usb() {
     its_alive || return 1
-    local dir=/live/boot-dev/antiX
+    local dir=$LIVE_MP
     test -d $dir || return 1
     is_writable "$dir"
     return $?
