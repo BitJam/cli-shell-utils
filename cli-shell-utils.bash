@@ -353,6 +353,18 @@ My_Select
 }
 
 #------------------------------------------------------------------------------
+# Same as my_select but with a "quit" entry added to bottom of the menu
+#------------------------------------------------------------------------------
+my_select_quit() {
+    local var=$1  title=$2  menu=$3  default=$4
+    menu=$(printf "%s\nquit:%s\n" "$menu" $"quit")
+    local ans
+    my_select ans "$title" "$menu" "$default"
+    [ "$ans" = "quit" ] && my_exit
+    eval $var=\$ans
+}
+
+#------------------------------------------------------------------------------
 # This is the workhorse for several of my menu systems (in other codes).
 #
 #   $title:    the question asked
