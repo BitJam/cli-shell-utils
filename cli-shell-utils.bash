@@ -797,7 +797,7 @@ fatal() {
     fi
 
     local fmt=$1 ; shift
-    printf "${err_co}Fatal error:$hi_co $fmt$nc_co\n" "$@" >&2
+    printf "${err_co}%s:$hi_co $fmt$nc_co\n" $"Fatal Error" "$@" >&2
     printf "Fatal error: $fmt\n" "$@" | strip_color >> $LOG_FILE
     fmt=$(echo "$fmt" | sed 's/\\n/ /g')
     printf "$code:$fmt\n" "$@"        | strip_color >> $ERR_FILE
@@ -819,8 +819,8 @@ fatal_0() { [ $1 -ne 0    ] && return; shift; fatal "$@" ;}
 #------------------------------------------------------------------------------
 warn() {
     local fmt=$1 ; shift
-    printf "${warn_co}Warning:$hi_co $fmt$nc_co\n" "$@" >&2
-    printf "${warn_co}Warning:$hi_co $fmt$nc_co\n" "$@" | strip_color >> $LOG_FILE
+    printf "${warn_co}%s:$hi_co $fmt$nc_co\n" $"Warning" "$@" >&2
+    printf "${warn_co}%s:$hi_co $fmt$nc_co\n" $"Warning" "$@" | strip_color >> $LOG_FILE
     pipe_up "warn: $fmt" "$@"
 }
 
@@ -829,8 +829,8 @@ warn() {
 #------------------------------------------------------------------------------
 error() {
     local fmt=$1 ; shift
-    printf "${err_co}Error:$hi_co $fmt$nc_co\n" "$@" >&2
-    printf "${err_co}Error:$hi_co $fmt$nc_co\n" "$@" | strip_color >> $LOG_FILE
+    printf "${err_co}%s:$hi_co $fmt$nc_co\n" $"Error" "$@" >&2
+    printf "${err_co}%s:$hi_co $fmt$nc_co\n" $"Error" "$@" | strip_color >> $LOG_FILE
     pipe_up "error: $fmt" "$@"
 }
 
