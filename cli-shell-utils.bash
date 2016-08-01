@@ -30,8 +30,7 @@ read_early_params() {
     local arg
 
     while [ $# -gt 0 ]; do
-        arg=$1
-        shift
+        arg=$1 ; shift
         [ ${#arg} -gt 0 -a -z "${arg##-*}" ] || continue
         arg=${arg#-}
         # Expand stacked single-char arguments
@@ -84,8 +83,7 @@ read_params() {
 
     # Loop through the cmdline args
     while [ $# -gt 0 -a ${#1} -gt 0 -a -z "${1##-*}" ]; do
-        arg=${1#-}
-        shift
+        arg=${1#-} ; shift
         SHIFT=$((SHIFT + 1))
 
         # Expand stacked single-char arguments
@@ -438,8 +436,7 @@ Ls_Blk
 #
 #------------------------------------------------------------------------------
 get_lsblk_field_width() {
-    local name=$1  field fwidth width=0
-    shift
+    local name=$1  field fwidth width=0 ; shift
     while read field; do
         fwidth=${#field}
         [ $width -lt $fwidth ] && width=$fwidth
@@ -724,8 +721,7 @@ strip_color() {
 # Show and log a message string.  Disable display if QUIET
 #------------------------------------------------------------------------------
 msg() {
-    local fmt=$1
-    shift
+    local fmt=$1 ; shift
     printf "$fmt\n" "$@" | strip_color >> $LOG_FILE
     [ -z "$QUIET" ] && printf "$m_co$fmt$nc_co\n" "$@"
 }
@@ -743,8 +739,7 @@ msg_1() {
 # Like msg() but not disabled by QUIET
 #------------------------------------------------------------------------------
 Msg() {
-    local fmt=$1
-    shift
+    local fmt=$1 ; shift
     printf "$fmt\n" "$@" | strip_color >> $LOG_FILE
     printf "$m_co$fmt$nc_co\n" "$@"
     pipe_up "info: $fmt" "$@"
@@ -754,8 +749,7 @@ Msg() {
 # Like Msg() but in bold
 #------------------------------------------------------------------------------
 shout() {
-    local fmt=$1
-    shift
+    local fmt=$1 ; shift
     printf "$fmt\n" "$@" | strip_color >> $LOG_FILE
     [ -z "$QUIET" ] && printf "$bold_co$fmt$nc_co\n" "$@"
 }
@@ -778,17 +772,14 @@ fatal() {
     local code
 
     if echo "$1" | grep -q "^[0-9]\+$"; then
-        EXIT_NUM=$1
-        shift
+        EXIT_NUM=$1 ; shift
     fi
 
     if echo "$1" | grep -q "^[a-z-]*$"; then
-        code=$1
-        shift
+        code=$1 ; shift
     fi
 
-    local fmt=$1
-    shift
+    local fmt=$1 ; shift
     printf "${err_co}Fatal error:$hi_co $fmt$nc_co\n" "$@" >&2
     printf "Fatal error: $fmt\n" "$@" | strip_color >> $LOG_FILE
     fmt=$(echo "$fmt" | sed 's/\\n/ /g')
@@ -810,8 +801,7 @@ fatal_0() { [ $1 -ne 0    ] && return; shift; fatal "$@" ;}
 # Throw a warning.
 #------------------------------------------------------------------------------
 warn() {
-    local fmt=$1
-    shift
+    local fmt=$1 ; shift
     printf "${warn_co}Warning:$hi_co $fmt$nc_co\n" "$@" >&2
     printf "${warn_co}Warning:$hi_co $fmt$nc_co\n" "$@" | strip_color >> $LOG_FILE
     pipe_up "warn: $fmt" "$@"
@@ -821,8 +811,7 @@ warn() {
 # Display a question
 #------------------------------------------------------------------------------
 quest() {
-    local fmt=$1
-    shift
+    local fmt=$1; shift
     printf "$quest_co$fmt$nc_co" "$@"
 }
 
@@ -848,8 +837,7 @@ start_fifo() {
 #------------------------------------------------------------------------------
 pipe_up() {
     [ "$FIFO_MODE" ] || return
-    fmt=$1
-    shift
+    local fmt=$1 ; shift
     if [ ${#FIFO_UP} -gt 0 ] && test -p "$FIFO_UP" ; then
         printf "$fmt\n" "$@" | strip_color > $FIFO_UP
     else
@@ -1044,8 +1032,7 @@ is_mountpoint() {
 # or use returns false and says it is Skipping $stage.
 #------------------------------------------------------------------------------
 require() {
-    local stage=$1  prog ret=0
-    shift;
+    local stage=$1  prog ret=0 ; shift;
     for prog; do
         which $prog &>/dev/null && continue
         warn $"Could not find program %s.  Skipping %s." "$(pqh $prog)" "$(pqh $stage)"
@@ -1093,8 +1080,7 @@ check_writable() {
 # Using write_file() allows both PRETEND and BE_VERBOSE to work.
 #------------------------------------------------------------------------------
 write_file() {
-    local file=$1
-    shift
+    local file=$1 ; shift
     echo "$*" > "$file"
 }
 
@@ -1120,8 +1106,7 @@ is_usb_or_removable() {
 # Mount dev at dir or know the reason why.  All failures are fatal
 #------------------------------------------------------------------------------
 my_mount() {
-    local dev=$1  dir=$2
-    shift 2
+    local dev=$1  dir=$2 ; shift 2
     is_mountpoint "$dir"              && fatal $"Directory '%s' is already a mountpoint" "$dir"
     always_cmd mkdir -p "$dir"        || fatal $"Failed to create directory '%s'" "$dir"
     always_cmd mount "$@" $dev "$dir" || fatal $"Could not mount %s at %s" "$dev" "$dir"
