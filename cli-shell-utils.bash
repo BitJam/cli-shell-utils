@@ -19,6 +19,7 @@
 
 : ${K_IFS:=|}
 : ${MAJOR_DEV_LIST:=3,8,22,179,259}
+: ${LIVE_MP:=/live/boot-dev}
 
 #------------------------------------------------------------------------------
 # Sometimes it's useful to process some arguments (-h --help, for example)
