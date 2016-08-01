@@ -310,7 +310,7 @@ _yes_no() {
             *) fatal "Internal error in _yes_no()"                           ;;
         esac
         local data=$(printf "1:1\n2:2\n0:0")
-        my_select_2 "$quest_co$question$nc_co" answer $def_entry "$data" "$menu"
+        my_select_2 "$quest_co$question$nc_co" answer $def_entry "$data" "$menu\n"
     fi
 
     case $answer in
