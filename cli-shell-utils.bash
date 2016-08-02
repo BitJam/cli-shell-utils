@@ -557,6 +557,7 @@ show_kernel_2() {
     local title=$1  list=$2  ifs=${3:-$K_IFS}  orig_ifs=$IFS
     IFS=$ifs
 
+    echo
     [ "$title" ] && echo "$m_co$title$nc_co"
 
     # Get field widths
@@ -577,7 +578,6 @@ Widths
 $(echo "$list")
 Print
     IFS=$orig_ifs
-    echo
 }
 
 #------------------------------------------------------------------------------
@@ -587,6 +587,7 @@ show_kernel_3() {
     local title=$1  list=$2  ifs=${3:-$K_IFS} orig_ifs=$IFS
     IFS=$ifs
 
+    echo
     [ "$title" ] && echo "$m_co$title$nc_co"
 
     # Get field widths
@@ -609,7 +610,6 @@ $(echo "$list")
 Print
 
     IFS=$orig_ifs
-    echo
 }
 
 #------------------------------------------------------------------------------
