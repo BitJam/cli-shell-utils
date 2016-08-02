@@ -18,6 +18,7 @@
 #==============================================================================
 
 : ${K_IFS:=|}
+: ${P_IFS:=&}
 : ${MAJOR_DEV_LIST:=3,8,22,179,259}
 : ${LIVE_MP:=/live/boot-dev}
 
@@ -328,10 +329,13 @@ _yes_no() {
 #------------------------------------------------------------------------------
 my_select() {
     local var=$1  title=$2  list=$3  default=${4:-1} orig_ifs=$IFS
-    local IFS=":"
+    local IFS=$P_IFS
     local cnt=1 dcnt datum label data menu
     while read datum label; do
-        [ ${#datum} -eq 0 ] && continue
+        if [ ${#datum} -eq 0 ]; then
+            [ ${#label} -gt 0 ] && menu="$menu    $label\n"
+            continue
+        fi
         dcnt=$cnt
 
         if [ "$datum" = "quit" ]; then
@@ -358,7 +362,7 @@ My_Select
 #------------------------------------------------------------------------------
 my_select_quit() {
     local var=$1  title=$2  menu=$3  default=$4
-    menu=$(printf "%s\nquit:%s\n" "$menu" $"quit")
+    menu=$(printf "%s\nquit$P_IFS%s\n" "$menu" $"quit")
     local ans
     my_select ans "$title" "$menu" "$default"
     [ "$ans" = "quit" ] && my_exit
@@ -442,7 +446,7 @@ cli_drive_menu() {
     local opts="--nodeps --include=$MAJOR_DEV_LIST"
     local dev_width=$(get_lsblk_field_width name $opts)
 
-    local fmt="%s:$dev_co%-${dev_width}s$num_co %6s $m_co%s$nc_co\n"
+    local fmt="%s$P_IFS$dev_co%-${dev_width}s$num_co %6s $m_co%s$nc_co\n"
     local NAME SIZE MODEL VENDOR dev
     while read line; do
         eval "$line"
@@ -451,7 +455,7 @@ cli_drive_menu() {
         [ "$all" ] || is_usb_or_removable "$dev"   || continue
         [ "$exclude" ] && [ "$NAME" = "$exclude" ] && continue
 
-        printf "$fmt\n" "$NAME" "$NAME" "$SIZE" "$(echo $VENDOR $MODEL)"
+        printf "$fmt" "$NAME" "$NAME" "$SIZE" "$(echo $VENDOR $MODEL)"
     done<<Ls_Blk
 $(lsblk -no name,size,model,vendor --pairs $opts)
 Ls_Blk
