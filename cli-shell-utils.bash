@@ -331,6 +331,7 @@ my_select() {
     local var=$1  title=$2  list=$3  default=${4:-1} orig_ifs=$IFS
     local IFS=$P_IFS
     local cnt=1 dcnt datum label data menu
+
     while read datum label; do
         if [ ${#datum} -eq 0 ]; then
             [ ${#label} -gt 0 ] && menu="$menu    $label\n"
@@ -449,6 +450,7 @@ cli_drive_menu() {
     local fmt="%s$P_IFS$dev_co%-${dev_width}s$num_co %6s $m_co%s$nc_co\n"
     local NAME SIZE MODEL VENDOR dev
     while read line; do
+        [ ${#line} -eq 0 ] && continue
         eval "$line"
         dev=/dev/$NAME
 
@@ -503,6 +505,7 @@ Widths
 
     local payload
     while read f1 f2 f3; do
+        [ ${#f1} -gt 0 ] || continue
         payload="$f1$IFS$f2$IFS$f3"
         data="$data$payload$P_IFS$(printf "$fmt" "$f1" "$f3")\n"
     done<<Print
@@ -535,6 +538,7 @@ Widths
     local data="$P_IFS$(printf "$hfmt" $"File" $"Version" $"Date")\n"
     local payload
     while read f1 f2 f3; do
+        [ ${#f1} -gt 0 ] || continue
         payload="$f1$IFS$f2$IFS$f3"
         data="$data$payload$P_IFS$(printf "$fmt" "$f2" "$f1" "$f3")\n"
     done<<Print
@@ -567,6 +571,7 @@ Widths
     local hfmt=" $hfmt_co%-${w1}s %s$nc_co\n"
     printf "$hfmt" $"Version" $"Date"
     while read  f1 f2 f3; do
+        [ ${#f1} -gt 0 ] || continue
         printf "$fmt" "$f1" "$f3"
     done<<Print
 $(echo "$list")
@@ -597,6 +602,7 @@ Widths
     local hfmt=" $hfmt_co%-${w2}s %-${w1}s %-s$nc_co\n"
     printf "$hfmt" $"File" $"Version" $"Date"
     while read f1 f2 f3; do
+        [ ${#f1} -gt 0 ] || continue
         printf "$fmt" "$f2" "$f1" "$f3"
     done<<Print
 $(echo "$list")
