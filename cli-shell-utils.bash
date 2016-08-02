@@ -890,7 +890,8 @@ start_fifo() {
     FIFO_UP="$WORK_DIR/to-gui"
     FIFO_DN="$WORK_DIR/to-cli"
     for fifo in $FIFO_UP $FIFO_DN; do
-        mkfifo "$fifo"   || fatal "Could not create fifo ''" "$fifo"
+        touch "$fifo"
+        #mkfifo "$fifo"  || fatal "Could not create fifo ''" "$fifo"
     done
 }
 
@@ -899,9 +900,15 @@ start_fifo() {
 #------------------------------------------------------------------------------
 pipe_up() {
     [ "$FIFO_MODE" ] || return
+
     local fmt=$1 ; shift
-    if [ ${#FIFO_UP} -gt 0 ] && test -p "$FIFO_UP" ; then
-        printf "$fmt\n" "$@" | strip_color > $FIFO_UP
+    [ ${#FIFO_UP} -gt 0 ] && printf "$fmt\n" "$@" >> $FIFO_UP
+    return
+
+
+    if [ ${#FIFO_UP} -gt 0 ] && test -e "$FIFO_UP" ; then
+        echo pipe_up 2
+        printf "$fmt\n" "$@" | strip_color >> $FIFO_UP
     else
         exit 117
     fi
@@ -912,6 +919,7 @@ pipe_up() {
 #------------------------------------------------------------------------------
 pipe_dn() {
     name=$1
+    return
     [ "$FIFO_MODE" ] || return
     read $name < $FIFO_DN
 }
