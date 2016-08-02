@@ -497,27 +497,21 @@ select_kernel_2() {
 $(echo "$list")
 Widths
 
-    local fmt=" %2s) $version_co%-${w1}s $date_co%s$nc_co\n"
-    local hfmt=" %3s $hfmt_co%-${w1}s %s$nc_co\n"
-    local menu="$(printf "$hfmt" "" $"Version" $"Date")\n"
-    local data="0:quit\n"
-    local cnt=1 default
+    local fmt="$version_co%-${w1}s $date_co%s$nc_co\n"
+    local hfmt="$hfmt_co%-${w1}s %s$nc_co\n"
+    local data="$P_IFS$(printf "$hfmt" $"Version" $"Date")\n"
+
+    local payload
     while read f1 f2 f3; do
-        menu="$menu$(printf "$fmt" "$cnt" "$f1" "$f3")\n"
-        data="$data$cnt:$f1$IFS$f2$IFS$f3\n"
-        [ $cnt -eq 1 ] && default=$f1
-        cnt=$((cnt + 1))
+        payload="$f1$IFS$f2$IFS$f3"
+        data="$data$payload$P_IFS$(printf "$fmt" "$f1" "$f3")\n"
     done<<Print
 $(echo "$list")
 Print
 
     IFS=$orig_ifs
-    menu="$menu$(printf " %2s) $quit_co%s$nc_co" 0 "quit")\n"
-    my_select_2 "$title" $var 1 "$data" "$menu" "$default"
 
-    eval "local ans=\$$var"
-    [ "$ans" = 'quit' ] && my_exit
-
+    my_select_quit $var "$title" "$data"
 }
 
 #------------------------------------------------------------------------------
@@ -536,27 +530,20 @@ select_kernel_3() {
 $(echo "$list")
 Widths
 
-    local fmt=" %2s) $fname_co%-${w2}s $version_co%-${w1}s $date_co%-s$nc_co"
-    local hfmt=" %3s $hfmt_co%-${w2}s %-${w1}s %-s$nc_co\n"
-    local menu="$(printf "$hfmt" "" $"File" $"Version" $"Date")\n"
-    local data="0:quit\n"
-    local cnt=1 default
+    local fmt="$fname_co%-${w2}s $version_co%-${w1}s $date_co%-s$nc_co"
+    local hfmt="$hfmt_co%-${w2}s %-${w1}s %-s$nc_co\n"
+    local data="$P_IFS$(printf "$hfmt" $"File" $"Version" $"Date")\n"
+    local payload
     while read f1 f2 f3; do
-        menu="$menu$(printf "$fmt" "$cnt" "$f2" "$f1" "$f3")\n"
-        data="$data$cnt:$f1$IFS$f2$IFS$f3\n"
-        [ $cnt -eq 1 ] && default=$f2
-        cnt=$((cnt + 1))
+        payload="$f1$IFS$f2$IFS$f3"
+        data="$data$payload$P_IFS$(printf "$fmt" "$f2" "$f1" "$f3")\n"
     done<<Print
 $(echo "$list")
 Print
 
     IFS=$orig_ifs
 
-    menu="$menu$(printf " %2s) $quit_co%s$nc_co" 0 "quit")\n"
-    my_select_2 "$title" $var 1 "$data" "$menu" "$default"
-
-    eval "local ans=\$$var"
-    [ "$ans" = 'quit' ] && my_exit
+    my_select_quit $var "$title" "$data" "$menu"
 }
 
 #------------------------------------------------------------------------------
