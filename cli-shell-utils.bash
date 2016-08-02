@@ -166,7 +166,7 @@ pause() {
     esac
 
     msg "Paused at '%s'" $here
-    quest "Press <Enter> to continue "
+    quest "Press <%s> to continue " "$(pqq $Enter)"
     read ans
 }
 
@@ -302,7 +302,7 @@ _yes_no() {
         echo "answer: $answer"
     else
         local yes=$"yes"  no=$"no"  quit=$"quit"  default=$"default"
-        quit="$bold_co$quit"
+        quit="$quit_co$quit"
 
         local menu def_entry
         case $def_entry in
@@ -336,13 +336,13 @@ my_select() {
 
         if [ "$datum" = "quit" ]; then
             dcnt=0
-            label="$bold_co$label$nc_co"
+            label="$quit_co$label$nc_co"
         fi
 
         [ $dcnt = "$default" ] && label=$(printf "%s (%s)" "$label" "$m_co$(cq "default")")
 
         data="${data}$dcnt:$datum\n"
-        menu="${menu}$(printf "$quest_co%2d$white)$lt_cyan %${width}s" $dcnt "$label")\n"
+        menu="${menu}$(printf "$quest_co%2d$hi_co)$m_co %${width}s" $dcnt "$label")\n"
 
         cnt=$((cnt+1))
     done<<My_Select
@@ -383,29 +383,36 @@ my_select_2() {
     local title=$1  var=$2  default=$3  data=$4  menu=$5  def_str=$6
 
     if [ -n "$def_str" ]; then
-        def_str="($bold_co$def_str$quest_co)"
+        def_str="($(pqq $def_str))"
     else
         def_str="selection"
     fi
 
-    local def_prompt=$(printf $"Press <%s> for the default %s" "$(cq "enter")" "$def_str")
+    local def_prompt=$(printf $"Press <%s> for the default %s" "$(pqq $"Enter")" "$def_str")
 
     echo
 
     local val input err_msg
     while [ -z "$val" ]; do
 
-        echo -e "$hi_co$title$nc_co"
+        echo -e "$quest_co$title$nc_co"
 
         echo -en "$menu" | colorize_menu
         [ "$err_msg" ] && printf "$err_co%s$nc_co\n" "$err_msg"
-        [ "$default" ] && printf "$m_co%s$nc_co\n" "$def_prompt"
+        [ "$default" ] && printf "$m_co%s$nc_co\n" "$quest_co$def_prompt$nc_co"
         echo -n "$quest_co>$nc_co "
 
         read input
         err_msg=
-        [ -z "$input" -a -n "$default" ] && input=$default
+        if [ "$input" = "q" ]; then
+            quest "Press 'q' again to quit "
+            read -n1 input
+            echo
+            [ "$input" = "q" ] && my_exit
+            continue
+        fi
 
+        [ -z "$input" -a -n "$default" ] && input=$default
         if ! echo "$input" | grep -q "^[0-9]\+$"; then
             err_msg=$"You must enter a number"
             [ "$default" ] && err_msg=$"You must enter a number or press <enter>"
@@ -435,7 +442,7 @@ cli_drive_menu() {
     local opts="--nodeps --include=$MAJOR_DEV_LIST"
     local dev_width=$(get_lsblk_field_width name $opts)
 
-    local fmt="%s:$lt_green%-${dev_width}s$magenta %6s $lt_cyan%s$nc_co\n"
+    local fmt="%s:$dev_co%-${dev_width}s$num_co %6s $m_co%s$nc_co\n"
     local NAME SIZE MODEL VENDOR dev
     while read line; do
         eval "$line"
@@ -488,12 +495,12 @@ Widths
 
     local fmt=" %2s) $version_co%-${w1}s $date_co%s$nc_co\n"
     local hfmt=" %3s $hfmt_co%-${w1}s %s$nc_co\n"
-    local menu=$(printf "$hfmt" "" $"Version" $"Date")
-    local data="0:quit"
+    local menu="$(printf "$hfmt" "" $"Version" $"Date")\n"
+    local data="0:quit\n"
     local cnt=1 default
     while read f1 f2 f3; do
-        menu="$menu\n$(printf "$fmt" "$cnt" "$f1" "$f3")"
-        data="$data\n$cnt:$f1$IFS$f2$IFS$f3"
+        menu="$menu$(printf "$fmt" "$cnt" "$f1" "$f3")\n"
+        data="$data$cnt:$f1$IFS$f2$IFS$f3\n"
         [ $cnt -eq 1 ] && default=$f1
         cnt=$((cnt + 1))
     done<<Print
@@ -501,7 +508,7 @@ $(echo "$list")
 Print
 
     IFS=$orig_ifs
-    menu="$menu\n$(printf " %2s) $bold_co%s$nc_co\n" 0 "quit")"
+    menu="$menu$(printf " %2s) $quit_co%s$nc_co" 0 "quit")\n"
     my_select_2 "$title" $var 1 "$data" "$menu" "$default"
 
     eval "local ans=\$$var"
@@ -525,14 +532,14 @@ select_kernel_3() {
 $(echo "$list")
 Widths
 
-    local fmt=" %2s) $fname_co%-${w2}s $version_co%-${w1}s $date_co%-s$nc_co\n"
+    local fmt=" %2s) $fname_co%-${w2}s $version_co%-${w1}s $date_co%-s$nc_co"
     local hfmt=" %3s $hfmt_co%-${w2}s %-${w1}s %-s$nc_co\n"
-    local menu=$(printf "$hfmt" "" $"File" $"Version" $"Date")
-    local data="0:quit"
+    local menu="$(printf "$hfmt" "" $"File" $"Version" $"Date")\n"
+    local data="0:quit\n"
     local cnt=1 default
     while read f1 f2 f3; do
-        menu="$menu\n$(printf "$fmt" "$cnt" "$f2" "$f1" "$f3")"
-        data="$data\n$cnt:$f1$IFS$f2$IFS$f3"
+        menu="$menu$(printf "$fmt" "$cnt" "$f2" "$f1" "$f3")\n"
+        data="$data$cnt:$f1$IFS$f2$IFS$f3\n"
         [ $cnt -eq 1 ] && default=$f2
         cnt=$((cnt + 1))
     done<<Print
@@ -541,7 +548,7 @@ Print
 
     IFS=$orig_ifs
 
-    menu="$menu\n$(printf " %2s) $bold_co%s$nc_co\n" 0 "quit")"
+    menu="$menu$(printf " %2s) $quit_co%s$nc_co" 0 "quit")\n"
     my_select_2 "$title" $var 1 "$data" "$menu" "$default"
 
     eval "local ans=\$$var"
@@ -662,21 +669,49 @@ Print
 # and $loco are used to control what colors get assigned, if any.
 #------------------------------------------------------------------------------
 set_colors() {
-    local noco=$1  loco=$2
+    local param=${1:-high}
 
+    case $param in
+        high) ;;
+         low) ;;
+         off) ;;
+           *) fatal color "Unknown color parameter '%s'.  Expected high, low, or off" "$param" ;;
+    esac
     local e=$(printf "\e")
-     black="$e[0;30m";    blue="$e[0;34m";    green="$e[0;32m";    cyan="$e[0;36m";
-       red="$e[0;31m";  purple="$e[0;35m";    brown="$e[0;33m"; lt_gray="$e[0;37m";
-   dk_gray="$e[1;30m"; lt_blue="$e[1;34m"; lt_green="$e[1;32m"; lt_cyan="$e[1;36m";
-    lt_red="$e[1;31m"; magenta="$e[1;35m";   yellow="$e[1;33m";   white="$e[1;37m";
-     nc_co="$e[0m";
 
-     hfmt_co=$white;
-    fname_co=$lt_green;  date_co=$lt_cyan;  lab_co=$lt_blue; version_co=$magenta;
-    cheat_co=$white;      err_co=$red;       hi_co=$white;     quest_co=$lt_green;
-      cmd_co=$white;     from_co=$lt_green;  mp_co=$magenta;     num_co=$magenta;
-      dev_co=$magenta;   head_co=$yellow;     m_co=$lt_cyan;      ok_co=$lt_green;
-       to_co=$lt_green;  warn_co=$yellow;  bold_co=$yellow;
+    if [ "$param" = "off" ]; then
+
+         black=  ;    blue=  ;    green=  ;    cyan=  ;
+           red=  ;  purple=  ;    brown=  ; lt_gray=  ;
+       dk_gray=  ; lt_blue=  ; lt_green=  ; lt_cyan=  ;
+        lt_red=  ; magenta=  ;   yellow=  ;   white=  ;
+         nc_co=  ;
+
+    else
+
+         black="$e[0;30m" ;    blue="$e[0;34m" ;    green="$e[0;32m" ;    cyan="$e[0;36m" ;
+           red="$e[0;31m" ;  purple="$e[0;35m" ;    brown="$e[0;33m" ; lt_gray="$e[0;37m" ;
+       dk_gray="$e[1;30m" ; lt_blue="$e[1;34m" ; lt_green="$e[1;32m" ; lt_cyan="$e[1;36m" ;
+        lt_red="$e[1;31m" ; magenta="$e[1;35m" ;   yellow="$e[1;33m" ;   white="$e[1;37m" ;
+         nc_co="$e[0m"    ;
+
+    fi
+
+         hfmt_co=$white    ;   dev_co=$lt_green  ; quit_co=$yellow  ;
+        fname_co=$white    ;  date_co=$lt_cyan   ;  lab_co=$lt_blue ;  version_co=$magenta   ;
+        cheat_co=$white    ;   err_co=$red       ;   hi_co=$white   ;    quest_co=$lt_green  ;
+          cmd_co=$white    ;  from_co=$lt_green  ;   mp_co=$magenta ;      num_co=$magenta   ;
+          dev_co=$magenta  ;  head_co=$yellow    ;    m_co=$lt_cyan ;       ok_co=$lt_green  ;
+           to_co=$lt_green ;  warn_co=$yellow    ; bold_co=$yellow  ;
+
+    # FIXME: set more low colors!
+    if [ "$param" = "low" ]; then
+
+        from_co=$brown ;       bold_co=$white ;  dev_co=$white ;
+          hi_co=$white ;    version_co=$white ;
+           m_co=$nc_co ;      fname_co=$nc_co ;
+         num_co=$white ;      date_co=$nc_co  ;
+    fi
 }
 
 #------------------------------------------------------------------------------
@@ -685,10 +720,11 @@ set_colors() {
 # more compact that using colors as strings.
 #------------------------------------------------------------------------------
 pq()  { echo "$hi_co$*$m_co"           ;}
+pqq() { echo "$hi_co$*$quest_co"       ;}
 pqw() { echo "$warn_co$*$hi_co"        ;}
 pqe() { echo "$hi_co$*$err_co"         ;}
 pqh() { echo "$m_co$*$hi_co"           ;}
-bq()  { echo "$yellow$*$m_co"          ;}
+bq()  { echo "$bold_co$*$m_co"         ;}
 cq()  { echo "$cheat_co$*$m_co"        ;}
 nq()  { echo "$num_co$*$m_co"          ;}
 
@@ -696,8 +732,8 @@ nq()  { echo "$num_co$*$m_co"          ;}
 # Intended to add colors to menus used by my_select_2() menus.
 #------------------------------------------------------------------------------
 colorize_menu() {
-    sed -r -e "s/(^| )([0-9]+)\)/\1$quest_co\2$white)$lt_cyan/g" \
-        -e "s/\(([^)]+)\)/($white\1$lt_cyan)/g" -e "s/$/$nc_co/"
+    sed -r -e "s/(^| )([0-9]+)\)/\1$quest_co\2$hi_co)$m_co/g" \
+        -e "s/\(([^)]+)\)/($hi_co\1$m_co)/g" -e "s/$/$nc_co/"
 }
 
 #------------------------------------------------------------------------------
