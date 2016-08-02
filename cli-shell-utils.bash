@@ -717,6 +717,7 @@ set_colors() {
 # more compact that using colors as strings.
 #------------------------------------------------------------------------------
 pq()  { echo "$hi_co$*$m_co"           ;}
+vq()  { echo "$version_co$*$m_co"      ;}
 pqq() { echo "$hi_co$*$quest_co"       ;}
 pqw() { echo "$warn_co$*$hi_co"        ;}
 pqe() { echo "$hi_co$*$err_co"         ;}
