@@ -1125,6 +1125,7 @@ is_writable() {
     local dir=$1
     test -d "$dir" || fatal $"Directory %s does not exist" "$dir"
     local temp=$(mktemp -p $dir 2> /dev/null) || return 1
+    test -f "$temp" || return 1
     rm -f "$temp"
     return 0
 }
