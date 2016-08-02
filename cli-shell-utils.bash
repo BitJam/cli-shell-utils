@@ -695,7 +695,7 @@ set_colors() {
     fi
 
          hfmt_co=$white    ;   dev_co=$lt_green  ; quit_co=$yellow  ;
-        fname_co=$white    ;  date_co=$lt_cyan   ;  lab_co=$lt_blue ;  version_co=$magenta   ;
+        fname_co=$white    ;  date_co=$lt_cyan   ;  lab_co=$lt_cyan ;  version_co=$magenta   ;
         cheat_co=$white    ;   err_co=$red       ;   hi_co=$white   ;    quest_co=$lt_green  ;
           cmd_co=$white    ;  from_co=$lt_green  ;   mp_co=$magenta ;      num_co=$magenta   ;
           dev_co=$magenta  ;  head_co=$yellow    ;    m_co=$lt_cyan ;       ok_co=$lt_green  ;
