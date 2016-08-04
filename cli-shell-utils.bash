@@ -1324,6 +1324,12 @@ its_alive_usb() {
     is_writable "$dir"
     return $?
 }
+
+get_live_dev() {
+    local live_dev=$(sed -rn "s|^([^ ]+) $LIVE_MP .*|\1|p" /proc/mounts)
+    echo ${live_dev##*/}
+}
+
 #------------------------------------------------------------------------------
 # Create a work directory with mktemp. Not used!  The idea was that we might
 # be able to avoid some conflicts with this if flock is not available.  It
