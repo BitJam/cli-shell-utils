@@ -620,7 +620,7 @@ $(echo "$list")
 Widths
 
     local fmt="$version_co%-${w1}s $date_co%s$nc_co\n"
-    local hfmt="$hfmt_co%-${w1}s %s$nc_co\n"
+    local hfmt="$head_co%-${w1}s %s$nc_co\n"
     local data="$P_IFS$(printf "$hfmt" $"Version" $"Date")\n"
 
     local payload
@@ -654,7 +654,7 @@ $(echo "$list")
 Widths
 
     local fmt="$fname_co%-${w2}s $version_co%-${w1}s $date_co%-s$nc_co"
-    local hfmt="$hfmt_co%-${w2}s %-${w1}s %-s$nc_co\n"
+    local hfmt="$head_co%-${w2}s %-${w1}s %-s$nc_co\n"
     local data="$P_IFS$(printf "$hfmt" $"File" $"Version" $"Date")\n"
     local payload
     while read f1 f2 f3; do
@@ -689,7 +689,7 @@ $(echo "$list")
 Widths
 
     local  fmt=" $version_co%-${w1}s $date_co%s$nc_co\n"
-    local hfmt=" $hfmt_co%-${w1}s %s$nc_co\n"
+    local hfmt=" $head_co%-${w1}s %s$nc_co\n"
     printf "$hfmt" $"Version" $"Date"
     while read  f1 f2 f3; do
         [ ${#f1} -gt 0 ] || continue
@@ -720,7 +720,7 @@ $(echo "$list")
 Widths
 
     local fmt=" $fname_co%-${w2}s $version_co%-${w1}s $date_co%-s$nc_co\n"
-    local hfmt=" $hfmt_co%-${w2}s %-${w1}s %-s$nc_co\n"
+    local hfmt=" $head_co%-${w2}s %-${w1}s %-s$nc_co\n"
     printf "$hfmt" $"File" $"Version" $"Date"
     while read f1 f2 f3; do
         [ ${#f1} -gt 0 ] || continue
@@ -755,7 +755,7 @@ Widths
 
     #echo "$w1:$w4:$w6:$w2"
 
-    local hfmt=" $hfmt_co%s %s  %s  %s %s$nc_co\n"
+    local hfmt=" $head_co%s %s  %s  %s %s$nc_co\n"
     local  fmt=" $lab_co%s $version_co%s  $date_co%s  $fname_co%s %s$nc_co\n"
     f1=$(lpad $w1 "")
     f4=$(rpad $w4 $"Version")
@@ -814,12 +814,12 @@ set_colors() {
 
     fi
 
-         hfmt_co=$white    ;   dev_co=$lt_green  ; quit_co=$yellow  ;
-        fname_co=$white    ;  date_co=$lt_cyan   ;  lab_co=$lt_cyan ;  version_co=$magenta   ;
-        cheat_co=$white    ;   err_co=$red       ;   hi_co=$white   ;    quest_co=$lt_green  ;
-          cmd_co=$white    ;  from_co=$lt_green  ;   mp_co=$magenta ;      num_co=$magenta   ;
-          dev_co=$magenta  ;  head_co=$yellow    ;    m_co=$lt_cyan ;       ok_co=$lt_green  ;
-           to_co=$lt_green ;  warn_co=$yellow    ; bold_co=$yellow  ;
+         head_co=$white    ;   dev_co=$lt_green  ; quit_co=$yellow    ;
+        fname_co=$white    ;  date_co=$lt_cyan   ;  lab_co=$lt_cyan   ;  version_co=$magenta   ;
+        cheat_co=$white    ;   err_co=$red       ;   hi_co=$white     ;    quest_co=$lt_green  ;
+          cmd_co=$white    ;  from_co=$lt_green  ;   mp_co=$magenta   ;      num_co=$magenta   ;
+          dev_co=$magenta  ;     m_co=$lt_cyan   ;   ok_co=$lt_green  ;
+           to_co=$lt_green ;  warn_co=$yellow    ; bold_co=$yellow    ;
 
     # FIXME: set more low colors!
     if [ "$param" = "low" ]; then
