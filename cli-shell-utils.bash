@@ -546,6 +546,60 @@ Get_Field_Width
 #==============================================================================
 # Kernel Tables!
 #==============================================================================
+#===============================================================================
+# Kernel utilities
+#
+# These create and work with lists of kernels of the form:
+#
+#   version|fname|date
+#
+#===============================================================================
+
+#------------------------------------------------------------------------------
+# get_all_kernel      construct a list of all kernel files in a directory
+#
+# get_kernel_version  extract a list of versions, fnames, or dates from a
+# get_kernel_fname    list of kernels
+# get_kernel_date
+#
+# count_lines         Count lines in a variable, number of kernels in a list
+#------------------------------------------------------------------------------
+
+get_all_kernel() {
+    local  var=$1 temp ; shift
+    temp=$($VM_VERSION_PROG -nsr --delimit="$K_IFS" "$@") \
+        || fatal "The %s program failed!" "$VM_VERSION_PROG"
+
+    eval $var=\$temp
+}
+
+get_kernel_version()  { echo "$1" | cut -d"$K_IFS" -f1                      ;}
+get_kernel_fname()    { echo "$1" | cut -d"$K_IFS" -f2                      ;}
+get_kernel_date()     { echo "$1" | cut -d"$K_IFS" -f"1,3" --compliment     ;}
+count_lines()         { echo "$1" | grep -c .                               ;}
+
+#------------------------------------------------------------------------------
+# Get kernels from a list that match the version expression
+# FIXME: escape escape escape!
+#------------------------------------------------------------------------------
+find_kernel_version() {
+    local version=$1  list=$2 ;  shift 2
+    echo "$list" | egrep "$@" "^($version)[$K_IFS]"
+}
+
+#------------------------------------------------------------------------------
+# Get kernels from a list that match the fname expression
+#------------------------------------------------------------------------------
+find_kernel_fname()   {
+    local fname=$1  list=$2 ; shift 2
+    echo "$list" | egrep "$@" "^[^$K_IFS]*[$K_IFS]($fname)[$K_IFS]"
+}
+
+fatal_k0() {
+    local cnt=$(count_lines "$1") ; shift
+    fatal_0 $cnt "$@"
+}
+
 #------------------------------------------------------------------------------
 # Present a menu for user to select a kernel.  the list input should be the
 # output of: "vmlinuz-version -nsd : <files>" or something like that.  You
