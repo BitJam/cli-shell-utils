@@ -953,8 +953,8 @@ fatal() {
     fi
 
     local fmt=$1 ; shift
-    printf "${err_co}%s:$hi_co $fmt$nc_co\n" $"Fatal Error" "$@" >&2
-    printf "Fatal error: $fmt\n" "$@" | strip_color >> $LOG_FILE
+    printf "${err_co}%s:$hi_co $fmt$nc_co\n" $"Error" "$@" >&2
+    printf "Error: $fmt\n" "$@" | strip_color >> $LOG_FILE
     fmt=$(echo "$fmt" | sed 's/\\n/ /g')
     printf "$code:$fmt\n" "$@"        | strip_color >> $ERR_FILE
     [ -n "$FATAL_QUESTION" ] && echo "Q:$FATAL_QUESTION" >> $ERR_FILE
