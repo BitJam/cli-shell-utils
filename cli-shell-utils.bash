@@ -452,7 +452,7 @@ cli_live_usb_src_menu() {
 
     menu=$(cli_cdrom_menu $dev_width ; cli_partition_menu $dev_width clone=)
     if [ $(count_lines "$menu") -gt 0 ]; then
-        local fmt="$P_IFS$head_co%-${dev_width}s %6s %8s %-16s %s$nc_co\n" 
+        local fmt="$P_IFS$head_co%-${dev_width}s %6s %8s %-16s %s$nc_co\n"
         printf "$fmt" "dev" $"size" $"fstype" $"label" $"model"
         echo -e "$menu"
     fi
@@ -507,7 +507,7 @@ cli_partition_menu() {
 #
 #------------------------------------------------------------------------------
 cli_drive_menu() {
-    local exclude=$(get_drive ${1##*/})  all=$2
+    local exclude=$(get_drive ${1##*/})
 
     local opts="--nodeps --include=$MAJOR_SD_DEV_LIST"
     local dev_width=$(get_lsblk_field_width name $opts)
@@ -519,7 +519,7 @@ cli_drive_menu() {
         eval "$line"
         dev=/dev/$NAME
 
-        [ "$all" ] || is_usb_or_removable "$dev"   || continue
+        force usb || is_usb_or_removable "$dev"   || continue
         [ "$exclude" ] && [ "$NAME" = "$exclude" ] && continue
 
         printf "$fmt" "$NAME" "$NAME" "$SIZE" "$(echo $VENDOR $MODEL)"
