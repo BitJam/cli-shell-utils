@@ -17,15 +17,19 @@
 #
 #==============================================================================
 
+: ${DATE_FMT:=%Y-%m-%d %H:%M}
+: ${DEFAULT_USER:=1000}
 : ${K_IFS:=|}
 : ${P_IFS:=&}
 : ${MAJOR_SD_DEV_LIST:=3,8,22,179,259}
 : ${MAJOR_SR_DEV_LIST:=11}
 : ${LIVE_MP:=/live/boot-dev}
+: ${MIN_ISO_SIZE:=180M}
+: ${MENU_PATH=/usr/local/share/text-menus/}
 
 #------------------------------------------------------------------------------
 # Sometimes it's useful to process some arguments (-h --help, for example)
-# Before others.  This can let normal users get simple usage.
+# before others.  This can let normal users get simple usage.
 # This relies on $SHORT_STACK, takes_param(), and eval_early_arguments()
 # Only works on flags, not parameters that take options.
 #------------------------------------------------------------------------------
