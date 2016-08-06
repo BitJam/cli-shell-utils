@@ -439,10 +439,11 @@ my_select_2() {
         val=$(echo -e "$data" | sed -n "s/^$input://p")
 
         if [ -z "$val" ]; then
-            err_msg=$(printf $"The number <%s> is out of range" "$(pqe $input)")
+            err_msg=$(printf $"The number '%s' is out of range" "$(pqe $input)")
             continue
         fi
-
+        # FIXME!  is this always right?
+        [ "$val" = "default" ] && val=
         eval $var=\$val
         break
     done
