@@ -753,7 +753,7 @@ Get_Field_Width
 get_all_kernel() {
     local  var=$1 temp ; shift
     temp=$($VM_VERSION_PROG -nsr --delimit="$K_IFS" "$@") \
-        || fatal "The %s program failed!" "$VM_VERSION_PROG"
+        || fatal $"The %s program failed!" "$VM_VERSION_PROG"
 
     eval $var=\$temp
 }
