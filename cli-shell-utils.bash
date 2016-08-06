@@ -979,7 +979,7 @@ set_colors() {
         high) ;;
          low) ;;
          off) ;;
-           *) fatal color "Unknown color parameter '%s'.  Expected high, low, or off" "$param" ;;
+           *) fatal color $"Unknown color parameter '%s'.  Expected high, low, or off" "$param" ;;
     esac
     local e=$(printf "\e")
 
