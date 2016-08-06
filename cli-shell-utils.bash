@@ -1373,19 +1373,21 @@ do_flock() {
 }
 
 #------------------------------------------------------------------------------
-# Create a temp file from the current program between "#= BEGIN_CONFIG" and
-# "#= END_CONFIG" and then source that file and delete it.  With those
-# comments properly placed this allows us to reset the config file *after*
-# sourcing it.  This allows people to change the config file with command
-# line arguments.
 #------------------------------------------------------------------------------
 reset_conf() {
     local temp_file=$(mktemp /tmp/$ME-config-XXXXXX) \
         || fatal $"Could not make a temporary file under %s" "/tmp"
 
-    sed -rn "/^#=+\s*BEGIN_CONFIG/,/^#=+\s*END_CONFIG/p" "$0" > $temp_file
-    source $temp_file
+    write_conf $temp_file
+    . $temp_file
     rm -f $temp_file || fatal $"Could not remove temporary file %s" "$temp_file"
+}
+
+write_conf() {
+    local file=${1:-$HOME/.config/$ME/$ME.conf}
+    mkdir -p $(dirname $file)
+    sed -rn "/^#=+\s*BEGIN_CONFIG/,/^#=+\s*END_CONFIG/p" "$0" > $file
+    msg $"Wrote config file %s" "$(pq $file)"
 }
 
 #==============================================================================
