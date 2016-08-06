@@ -400,6 +400,7 @@ my_select_2() {
 
     local def_prompt=$(printf $"Press <%s> for the default %s" "$(pqq $"Enter")" "$def_str")
 
+    local p2=$(printf "Use '%s' to quit.  Use '%s' for help." "$(pqq q)" "$(pqq h)")
     echo
 
     local val input err_msg
@@ -410,15 +411,19 @@ my_select_2() {
         echo -en "$menu" | colorize_menu
         [ "$err_msg" ] && printf "$err_co%s$nc_co\n" "$err_msg"
         [ "$default" ] && printf "$m_co%s$nc_co\n" "$quest_co$def_prompt$nc_co"
+        quest "$p2\n"
         echo -n "$quest_co>$nc_co "
 
         read input
         err_msg=
         if [ "$input" = "q" ]; then
-            quest "Press 'q' again to quit "
+            quest $"Press 'q' again to quit "
             read -n1 input
             echo
             [ "$input" = "q" ] && my_exit
+            continue
+        elif [ "$input" = "h" ]; then
+            test -r $MY_DIR/$ME.1 && man $MY_DIR/$ME.1
             continue
         fi
 
