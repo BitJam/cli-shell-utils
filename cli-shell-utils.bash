@@ -762,6 +762,8 @@ get_kernel_version()  { echo "$1" | cut -d"$K_IFS" -f1                      ;}
 get_kernel_fname()    { echo "$1" | cut -d"$K_IFS" -f2                      ;}
 get_kernel_date()     { echo "$1" | cut -d"$K_IFS" -f"1,3" --compliment     ;}
 count_lines()         { echo "$1" | grep -c .                               ;}
+count_null_lines()    { echo "$1" | tr -cd '\000' | tr '\000' 'x' | wc -c   ;}
+count_tabs()          { echo "$1" | tr -cd '\t'   | tr '\t' 'x'   | wc -c   ;}
 
 #------------------------------------------------------------------------------
 # Get kernels from a list that match the version expression
