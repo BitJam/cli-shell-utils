@@ -317,7 +317,7 @@ _yes_no() {
             *) fatal "Internal error in _yes_no()"                           ;;
         esac
         local data=$(printf "1:1\n2:2\n0:0")
-        my_select_2 "$quest_co$question$nc_co" answer $def_entry "$data" "$menu\n"
+        my_select_2 answer "$quest_co$question$nc_co" $def_entry "$data" "$menu\n"
     fi
 
     case $answer in
@@ -360,7 +360,7 @@ $(echo -e "$list")
 My_Select
 
     IFS=$orig_ifs
-    my_select_2 "$title" "$var" "$default" "$data" "$menu"
+    my_select_2 $var "$title" "$default" "$data" "$menu"
 }
 
 #------------------------------------------------------------------------------
@@ -390,7 +390,7 @@ my_select_quit() {
 #              the contents of $data.
 #------------------------------------------------------------------------------
 my_select_2() {
-    local title=$1  var=$2  default=$3  data=$4  menu=$5  def_str=$6
+    local var=$1  title=$2  default=$3  data=$4  menu=$5  def_str=$6
 
     if [ -n "$def_str" ]; then
         def_str="($(pqq $def_str))"
