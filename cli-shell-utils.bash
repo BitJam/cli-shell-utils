@@ -452,15 +452,179 @@ my_select_2() {
 #------------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------------
+cli_text_menu() {
+    local dir=$MENU_DIR
+    local var=$1  name=$2  title=$3  blurb=$4
+    local dfile="$dir/$name.data"  mfile="$dir/$name.menu"
+
+
+    local file
+    for file in "$dfile" "$mfile"; do
+        [ -r "$file" ] && continue
+        warn "Missing file %s" "$file"
+        return
+    done
+    [ "$blurb" ] && title="$title\n$blurb"
+
+    local data=$(cat $dfile)
+    local menu=$(cat $mfile)
+    my_select_2 $var "$title" 1 "$data" "$menu\n"
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+cli_search_file() {
+    local var=$1  spec=$2  dir_list=$3  max_depth=$4  max_found=${5:-20}  min_size=${6:-$MIN_ISO_SIZE}
+
+    local _sf_input
+    while true; do
+        quest $"Will search directories: %s\n"                           "$(pqq $dir_list)"
+        quest $"for files matching '%s' with a size of %s or greater\n"  "$(pqq $spec)"  "$(pq $min_size)"
+        quest $"Will search down %s directories"                         "$(pqq $max_depth)"
+        my_select_quit _sf_input "" "$(select_file_menu)"
+
+        case $_sf_input in
+            search) ;;
+              dirs) cli_get_text dir_list  "Enter directories"          ; continue ;;
+             depth) cli_get_text max_depth "Enter maximum depth (1-9)"  ; continue ;;
+              spec) cli_get_text spec      "Enter file specfication"    ; continue ;;
+        esac
+
+        local depth=1 dir f found found_cnt
+        while [ $depth -le $max_depth ]; do
+            echo -n "$depth "
+            for dir in /data/ISO $dir_list; do
+                test -d "$dir" || continue
+                local args="-maxdepth $depth -mindepth $depth -type f -size +$MIN_ISO_SIZE"
+                f=$(find "$dir" $args -iname "$spec" -print0 | tr '\000' '\t')
+                [ ${#f} -gt 0 ] && found="$found$f"
+                found_cnt=$(count_tabs "$found")
+                [ $found_cnt -ge $max_found ] && break
+            done
+            [ $found_cnt -ge $max_found ] && break
+            depth=$((depth + 1))
+        done
+        echo
+
+        if [ $found_cnt -eq 0 ]; then
+            warn "No %s files were found.  Please try again" "$(pqw "$spec")"
+            continue
+        fi
+        if [ $found_cnt -gt $max_found ]; then
+            warn "Found %s files at depth %s.  Only showing the %s most recent." \
+                $(pqh $found_cnt) $(pqh $depth) $(pqh $max_found)
+        fi
+
+        found=$(echo "$found" | tr '\t' '\000' | xargs -0 ls -dt1  2>/dev/null | head -n$max_found)
+
+        cli_select_file _sf_input "Please select a file" "$found"
+        case $_sf_input in
+            retry) continue ;;
+        esac
+
+        eval $var=\$_sf_input
+        return
+    done
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+cli_select_file() {
+    local var=$1  title=$2  file_list=$3  orig_IFS=$IFS
+
+    local ifmt="%s$K_IFS%s$K_IFS%s$K_IFS%s"
+    local file name size date w1=5  w2=5  data
+    while read file; do
+        [ ${#file} -gt 0 ] || continue
+        test -f "$file"    || continue
+        name=$(_file_name "$file")
+        size=$(_file_size "$file")
+        date=$(_file_date "$file")
+        [ $w1 -lt ${#name} ] && w1=${#name}
+        [ $w2 -lt ${#size} ] && w2=${#size}
+        data="$data$(printf "$ifmt" "$file" "$name" "$size" "$date")\n"
+    done<<File_Menu
+$(echo -e "$file_list")
+File_Menu
+
+    local fmt="%s$P_IFS$fname_co%-${w1}s$num_co %${w2}s$date_co %s$nc_co"
+    local IFS=$K_IFS menu
+    while read file name size date; do
+        menu="$menu$(printf "$fmt" "$file" "$name" "$size" "$date")\n"
+    done <<File_Menu_2
+$(echo -e "$data")
+File_Menu_2
+    IFS=$orig_ifs
+
+    menu="${menu}retry$P_IFS${quit_co}try again$nc_co\n"
+    my_select $var "$title" "$menu"
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+_file_date() { date "+${DATE_FMT#+}" -d @$(stat -c %Y "$1") ;}
+_file_size() { echo "$(( $(stat -c %s "$1") /1024 /1024))M" ;}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+_file_name() {
+    local file=$1
+    file=$(echo "$file" | sed "s|^/home/|~|")
+
+    if [ ${#file} -le 40 ]; then
+        echo "$file"
+        return
+    fi
+    local base=$(basename "$file")  path=$(dirname "$file")
+
+    echo "$(echo "$path" | cut -d/ -f1,2)/.../$base"
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+select_file_menu() {
+    printf "%s$P_IFS%s\n" "search" "Begin search"
+    printf "%s$P_IFS%s\n" "dirs"   "Change directories"
+    printf "%s$P_IFS%s\n" "depth"  "Change search depth"
+    printf "%s$P_IFS%s\n" "spec"   "Change file specification"
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+cli_get_text() {
+    local var=$1  title=$2
+    local input prompt=$(pqq "> ")
+
+    while true; do
+        quest "$title"
+        echo -n "\n$prompt"
+        read input
+        quest $"You entered: %s" "$(cq "$input")"
+        YES_no $"Is this correct?" && break
+    done
+    eval $var=\$input
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
 cli_live_usb_src_menu() {
     local dev_width=$(get_lsblk_field_width name --include="$MAJOR_SD_DEV_LIST,$MAJOR_SR_DEV_LIST")
 
-    printf "iso-file$P_IFS%s\n" $"An ISO file"
-    printf "clone$P_IFS%s\n" "Clone this live system"
-    its_alive && mountpoint $LIVE_MP \
-        && printf "clone$P_IFS%s\n" "Clone this live system"
+    local live_dev
+    if its_alive; then
+        live_dev=$(get_live_dev)
+        is_mountpoint $LIVE_MP && printf "clone$P_IFS%s (%s)\n" $"Clone this live system" "$(pq $live_dev)"
+    fi
 
-    menu=$(cli_cdrom_menu $dev_width ; cli_partition_menu $dev_width clone=)
+    printf "iso-file$P_IFS%s\n" $"An ISO file"
+    menu=$(cli_cdrom_menu $dev_width ; cli_partition_menu $dev_width clone= $live_dev)
     if [ $(count_lines "$menu") -gt 0 ]; then
         local fmt="$P_IFS$head_co%-${dev_width}s %6s %8s %-16s %s$nc_co\n"
         printf "$fmt" "dev" $"size" $"fstype" $"label" $"model"
