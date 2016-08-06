@@ -654,17 +654,17 @@ Cdrom_Menu
 #
 #------------------------------------------------------------------------------
 cli_partition_menu() {
-    local dev_width=$1  preamb=$2
+    local dev_width=$1  preamb=$2 exclude=$(get_drive ${3##*/})
     local dev_list=$(lsblk -lno name --include="$MAJOR_SD_DEV_LIST")
-    #local fmt="$preamb%s$P_IFS%-${dev_width}s %6s %8s %-s %s\n"
     local fmt="$preamb%s$P_IFS$dev_co%-${dev_width}s$num_co %6s$bold_co %8s$lab_co %-16s$nc_co %16s\n"
     local range=1
     force partition && range=$(seq 1 20)
 
     local SIZE MODEL VENDOR FSTYPE label dev_info part_num
     for dev in $dev_list; do
-        local dev_info=$(lsblk -no vendor,model /dev/$dev)
+        [ "$dev" = "$exclude" ] && continue
         force usb || is_usb_or_removable "$dev" || continue
+        local dev_info=$(lsblk -no vendor,model /dev/$dev)
         for part_num in $range; do
             local part=$(get_partition "$dev" $part_num)
             local device=/dev/$part
@@ -681,7 +681,7 @@ cli_partition_menu() {
 #
 #------------------------------------------------------------------------------
 cli_drive_menu() {
-    local exclude=$(get_drive ${1##*/})
+    local exclude=$(get_drive ${1##*/}) exclude_2=$(get_drive ${2##*/})
 
     local opts="--nodeps --include=$MAJOR_SD_DEV_LIST"
     local dev_width=$(get_lsblk_field_width name $opts)
@@ -693,8 +693,9 @@ cli_drive_menu() {
         eval "$line"
         dev=/dev/$NAME
 
-        force usb || is_usb_or_removable "$dev"   || continue
-        [ "$exclude" ] && [ "$NAME" = "$exclude" ] && continue
+        force usb || is_usb_or_removable "$dev" || continue
+        [ "$NAME" = "$exclude"   ] && continue
+        [ "$NAME" = "$exclude_2" ] && continue
 
         printf "$fmt" "$NAME" "$NAME" "$SIZE" "$(echo $VENDOR $MODEL)"
     done<<Ls_Blk
