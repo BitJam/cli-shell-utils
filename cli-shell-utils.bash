@@ -339,7 +339,7 @@ my_select() {
 
     while read datum label; do
         if [ ${#datum} -eq 0 ]; then
-            [ ${#label} -gt 0 ] && menu="$menu    $label\n"
+            [ ${#label} -gt 0 ] && menu="$menu     $label\n"
             continue
         fi
         dcnt=$cnt
@@ -352,7 +352,7 @@ my_select() {
         [ $dcnt = "$default" ] && label=$(printf "%s (%s)" "$label" "$m_co$(cq "default")")
 
         data="${data}$dcnt:$datum\n"
-        menu="${menu}$(printf "$quest_co%2d$hi_co)$m_co %${width}s" $dcnt "$label")\n"
+        menu="${menu}$(printf "$quest_co%3d$hi_co)$m_co %${width}s" $dcnt "$label")\n"
 
         cnt=$((cnt+1))
     done<<My_Select
