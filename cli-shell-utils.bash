@@ -28,7 +28,7 @@
 : ${MAJOR_SR_DEV_LIST:=11}
 : ${LIVE_MP:=/live/boot-dev}
 : ${MIN_ISO_SIZE:=180M}
-: ${MENU_PATH=/usr/local/share/text-menus/}
+: ${MENU_PATH:=/usr/local/share/text-menus/}
 : ${MIN_LINUXFS_SIZE:=120M}
 
 #------------------------------------------------------------------------------
