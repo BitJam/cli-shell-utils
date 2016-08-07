@@ -336,7 +336,7 @@ _yes_no() {
 # The "1)" and so on get added automatically.
 #------------------------------------------------------------------------------
 my_select() {
-    local var=$1  title=$2  list=$3  default=${4:-1} orig_ifs=$IFS
+    local var=$1  title=$2  list=$3  def_str=$4  default=${5:-1}  orig_ifs=$IFS
     local IFS=$P_IFS
     local cnt=1 dcnt datum label data menu
 
@@ -363,17 +363,17 @@ $(echo -e "$list")
 My_Select
 
     IFS=$orig_ifs
-    my_select_2 $var "$title" "$default" "$data" "$menu"
+    my_select_2 $var "$title" "$default" "$data" "$menu" "$def_str"
 }
 
 #------------------------------------------------------------------------------
 # Same as my_select but with a "quit" entry added to bottom of the menu
 #------------------------------------------------------------------------------
 my_select_quit() {
-    local var=$1  title=$2  menu=$3  default=$4
+    local var=$1  title=$2  menu=$3  def_str=$4
     menu=$(printf "%s\nquit$P_IFS%s\n" "$menu" $"quit")
     local ans
-    my_select ans "$title" "$menu" "$default"
+    my_select ans "$title" "$menu" "$def_str"
     [ "$ans" = "quit" ] && my_exit
     eval $var=\$ans
 }
@@ -414,8 +414,8 @@ my_select_2() {
         echo -en "$menu" | colorize_menu
         [ "$err_msg" ] && printf "$err_co%s$nc_co\n" "$err_msg"
         [ "$default" ] && printf "$m_co%s$nc_co\n" "$quest_co$def_prompt$nc_co"
-        quest "$p2\n"
-        echo -n "$quest_co>$nc_co "
+        [ "$p2" ]      && quest "$p2\n"
+        quest "> "
 
         read input
         err_msg=
@@ -426,7 +426,7 @@ my_select_2() {
             [ "$input" = "q" ] && my_exit
             continue
         elif [ "$input" = "h" ]; then
-            test -r $MY_DIR/$ME.1 && man $MY_DIR/$ME.1
+            man "$man_page"
             continue
         fi
 
@@ -495,14 +495,16 @@ cli_search_file() {
         esac
 
         local depth=1 dir f found found_cnt
+        echo -n "depth:"
         while [ $depth -le $max_depth ]; do
-            echo -n "$depth "
-            for dir in /data/ISO $dir_list; do
+            echo -n " $depth"
+            for dir in $dir_list; do
                 test -d "$dir" || continue
                 local args="-maxdepth $depth -mindepth $depth -type f -size +$MIN_ISO_SIZE"
                 f=$(find "$dir" $args -iname "$spec" -print0 | tr '\000' '\t')
                 [ ${#f} -gt 0 ] && found="$found$f"
                 found_cnt=$(count_tabs "$found")
+                echo -n "($found_cnt)"
                 [ $found_cnt -ge $max_found ] && break
             done
             [ $found_cnt -ge $max_found ] && break
@@ -562,7 +564,7 @@ File_Menu_2
     IFS=$orig_ifs
 
     menu="${menu}retry$P_IFS${quit_co}try again$nc_co\n"
-    my_select $var "$title" "$menu"
+    my_select $var "$title" "$menu" "$first"
 }
 
 #------------------------------------------------------------------------------
