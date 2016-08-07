@@ -525,7 +525,7 @@ cli_search_file() {
 
         found=$(echo "$found" | tr '\t' '\000' | xargs -0 ls -dt1  2>/dev/null | head -n$max_found)
 
-        cli_select_file _sf_input "Please select a file" "$found"
+        cli_select_file _sf_input "Please select a file" "$found" "$dir_list"
         case $_sf_input in
             retry) continue ;;
         esac
@@ -539,14 +539,16 @@ cli_search_file() {
 #
 #------------------------------------------------------------------------------
 cli_select_file() {
-    local var=$1  title=$2  file_list=$3  orig_IFS=$IFS
-
+    local var=$1  title=$2  file_list=$3  dir_list=$4  one_dir orig_IFS=$IFS
+    [ -n "${dir_list##* *}" ] && one_dir="$dir_list/"
     local ifmt="%s$K_IFS%s$K_IFS%s$K_IFS%s"
-    local file name size date w1=5  w2=5  data
+    local file name size date w1=5  w2=5  data  first
     while read file; do
         [ ${#file} -gt 0 ] || continue
         test -f "$file"    || continue
-        name=$(_file_name "$file")
+        : ${first:=$(basename "$file")}
+
+        name=$(_file_name "$file" "$one_dir")
         size=$(_file_size "$file")
         date=$(_file_date "$file")
         [ $w1 -lt ${#name} ] && w1=${#name}
@@ -579,10 +581,11 @@ _file_size() { echo "$(( $(stat -c %s "$1") /1024 /1024))M" ;}
 #
 #------------------------------------------------------------------------------
 _file_name() {
-    local file=$1
+    local file=$1  one_dir=$2
+    [ ${#one_dir} -gt 0 ] && file=$(echo "$file" | sed "s|^$one_dir||")
     file=$(echo "$file" | sed "s|^/home/|~|")
 
-    if [ ${#file} -le 40 ]; then
+    if [ ${#file} -le 80 ]; then
         echo "$file"
         return
     fi
