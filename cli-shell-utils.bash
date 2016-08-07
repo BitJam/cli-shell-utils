@@ -479,15 +479,22 @@ cli_text_menu() {
 #------------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------------
+_search_file_title() {
+    local spec=$1  dir_list=$2  max_depth=$3  min_size=$4
+
+    quest $"Will search directories: %s\n"                           "$(pqq $dir_list)"
+    quest $"for files matching '%s' with a size of %s or greater\n"  "$(pqq $spec)"  "$(pq $min_size)"
+    quest $"Will search down %s directories"                         "$(pqq $max_depth)"
+}
+
 cli_search_file() {
     local var=$1  spec=$2  dir_list=$3  max_depth=$4  max_found=${5:-20}  min_size=${6:-$MIN_ISO_SIZE}
 
     local _sf_input
     while true; do
-        quest $"Will search directories: %s\n"                           "$(pqq $dir_list)"
-        quest $"for files matching '%s' with a size of %s or greater\n"  "$(pqq $spec)"  "$(pq $min_size)"
-        quest $"Will search down %s directories"                         "$(pqq $max_depth)"
-        my_select_quit _sf_input "" "$(select_file_menu)"
+        local title=$(_search_file_title "$spec" "$dir_list" "$max_depth" "$min_size")
+
+        my_select_quit _sf_input "$title" "$(select_file_menu)"
 
         case $_sf_input in
             search) ;;
