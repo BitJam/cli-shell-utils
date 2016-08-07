@@ -395,15 +395,17 @@ my_select_quit() {
 my_select_2() {
     local var=$1  title=$2  default=$3  data=$4  menu=$5  def_str=$6
 
+    local man_page="$MY_DIR/$ME.1"
+
     if [ -n "$def_str" ]; then
         def_str="($(pqq $def_str))"
     else
         def_str="selection"
     fi
 
-    local def_prompt=$(printf $"Press <%s> for the default %s" "$(pqq $"Enter")" "$def_str")
+    local p2 def_prompt=$(printf $"Press <%s> for the default %s" "$(pqq $"Enter")" "$def_str")
 
-    local p2=$(printf "Use '%s' to quit.  Use '%s' for help." "$(pqq q)" "$(pqq h)")
+    test -r "$man_page" && p2=$(printf $"Use '%s' for help." "$(pqq h)")
     echo
 
     local val input err_msg
