@@ -29,6 +29,7 @@
 : ${LIVE_MP:=/live/boot-dev}
 : ${MIN_ISO_SIZE:=180M}
 : ${MENU_PATH=/usr/local/share/text-menus/}
+: ${MIN_LINUXFS_SIZE:=120M}
 
 #------------------------------------------------------------------------------
 # Sometimes it's useful to process some arguments (-h --help, for example)
@@ -474,6 +475,29 @@ cli_text_menu() {
     local data=$(cat $dfile)
     local menu=$(cat $mfile)
     my_select_2 $var "$title" 1 "$data" "$menu\n"
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+find_live_boot_dir() {
+    local var=$1  mp=$2  fname=$3
+    local find_opts="-maxdepth 2 -mindepth 2 -type f -name $fname -size +$MIN_LINUXFS_SIZE"
+
+    local list=$(find $mp $find_opts | sed -e "s|^$mp||" -e "s|/$fname$||")
+    case $(count_lines "$list") in
+        0) fatal "No '%s' found in any directory in '%s'" "$fname" "$mp" ;;
+        1) eval $var=\$list
+           return ;;
+    esac
+    local dir menu
+    while read dir; do
+        menu="$menu$dir$P_IFS$dir\n"
+    done<<Live_Boot_Dir
+$(echo "$list")
+Live_Boot_Dir
+
+    my_select_quit $var "Please select the live boot directory" "$menu"
 }
 
 #------------------------------------------------------------------------------
