@@ -493,17 +493,19 @@ cli_text_menu() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Return false if no boot dir is found so caller can handle error message
 #------------------------------------------------------------------------------
 find_live_boot_dir() {
-    local var=$1  mp=$2  fname=$3
+    local var=$1  mp=$2  fname=$3  title=$4  min_size=${5:-$MIN_LINUXFS_SIZE}
+    [ ${#title} -eq 0 ] && title=$"Please select the live boot directory"
+
     local find_opts="-maxdepth 2 -mindepth 2 -type f -name $fname -size +$MIN_LINUXFS_SIZE"
 
     local list=$(find $mp $find_opts | sed -e "s|^$mp||" -e "s|/$fname$||")
     case $(count_lines "$list") in
-        0) fatal "No '%s' found in any directory in '%s'" "$fname" "$mp" ;;
+        0) return 1 ;;
         1) eval $var=\$list
-           return ;;
+           return 0 ;;
     esac
     local dir menu
     while read dir; do
@@ -512,7 +514,8 @@ find_live_boot_dir() {
 $(echo "$list")
 Live_Boot_Dir
 
-    my_select_quit $var "Please select the live boot directory" "$menu"
+    my_select_quit $var "$title" "$menu"
+    return 0
 }
 
 #------------------------------------------------------------------------------
