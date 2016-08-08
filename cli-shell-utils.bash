@@ -240,21 +240,21 @@ check_cmds() {
 }
 
 #------------------------------------------------------------------------------
-# Works like cmd() below but ignores the $PRETEND variable.  This can be useful
-# if you want to always run a command but also want to record the call.
+# Works like cmd() below but ignores the $PRETEND_MODE variable.  This can be
+# useful  if you want to always run a command but also want to record the call.
 #------------------------------------------------------------------------------
-always_cmd() { PRETEND= cmd "$@" ;}
+always_cmd() { PRETEND_MODE= cmd "$@" ;}
 
 #------------------------------------------------------------------------------
 # Always send the command line and all output to the log file.  Set the log
 # file to /dev/null to disable this feature.  If BE_VERBOSE then also echo
-# the command line to the screen.  If PRETEND then don't actually run the
-# command.
+# the command line to the screen.  If PRETEND_MODE then don't actually run
+# the command.
 #------------------------------------------------------------------------------
 cmd() {
     echo " > $*" >> $LOG_FILE
-    [ "$BE_VERBOSE" ] && echo " >" "$@" | sed "s|$WORK_DIR|.|g"
-    [ "$PRETEND"    ] && return 0
+    [ "$BE_VERBOSE"   ] && echo " >" "$@" | sed "s|$WORK_DIR|.|g"
+    [ "$PRETEND_MODE" ] && return 0
     "$@" 2>&1 | tee -a $LOG_FILE
     # Warning: Bashism
     return ${PIPESTATUS[0]}
@@ -343,7 +343,7 @@ YES_no_pretend() {
     case $answer in
              yes) return 0 ;;
               no) return 1 ;;
-         pretend) PRETEND=true ; return 0 ;;
+         pretend) PRETEND_MODE=true ; return 0 ;;
                *) fatal "Internal error in YES_no_pretend()" ;;
         esac
 }
@@ -1517,7 +1517,7 @@ check_writable() {
 
 #------------------------------------------------------------------------------
 # Only used in conjunction with cmd() which does not handle io-redirect well.
-# Using write_file() allows both PRETEND and BE_VERBOSE to work.
+# Using write_file() allows both PRETEND_MODE and BE_VERBOSE to work.
 #------------------------------------------------------------------------------
 write_file() {
     local file=$1 ; shift
