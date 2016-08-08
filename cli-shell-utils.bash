@@ -332,6 +332,21 @@ _yes_no() {
     esac
 }
 
+YES_no_pretend() {
+    local question=$1 answer
+    [ ${#question} -gt 0 ] || question=$"Shall we begin?"
+    local yes=$"yes"  no=$"no"  pretend=$"pretend mode"
+    local menu="yes$P_IFS$yes\nno$P_IFS$no\npretend$P_IFS$pretend\n"
+
+    my_select answer "$question" "$menu"
+
+    case $answer in
+             yes) return 0 ;;
+              no) return 1 ;;
+         pretend) PRETEND=true ; return 0 ;;
+               *) fatal "Internal error in YES_no_pretend()" ;;
+        esac
+}
 #------------------------------------------------------------------------------
 # Generate a simple selection menu based on a data:label data structure.
 # The "1)" and so on get added automatically.
