@@ -1060,6 +1060,52 @@ Print
 #  label, version, date, from-fname, to-fname
 #------------------------------------------------------------------------------
 kernel_stats() {
+    local ifs=$K_IFS orig_ifs=$IFS
+    IFS=$ifs
+
+    local list
+    while [ $# -ge 5 ]; do
+        list="$list$1$IFS$2$IFS$3$IFS$4$IFS$5\n"
+        shift 5
+    done
+
+    local version=$"Version" date=$"Date"  from=$"From"  to=$"To"
+    local w1=5  w2=${#version}  w3=${#date}  w4=${#from}
+    # Get field widths
+    local f1 f2 f3 f4 f5
+    while read f1 f2 f3 f4 f5; do
+        [ ${#f1} -gt 0 ] || continue
+        [ $w1 -lt ${#f1} ] && w1=${#f1}
+        [ $w2 -lt ${#f2} ] && w2=${#f2}
+        [ $w3 -lt ${#f3} ] && w3=${#f3}
+        [ $w4 -lt ${#f4} ] && w4=${#f4}
+    done<<Widths
+$(echo -e "$list")
+Widths
+
+    local hfmt=" $head_co%s %s  %s  %s %s$nc_co\n"
+    local  fmt=" $lab_co%s $version_co%s  $date_co%s  $fname_co%s %s$nc_co\n"
+    f1=$(lpad $w1 "")
+    f2=$(rpad $w2 "$version")
+    f3=$(rpad $w3 "$date")
+    f4=$(rpad $w4 "$from")
+    printf "$hfmt" "$f1" "$f2" "$f3" "$f4" "$to"
+
+    while read f1 f2 f3 f4 f5; do
+        [ ${#f1} -gt 0 ] || continue
+        f1=$(lpad $w1 "$f1")
+        f2=$(rpad $w2 "$f2")
+        f3=$(rpad $w3 "$f3")
+        f4=$(rpad $w4 "$f4")
+        printf "$fmt" "$f1" "$f2" "$f3" "$f4" "$f5"
+    done<<Print
+$(echo -e "$list")
+Print
+
+    IFS=$orig_ifs
+}
+
+old_kernel_stats() {
     local list=$1  ifs=${2:-$K_IFS} orig_ifs=$IFS
     IFS=$ifs
 
