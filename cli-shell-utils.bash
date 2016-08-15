@@ -750,6 +750,7 @@ cli_get_text() {
 #
 #------------------------------------------------------------------------------
 cli_live_usb_src_menu() {
+    local exclude=$1
     local dev_width=$(get_lsblk_field_width name --include="$MAJOR_SD_DEV_LIST,$MAJOR_SR_DEV_LIST")
 
     local live_dev
@@ -758,8 +759,8 @@ cli_live_usb_src_menu() {
         is_mountpoint $LIVE_MP && printf "clone$P_IFS%s (%s)\n" $"Clone this live system" "$(pq $live_dev)"
     fi
 
-    printf "iso-file$P_IFS%s\n" $"An ISO file"
-    menu=$(cli_cdrom_menu $dev_width ; cli_partition_menu $dev_width clone= $live_dev)
+    printf "iso-file$P_IFS%s\n" $"Copy from an ISO file"
+    menu=$(cli_cdrom_menu $dev_width ; cli_partition_menu $dev_width clone= $live_dev $exclude)
     if [ $(count_lines "$menu") -gt 0 ]; then
         local fmt="$P_IFS$head_co%-${dev_width}s %6s %8s %-16s %s$nc_co\n"
         printf "$fmt" "dev" $"size" $"fstype" $"label" $"model"
@@ -789,7 +790,7 @@ Cdrom_Menu
 #
 #------------------------------------------------------------------------------
 cli_partition_menu() {
-    local dev_width=$1  preamb=$2 exclude=$(get_drive ${3##*/})
+    local dev_width=$1  preamb=$2 exclude=$(get_drive ${3##*/}) exclude2=$(get_drive ${4##*/})
     local dev_list=$(lsblk -lno name --include="$MAJOR_SD_DEV_LIST")
     local fmt="$preamb%s$P_IFS$dev_co%-${dev_width}s$num_co %6s$bold_co %8s$lab_co %-16s$nc_co %16s\n"
     local range=1
@@ -797,7 +798,7 @@ cli_partition_menu() {
 
     local SIZE MODEL VENDOR FSTYPE label dev_info part_num
     for dev in $dev_list; do
-        [ "$dev" = "$exclude" ] && continue
+        [ "$dev" = "$exclude" -o "$dev" = "$exclude2" ] && continue
         force usb || is_usb_or_removable "$dev" || continue
         local dev_info=$(lsblk -no vendor,model /dev/$dev)
         for part_num in $range; do
