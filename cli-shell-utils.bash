@@ -1146,6 +1146,58 @@ Print
     IFS=$orig_ifs
 }
 
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+usb_stats() {
+    local ifs=$K_IFS  orig_ifs=$IFS
+    IFS=$ifs
+
+    local list
+    while [ $# -ge 4 ]; do
+        list="$list$1$IFS$2$IFS$3$IFS$4\n"
+        shift 4
+    done
+
+    local total=$"Total"  used=$"Used"  extra=$"Extra"
+    local w1=5 w2=${#total} w3=${#used} w4=${#extra}
+    # Get field widths
+    local f1 f2 f3 f4
+    while read f1 f2 f3 f4; do
+        [ ${#f1} -gt 0 ] || continue
+        [ $w1 -lt ${#f1} ] && w1=${#f1}
+        [ $w2 -lt ${#f2} ] && w2=${#f2}
+        [ $w3 -lt ${#f3} ] && w3=${#f3}
+        [ $w4 -lt ${#f4} ] && w4=${#f4}
+    done<<Widths
+$(echo -e "$list")
+Widths
+
+    local hfmt=" $head_co%s  %s  %s  %s$nc_co\n"
+    local  fmt=" $lab_co%s  $num_co%s  %s  %s$m_co  MiB$nc_co\n"
+    f1=$(lpad $w1 "")
+    f2=$(rpad $w2 "$total")
+    f3=$(rpad $w3 "$used")
+    f4=$(rpad $w4 "$extra")
+
+    printf "$hfmt" "$f1" "$f2" "$f3" "$f4"
+
+    while read f1 f2 f3 f4; do
+        [ ${#f1} -gt 0 ] || continue
+        f1=$(lpad $w1 "$f1")
+        f2=$(lpad $w2 "$f2")
+        f3=$(lpad $w3 "$f3")
+        f4=$(lpad $w4 "$f4")
+        printf "$fmt" "$f1" "$f2" "$f3" "$f4"
+    done<<Print
+$(echo -e "$list")
+Print
+
+    IFS=$orig_ifs
+}
+
+
 #==============================================================================
 # Fun with Colors!  (and align unicode test)
 #
