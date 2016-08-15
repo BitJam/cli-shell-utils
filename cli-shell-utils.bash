@@ -317,10 +317,12 @@ _yes_no() {
 
         local menu def_entry
         case $def_entry in
-            1) menu=$(printf "  1) $yes ($default)\n  2) $no\n  0) $quit\n") ;;
-            2) menu=$(printf "  1) $yes\n  2) $no (default)\n  0) $quit\n")  ;;
-            *) fatal "Internal error in _yes_no()"                           ;;
+            1) menu=$(printf "  1) $yes ($default)\n  2) $no\n") ;;
+            2) menu=$(printf "  1) $yes\n  2) $no (default)\n")  ;;
+            *) fatal "Internal error in _yes_no()"               ;;
         esac
+
+        [ "$NO_QUIT" ] || menu="$menu  0) $quit\n"
         local data=$(printf "1:1\n2:2\n0:0")
         my_select_2 answer "$quest_co$question$nc_co" $def_entry "$data" "$menu\n"
     fi
@@ -387,6 +389,10 @@ My_Select
 # Same as my_select but with a "quit" entry added to bottom of the menu
 #------------------------------------------------------------------------------
 my_select_quit() {
+    if [ "$NO_QUIT" ]; then
+        my_select "$@"
+        return
+    fi
     local var=$1  title=$2  menu=$3  def_str=$4
     menu=$(printf "%s\nquit$P_IFS%s\n" "$menu" $"quit")
     local ans
