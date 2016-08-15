@@ -407,16 +407,17 @@ my_select_quit() {
 #------------------------------------------------------------------------------
 # This is the workhorse for several of my menu systems (in other codes).
 #
-#   $title:    the question asked
 #   $var:      the name of the variable the answer goes in
+#   $title:    the question asked
 #   $default:  the default selection (a number)
-#   $data:     A string of lines of $NUM:$VALUE:$menu_value
+#   $data:     A string of lines of $NUM:$VALUE
 #              The number select by the user gets converted to the value
 #              The third field is used to mimic the value in the menu
 #              for the initrd text menus but that may not be used here.
 #   $menu      A multi-line string that is the menu to be displayed.  It
 #              The callers job to make sure it is properly aligned with
 #              the contents of $data.
+#   $def_str   A string to indicate the default answer
 #------------------------------------------------------------------------------
 my_select_2() {
     local var=$1  title=$2  default=$3  data=$4  menu=$5  def_str=$6
