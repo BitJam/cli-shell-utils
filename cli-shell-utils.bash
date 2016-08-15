@@ -336,7 +336,7 @@ _yes_no() {
 }
 
 YES_no_pretend() {
-    local question=$1 answer
+    local question=$1 answer  orig_pretend=$PRETEND_MODE
     [ ${#question} -gt 0 ] || question=$"Shall we begin?"
     local yes=$"yes"  no=$"no"  pretend=$"pretend mode"
     local menu="yes$P_IFS$yes\nno$P_IFS$no\npretend$P_IFS$pretend\n"
@@ -346,10 +346,13 @@ YES_no_pretend() {
     case $answer in
              yes) return 0 ;;
               no) return 1 ;;
-         pretend) PRETEND_MODE=true ; return 0 ;;
-               *) fatal "Internal error in YES_no_pretend()" ;;
+         pretend) PRETEND_MODE=true ; shout_pretend ; return 0 ;;
+               *) fatal "Internal error in YES_no_pretend()"   ;;
         esac
 }
+
+shout_pretend() { [ "$PRETEND_MODE" ] && Shout $"PRETEND MODE ENABLED" ;}
+
 #------------------------------------------------------------------------------
 # Generate a simple selection menu based on a data:label data structure.
 # The "1)" and so on get added automatically.
