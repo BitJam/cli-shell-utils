@@ -1628,10 +1628,11 @@ reset_conf() {
 }
 
 write_conf() {
-    local file=${1:-$HOME/.config/$ME/$ME.conf}
-    mkdir -p $(dirname $file)
+    local file=${1:-$CONF_FILE}
+    mkdir -p $(dirname $file) || fatal $"Could not create directory for config file"
     sed -rn "/^#=+\s*BEGIN_CONFIG/,/^#=+\s*END_CONFIG/p" "$0" > $file
     msg $"Wrote config file %s" "$(pq $file)"
+    return 0
 }
 
 #==============================================================================
