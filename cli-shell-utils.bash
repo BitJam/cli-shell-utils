@@ -30,6 +30,7 @@
 : ${MIN_ISO_SIZE:=180M}
 : ${MENU_PATH:=/usr/local/share/text-menus/}
 : ${MIN_LINUXFS_SIZE:=120M}
+: ${CONF_FILE:=/root/.config/$ME/$ME.config}
 
 #------------------------------------------------------------------------------
 # Sometimes it's useful to process some arguments (-h --help, for example)
