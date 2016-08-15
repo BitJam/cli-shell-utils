@@ -1764,6 +1764,17 @@ get_live_dev() {
     echo ${live_dev##*/}
 }
 
+show_distro_version()  {
+    local dir=$1
+    [ ${#dir} -gt 0 ]                            || return 1
+    local iso_version version_file=$dir/version
+    test -r $version_file                        || return 1
+    iso_version=$(cat $version_file 2>/dev/null) || return 1
+    [ ${#iso_version} -gt 0 ]                    || return 1
+    msg $"Distro: %s" "$(pq $iso_version)"
+    return 0
+}
+
 #------------------------------------------------------------------------------
 # Create a work directory with mktemp. Not used!  The idea was that we might
 # be able to avoid some conflicts with this if flock is not available.  It
