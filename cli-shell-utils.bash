@@ -562,23 +562,56 @@ Live_Boot_Dir
 #------------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------------
-_search_file_title() {
-    local spec=$1  dir_list=$2  max_depth=$3  min_size=$4
+expand_directories() {
+    local dir
+    for dir; do
 
-    quest $"Will search directories: %s\n"                           "$(pqq $dir_list)"
-    quest $"for files matching '%s' with a size of %s or greater\n"  "$(pqq $spec)"  "$(pq $min_size)"
-    quest $"Will search down %s directories"                         "$(pqq $max_depth)"
+        # Fudge ~/ so it becomes the default users' home, not root's
+        case $dir in
+            ~/*)  dir=$(get_user_home)/${dir#~/} ;;
+        esac
+
+        eval "dir=$dir"
+        if test -d $dir; then
+            echo $dir
+        else
+            warn "Not a directory %s" "$dir"
+        fi
+    done
 }
 
 cli_search_file() {
     local var=$1  spec=$2  dir_list=$3  max_depth=$4  max_found=${5:-20}  min_size=${6:-$MIN_ISO_SIZE}
 
-    local _sf_input
+    local _sf_input title dir_cnt invalid
     while true; do
-        local title=$(_search_file_title "$spec" "$dir_list" "$max_depth" "$min_size")
+        dir_list=$(expand_directories $dir_list)
+        dir_cnt=$(echo "$dir_list" | wc -w)
 
-        my_select_quit _sf_input "$title" "$(select_file_menu)"
+        title=$(
+        if [ $dir_cnt -eq 1 ]; then
+            quest $"Will search %s directory: %s\n"                          "$(pnq $dir_cnt)"   "$(pqq $dir_list)"
+        else
+            quest $"Will search %s directories: %s\n"                        "$(pnq $dir_cnt)"   "$(pqq $dir_list)"
+        fi
+            quest $"for files matching '%s' with a size of %s or greater\n"  "$(pqq $spec)"      "$(pq $min_size)"
+            quest $"Will search down %s directories"                         "$(pqq $max_depth)"
+        )
 
+        if [ $dir_cnt -le 0 ]; then
+            while [ $dir_cnt -le 0 ]; do
+                warn "No directories were found in the list.  Please try again"
+                cli_get_text dir_list "Enter directories"
+                dir_list=$(expand_directories $dir_list)
+                dir_cnt=$(echo "$dir_list" | wc -w)
+            done
+            continue
+        fi
+
+        my_select_quit _sf_input "$title" "$(select_file_menu $invalid)"
+        invalid=
+
+        # FIXME: need to make some of these entries more specfic
         case $_sf_input in
             search) ;;
               dirs) cli_get_text dir_list  "Enter directories"          ; continue ;;
@@ -605,7 +638,8 @@ cli_search_file() {
         echo
 
         if [ $found_cnt -eq 0 ]; then
-            warn "No %s files were found.  Please try again" "$(pqw "$spec")"
+            warn "No '%s' files were found.  Please try again" "$(pqw "$spec")"
+            invalid=true
             continue
         fi
         if [ $found_cnt -gt $max_found ]; then
@@ -688,7 +722,8 @@ _file_name() {
 #
 #------------------------------------------------------------------------------
 select_file_menu() {
-    printf "%s$P_IFS%s\n" "search" "Begin search"
+    local invalid=$1
+    [ "$invalid" ] || printf "%s$P_IFS%s\n" "search" "Begin search"
     printf "%s$P_IFS%s\n" "dirs"   "Change directories"
     printf "%s$P_IFS%s\n" "depth"  "Change search depth"
     printf "%s$P_IFS%s\n" "spec"   "Change file specification"
@@ -699,12 +734,12 @@ select_file_menu() {
 #------------------------------------------------------------------------------
 cli_get_text() {
     local var=$1  title=$2
-    local input prompt=$(pqq "> ")
+    local input prompt=$(quest "> ")
 
     while true; do
         quest "$title"
-        echo -n "\n$prompt"
-        read input
+        echo -en "\n$prompt"
+        read -r input
         quest $"You entered: %s" "$(cq "$input")"
         YES_no $"Is this correct?" && break
     done
