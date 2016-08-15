@@ -430,12 +430,18 @@ my_select_2() {
         def_str="selection"
     fi
 
-    local p2 def_prompt=$(printf $"Press <%s> for the default %s" "$(pqq $"Enter")" "$def_str")
+    local p2 have_man def_prompt=$(printf $"Press <%s> for the default %s" "$(pqq $"Enter")" "$def_str")
 
-    test -r "$man_page" && p2=$(printf $"Use '%s' for help." "$(pqq h)")
+    if test -r "$man_page"; then
+        have_man=true
+        p2=$(printf $"Use '%s' for help.  Use '%s' to quit" "$(pqq h)" "$(pqq q)")
+    else
+        p2=$(printf $"Use '%s' to quit" "$(pqq q)")
+    fi
+
     echo
 
-    local val input err_msg
+    local val input_1 input err_msg
     while [ -z "$val" ]; do
 
         echo -e "$quest_co$title$nc_co"
@@ -444,20 +450,28 @@ my_select_2() {
         [ "$err_msg" ] && printf "$err_co%s$nc_co\n" "$err_msg"
         [ "$default" ] && printf "$m_co%s$nc_co\n" "$quest_co$def_prompt$nc_co"
         [ "$p2" ]      && quest "$p2\n"
-        quest "> "
+        # quest "> "
 
-        read input
+        read -n1 input_1
         err_msg=
-        if [ "$input" = "q" ]; then
-            quest $"Press 'q' again to quit "
-            read -n1 input
-            echo
-            [ "$input" = "q" ] && my_exit
+        if [ ${#input_1} -eq 0 ]; then
+            input=$input_1
+        elif [ "$input_1" = "q" ]; then
+            final_quit
             continue
-        elif [ "$input" = "h" ]; then
+        elif [ -n "$have_man" -a "$input_1" = "h" ]; then
             man "$man_page"
             continue
+        else
+            echo -ne "\b"
+            read -ei "$input_1" input
         fi
+
+        # Evaluate again in case of backspacing
+        case $input in
+            q*) final_quit ; continue ;;
+            h*) [ "$have_man" ] && man "$man_page" ; continue ;;
+        esac
 
         [ -z "$input" -a -n "$default" ] && input=$default
         if ! echo "$input" | grep -q "^[0-9]\+$"; then
