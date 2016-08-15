@@ -512,9 +512,8 @@ final_quit() {
 #------------------------------------------------------------------------------
 cli_text_menu() {
     local dir=$MENU_DIR
-    local var=$1  name=$2  title=$3  blurb=$4
+    local var=$1  name=$2  title=$3  blurb=$4  text_menu_val
     local dfile="$dir/$name.data"  mfile="$dir/$name.menu"
-
 
     local file
     for file in "$dfile" "$mfile"; do
@@ -526,7 +525,12 @@ cli_text_menu() {
 
     local data=$(cat $dfile)
     local menu=$(cat $mfile)
-    my_select_2 $var "$title" 1 "$data" "$menu\n"
+    my_select_2 text_menu_val "$title" 1 "$data" "$menu\n"
+    # FIXME: maybe a char other than : would be better for 2nd delimiter
+    local val=${text_menu_val%%:*}
+    local lab=${text_menu_val##*:}
+    msg $"You chose %s" "$(pq $lab)"
+    eval $var=\$val
 }
 
 #------------------------------------------------------------------------------
