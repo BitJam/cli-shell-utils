@@ -1629,15 +1629,21 @@ reset_config() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Do nothing if --ignore-config
+# Otherwise if --reset-config or no existing config then reset config and exit
+# Otherwise source the existing config file (if readable)
 #------------------------------------------------------------------------------
 read_reset_config_file() {
     local file=${1:-$CONFIG_FILE}
 
     [ "$IGNORE_CONFIG" ] && return
-    [ "$RESET_CONFIG"  ] && reset_config "$file"
-    test -r "$file"      && . "$file"
-    test -e "$file"      || reset_config "$file"
+
+    if [ "$RESET_CONFIG" -o ! -e "$file" ]; then
+        reset_config "$file"
+    else
+        test -r "$file" && . "$file"
+    fi
+
 }
 
 
