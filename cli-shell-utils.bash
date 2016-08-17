@@ -1782,20 +1782,6 @@ show_distro_version()  {
 }
 
 #------------------------------------------------------------------------------
-# Create a work directory with mktemp. Not used!  The idea was that we might
-# be able to avoid some conflicts with this if flock is not available.  It
-# may just be a bad idea.
-#------------------------------------------------------------------------------
-random_work_dir() {
-    [ ${#WORK_DIR} -gt 0 ] || return
-    local temp_dir=$(mktemp -d "$WORK_DIR"-XXXXXX)
-    [ ${#temp_dir} -gt 0 ] \
-        || fatal $"Could not create a temporary directory in '%s'" "$(dirname "$WORK_DIR")"
-
-    WORK_DIR=$temp_dir
-}
-
-#------------------------------------------------------------------------------
 # Given a partition, echo the canonical name for the drive.
 #------------------------------------------------------------------------------
 get_drive() {
