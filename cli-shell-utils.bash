@@ -30,7 +30,7 @@
 : ${MIN_ISO_SIZE:=180M}
 : ${MENU_PATH:=/usr/local/share/text-menus/}
 : ${MIN_LINUXFS_SIZE:=120M}
-: ${CONF_FILE:=/root/.config/$ME/$ME.config}
+: ${CONFIG_FILE:=/root/.config/$ME/$ME.conf}
 
 #------------------------------------------------------------------------------
 # Sometimes it's useful to process some arguments (-h --help, for example)
@@ -1617,23 +1617,29 @@ do_flock() {
 }
 
 #------------------------------------------------------------------------------
+#
 #------------------------------------------------------------------------------
-reset_conf() {
-    local temp_file=$(mktemp /tmp/$ME-config-XXXXXX) \
-        || fatal $"Could not make a temporary file under %s" "/tmp"
-
-    write_conf $temp_file
-    . $temp_file
-    rm -f $temp_file || fatal $"Could not remove temporary file %s" "$temp_file"
-}
-
-write_conf() {
-    local file=${1:-$CONF_FILE}
-    mkdir -p $(dirname $file) || fatal $"Could not create directory for config file"
-    sed -rn "/^#=+\s*BEGIN_CONFIG/,/^#=+\s*END_CONFIG/p" "$0" > $file
-    msg $"Wrote config file %s" "$(pq $file)"
+reset_config() {
+    local file=${1:-$CONFIG_FILE}
+    mkdir -p $(dirname "$file") || fatal $"Could not create directory for config file"
+    sed -rn "/^#=+\s*BEGIN_CONFIG/,/^#=+\s*END_CONFIG/p" "$0" \
+        | egrep -v "^#=+[ ]*(BEGIN|END)_CONFIG" > $file
+    msg $"Reset config file %s" "$(pq $file)"
     return 0
 }
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+read_reset_config_file() {
+    local file=${1:-$CONFIG_FILE}
+
+    [ "$IGNORE_CONFIG" ] && return
+    [ "$RESET_CONFIG"  ] && reset_config "$file"
+    test -r "$file"      && . "$file"
+    test -e "$file"      || reset_config "$file"
+}
+
 
 #==============================================================================
 # General System Utilities
