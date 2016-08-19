@@ -649,7 +649,7 @@ cli_search_file() {
 
         found=$(echo "$found" | tr '\t' '\000' | xargs -0 ls -dt1  2>/dev/null | head -n$max_found)
 
-        cli_select_file _sf_input "Please select a file" "$found" "$dir_list"
+        cli_choose_file _sf_input "Please select a file" "$found" "$dir_list"
         case $_sf_input in
             retry) continue ;;
         esac
@@ -662,7 +662,7 @@ cli_search_file() {
 #------------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------------
-cli_select_file() {
+cli_choose_file() {
     local var=$1  title=$2  file_list=$3  dir_list=$4  one_dir orig_IFS=$IFS
     [ -n "${dir_list##* *}" ] && one_dir="$dir_list/"
     local ifmt="%s$K_IFS%s$K_IFS%s$K_IFS%s"
