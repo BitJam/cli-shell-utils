@@ -760,7 +760,7 @@ cli_live_usb_src_menu() {
     fi
 
     printf "iso-file$P_IFS%s\n" $"Copy from an ISO file"
-    menu=$(cli_cdrom_menu $dev_width ; cli_partition_menu $dev_width clone= $live_dev $exclude)
+    menu=$(cli_cdrom_menu $dev_width "dev=" ; cli_partition_menu $dev_width "clone=" $live_dev $exclude)
     if [ $(count_lines "$menu") -gt 0 ]; then
         local fmt="$P_IFS$head_co%-${dev_width}s %6s %8s %-16s %s$nc_co\n"
         printf "$fmt" "dev" $"size" $"fstype" $"label" $"model"
@@ -772,7 +772,7 @@ cli_live_usb_src_menu() {
 #
 #------------------------------------------------------------------------------
 cli_cdrom_menu() {
-    local dev_width=${1:-4}
+    local dev_width=${1:-4}  prefix=$2
     local opts="--nodeps --include=$MAJOR_SR_DEV_LIST"
     local fmt="%s$P_IFS$dev_co%-${dev_width}s$num_co %6s$bold_co %8s$lab_co %-16s$nc_co %-16s\n"
     local model=$(bq cd/dvd disc)
@@ -780,7 +780,7 @@ cli_cdrom_menu() {
     while read line; do
         eval "$line"
         [ ${#LABEL} -gt 0 ] || continue
-        printf "$fmt" "$NAME" "$NAME" "$SIZE" "$FSTYPE" "$LABEL" "$model"
+        printf "$fmt" "$prefix$NAME" "$NAME" "$SIZE" "$FSTYPE" "$LABEL" "$model"
     done<<Cdrom_Menu
 $(lsblk -no name,size,fstype,label --pairs $opts)
 Cdrom_Menu
