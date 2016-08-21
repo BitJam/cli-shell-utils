@@ -749,6 +749,27 @@ cli_get_text() {
 #------------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------------
+cli_get_filename() {
+    local var=$1  title=$2  preamb=$(sub_user_home "$3")
+    local file
+
+    while true; do
+        quest "$title$nc_co\n$quest_co%s" "(tab completion is enabled)"
+        read -e -i "$preamb" input
+        preamb=$input
+        if ! test -f "$file"; then
+            warn "%s does not appear to be a file" "$file"
+            YES_no "Try again?" && continue
+        fi
+        quest $"You entered: %s" "$(cq "$input")"
+        YES_no $"Is this correct?" && break
+    done
+    eval $var=\$input
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
 cli_live_usb_src_menu() {
     local exclude=$1
     local dev_width=$(get_lsblk_field_width name --include="$MAJOR_SD_DEV_LIST,$MAJOR_SR_DEV_LIST")
