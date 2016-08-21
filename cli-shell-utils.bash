@@ -1851,6 +1851,11 @@ get_user_home() {
     getent passwd $user | cut -d: -f6
 }
 
+sub_user_home() {
+    local user_home=$(get_user_home)
+    echo "$1" | sed "s|%USER_HOME%|$user_home|g"
+}
+
 need_root() { [ $UID -eq 0 ] || fatal 099 $"This script must be run as root" ;}
 
 #==============================================================================
