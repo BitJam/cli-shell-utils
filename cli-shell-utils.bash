@@ -430,7 +430,8 @@ my_select_2() {
         def_str="selection"
     fi
 
-    local p2 have_man def_prompt=$(printf $"Press <%s> for the default %s" "$(pqq $"Enter")" "$def_str")
+    local p2 have_man def_prompt=$(printf $"Press <%s> or <%s> for the default %s" \
+        "$(pqq $"Enter")" "$(pqq $"space")" "$def_str")
 
     if test -r "$man_page"; then
         have_man=true
