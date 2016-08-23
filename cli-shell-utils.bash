@@ -422,7 +422,7 @@ my_select_quit() {
 my_select_2() {
     local var=$1  title=$2  default=$3  data=$4  menu=$5  def_str=$6
 
-    local man_page="$MY_DIR/$ME.1"
+    local man_page="$MY_DIR/$(basename "$0" .sh).1"
 
     if [ -n "$def_str" ]; then
         def_str="($(pqq $def_str))"
