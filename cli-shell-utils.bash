@@ -1862,6 +1862,21 @@ get_partition() {
 }
 
 #------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+device_str() {
+    local file=$1  file_type=${2:-$"file"}
+    local dev=$(expand_device "$file")
+    case $(stat -c %t "${dev:-$file}") in
+                 0) echo "$file_type"      ;;
+                 b) echo $"cd/dvd disc"    ;;
+                b3) echo $"mmc device"     ;;
+        3|8|22|103) echo $"disk device"    ;;
+                 *) echo $"unknown device" ;;
+    esac
+}
+
+#------------------------------------------------------------------------------
 # Simple mkdir -p with simple error checking.  If it is likely that a directory
 # cannot be made then check it yourself explicitly instead of using this
 # routine.  This is to provide some breadcrumbs but I don't expect it to fail
