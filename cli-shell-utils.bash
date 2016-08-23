@@ -444,7 +444,7 @@ my_select_2() {
     local val input_1 input err_msg
     while [ -z "$val" ]; do
 
-        echo -e "$quest_co$title$nc_co"
+        quest "$title\n"
 
         echo -en "$menu" | colorize_menu
         [ "$err_msg" ] && printf "$err_co%s$nc_co\n" "$err_msg"
