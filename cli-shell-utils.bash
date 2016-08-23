@@ -1802,13 +1802,27 @@ get_live_dev() {
 }
 
 show_distro_version()  {
-    local dir=$1
+    local dir=$1  dev=${2##*/}
+
     [ ${#dir} -gt 0 ]                            || return 1
+
+    sync
+
     local iso_version version_file=$dir/version
     test -r $version_file                        || return 1
     iso_version=$(cat $version_file 2>/dev/null) || return 1
-    [ ${#iso_version} -gt 0 ]                    || return 1
-    msg $"Distro: %s" "$(pq $iso_version)"
+
+    if [ ${#dev} -eq 0 ]; then
+        [ ${#iso_version} -gt 0 ]                || return 1
+        msg $"Distro: %s" "$(pq $iso_version)"
+        return 0
+    fi
+
+    if [ ${#iso_version} -gt 0 ]; then
+        msg $"Distro: %s on %s" "$(pq $iso_version)" "$(pq $dev)"
+    else
+        warn "No version file found on %s" "$(pqw "$dev")"
+    fi
     return 0
 }
 
