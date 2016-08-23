@@ -1781,6 +1781,7 @@ my_mount() {
 # correctly on other live systems but has not been tested.
 #------------------------------------------------------------------------------
 its_alive() {
+    # return 0
     local root_fstype=$(sed -rn "s|^([a-z]+) / .*|\1|p" /proc/mounts | head -n1)
     case $root_fstype in
         aufs|overlay) return 0 ;;
