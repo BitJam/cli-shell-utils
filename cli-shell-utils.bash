@@ -451,26 +451,28 @@ my_select_2() {
         [ "$default" ] && printf "$m_co%s$nc_co\n" "$quest_co$def_prompt$nc_co"
         [ "$p2" ]      && quest "$p2\n"
 
-        local orig_IFS=$IFS
-        local IFS=
-        read -n1 input_1
-        IFS=$orig_IFS
+        local leave_inner= input= input_1=
 
-        err_msg=
-        if [ ${#input_1} -eq 0 ]; then
-            input=$input_1
-        elif [ "$input_1" = "q" ]; then
-            final_quit
-            continue
-        elif [ -n "$have_man" -a "$input_1" = "h" ]; then
-            man "$man_page"
-            echo
-            continue
-        else
-            echo -ne "\b"
-            read -ei "$input_1" input
-        fi
+        while [ -z "$leave_inner" ]; do
+            err_msg=
+            local orig_IFS=$IFS
+            local IFS=
+            read -n1 input_1
+            IFS=$orig_IFS
+            case $input_1 in
+                "") input= ; leave_inner=true ;;
+                 q) final_quit; continue      ;;
+                 h) [ -n "$have_men" ] && continue
+                    man "$man_page"
+                    echo
+                    continue ;;
+             [0-9]) echo -ne "\b"
+                    read -ei "$input_1" input
+                    leave_inner=true    ;;
+                 *) quest " %s\n" "Opps.  Please try again" ;;
+            esac
 
+        done
         # Evaluate again in case of backspacing
         case $input in
             q*) final_quit ; continue ;;
