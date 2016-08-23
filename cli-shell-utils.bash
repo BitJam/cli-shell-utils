@@ -755,17 +755,17 @@ cli_get_filename() {
     local file
 
     while true; do
-        quest "$title$nc_co\n$quest_co%s" "(tab completion is enabled)"
-        read -e -i "$preamb" input
-        preamb=$input
+        quest "$title$nc_co\n$quest_co%s\n" "(tab completion is enabled)"
+        read -e -i "$preamb" file
+        preamb=$file
         if ! test -f "$file"; then
             warn "%s does not appear to be a file" "$file"
             YES_no "Try again?" && continue
         fi
-        quest $"You entered: %s" "$(cq "$input")"
+        quest $"You entered: %s" "$(cq "$file")"
         YES_no $"Is this correct?" && break
     done
-    eval $var=\$input
+    eval $var=\$file
 }
 
 #------------------------------------------------------------------------------
