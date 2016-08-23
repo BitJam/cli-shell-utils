@@ -1509,6 +1509,8 @@ pipe_dn() {
 # Show the time elapsed since START_T if it is greatr than 10 seconds
 #------------------------------------------------------------------------------
 show_elapsed() {
+    [ ${#START_T} -eq 0 ] && return
+    [ $START_T    -eq 0 ] && return
     local dt=$(($(date +%s) - START_T))
     [ $dt -gt 10 ] && msg "\n$ME took $(elapsed $START_T)."
     echo >> $LOG_FILE
