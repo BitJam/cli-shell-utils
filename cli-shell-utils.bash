@@ -450,7 +450,6 @@ my_select_2() {
         [ "$err_msg" ] && printf "$err_co%s$nc_co\n" "$err_msg"
         [ "$default" ] && printf "$m_co%s$nc_co\n" "$quest_co$def_prompt$nc_co"
         [ "$p2" ]      && quest "$p2\n"
-        # quest "> "
 
         read -n1 input_1
         err_msg=
