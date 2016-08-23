@@ -461,6 +461,7 @@ my_select_2() {
             continue
         elif [ -n "$have_man" -a "$input_1" = "h" ]; then
             man "$man_page"
+            echo
             continue
         else
             echo -ne "\b"
