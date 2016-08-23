@@ -451,7 +451,11 @@ my_select_2() {
         [ "$default" ] && printf "$m_co%s$nc_co\n" "$quest_co$def_prompt$nc_co"
         [ "$p2" ]      && quest "$p2\n"
 
+        local orig_IFS=$IFS
+        local IFS=
         read -n1 input_1
+        IFS=$orig_IFS
+
         err_msg=
         if [ ${#input_1} -eq 0 ]; then
             input=$input_1
