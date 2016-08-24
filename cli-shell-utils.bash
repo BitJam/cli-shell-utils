@@ -1192,6 +1192,10 @@ usb_stats() {
     # Get field widths
     local f1 f2 f3 f4
     while read f1 f2 f3 f4; do
+        f2=$(add_commas $f2)
+        f3=$(add_commas $f3)
+        f4=$(add_commas $f4)
+
         [ ${#f1} -gt 0 ] || continue
         [ $w1 -lt ${#f1} ] && w1=${#f1}
         [ $w2 -lt ${#f2} ] && w2=${#f2}
@@ -1204,19 +1208,23 @@ Widths
     local hfmt=" $head_co%s  %s  %s  %s$nc_co\n"
     local  fmt=" $lab_co%s  $num_co%s  %s  %s$m_co  MiB$nc_co\n"
     f1=$(lpad $w1 "")
-    f2=$(rpad $w2 "$total")
-    f3=$(rpad $w3 "$used")
-    f4=$(rpad $w4 "$extra")
+    f2=$(lpad $w2 "$total")
+    f3=$(lpad $w3 "$used")
+    f4=$(lpad $w4 "$extra")
 
     printf "$hfmt" "$f1" "$f2" "$f3" "$f4"
 
     while read f1 f2 f3 f4; do
+        f2=$(add_commas $f2)
+        f3=$(add_commas $f3)
+        f4=$(add_commas $f4)
+
         [ ${#f1} -gt 0 ] || continue
         f1=$(lpad $w1 "$f1")
         f2=$(lpad $w2 "$f2")
         f3=$(lpad $w3 "$f3")
         f4=$(lpad $w4 "$f4")
-        printf "$fmt" "$f1" "$f2" "$f3" "$f4"
+        printf "$fmt" "$f1" "$f2" "$f3" "$f4" | sed "s/,/$m_co,$num_co/g"
     done<<Print
 $(echo -e "$list")
 Print
@@ -1918,6 +1926,11 @@ sub_user_home() {
 }
 
 need_root() { [ $UID -eq 0 ] || fatal 099 $"This script must be run as root" ;}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+add_commas() { echo "$1" | sed ':a;s/\B[0-9]\{3\}\>/,&/;ta' ;}
 
 #==============================================================================
 #===== END ====================================================================
