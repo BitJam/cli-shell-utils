@@ -451,24 +451,24 @@ my_select_2() {
         [ "$default" ] && printf "$m_co%s$nc_co\n" "$quest_co$def_prompt$nc_co"
         [ "$p2" ]      && quest "$p2\n"
 
-        local leave_inner= input= input_1=
+        local  input= input_1=
 
-        while [ -z "$leave_inner" ]; do
+        while true; do
             err_msg=
             local orig_IFS=$IFS
             local IFS=
             read -n1 input_1
             IFS=$orig_IFS
             case $input_1 in
-                "") input= ; leave_inner=true ;;
-                 q) final_quit; continue      ;;
+                "") input=         ; break  ;;
+                 q) input=$input_1 ; break  ;;
                  h) [ -n "$have_men" ] && continue
                     man "$man_page"
                     echo
                     continue ;;
              [0-9]) echo -ne "\b"
                     read -ei "$input_1" input
-                    leave_inner=true    ;;
+                    break  ;;
                  *) quest " %s\n" "Opps.  Please try again" ;;
             esac
 
