@@ -958,8 +958,8 @@ fatal_k0() {
 # This is the two column version:  Version  Date
 #------------------------------------------------------------------------------
 select_kernel_2() {
-    local title=$1 var=$2 list=$3  ifs=${4:-$K_IFS} orig_ifs=$IFS
-    IFS=$ifs
+    local title=$1 var=$2 list=$3  orig_ifs=$IFS
+    IFS=$K_IFS
 
     # Get field widths
     local f1 f2 f3  w1=5
@@ -991,8 +991,8 @@ Print
 # This is the three column version:  Fname Version  Date
 #------------------------------------------------------------------------------
 select_kernel_3() {
-    local title=$1 var=$2 list=$3  ifs=${4:-$K_IFS}  orig_ifs=$IFS
-    IFS=$ifs
+    local title=$1 var=$2 list=$3  orig_ifs=$IFS
+    IFS=$K_IFS
 
     # Get field widths
     local f1 f2 f3  w1=5 w2=5
@@ -1024,8 +1024,8 @@ Print
 # Display a 2-Column table (version, date) of a list of kernels
 #------------------------------------------------------------------------------
 show_kernel_2() {
-    local title=$1  list=$2  ifs=${3:-$K_IFS}  orig_ifs=$IFS
-    IFS=$ifs
+    local title=$1  list=$2  orig_ifs=$IFS
+    IFS=$K_IFS
 
     echo
     [ "$title" ] && echo "$m_co$title$nc_co"
@@ -1054,8 +1054,8 @@ Print
 # Show a 3-column table of a list of kernels (fname, version, date)
 #------------------------------------------------------------------------------
 show_kernel_3() {
-    local title=$1  list=$2  ifs=${3:-$K_IFS} orig_ifs=$IFS
-    IFS=$ifs
+    local title=$1  list=$2  orig_ifs=$IFS
+    IFS=$K_IFS
 
     echo
     [ "$title" ] && echo "$m_co$title$nc_co"
@@ -1133,8 +1133,8 @@ Print
 }
 
 old_kernel_stats() {
-    local list=$1  ifs=${2:-$K_IFS} orig_ifs=$IFS
-    IFS=$ifs
+    local list=$1  orig_ifs=$IFS
+    IFS=$K_IFS
 
     # Get field widths
     local f1 f2 f3 f4 f5 f6 w1=5 w2=5 w3=5 w4=5 w6=5
@@ -1178,8 +1178,8 @@ Print
 #
 #------------------------------------------------------------------------------
 usb_stats() {
-    local ifs=$K_IFS  orig_ifs=$IFS
-    IFS=$ifs
+    local orig_ifs=$IFS
+    local IFS=$K_IFS
 
     local list
     while [ $# -ge 4 ]; do
