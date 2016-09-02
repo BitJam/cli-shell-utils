@@ -10,12 +10,12 @@
 10:tz=America/Managua:Managua
 11:tz=America/Lima:Lima
 12:tz=America/Bogota:Bogota
-13:tz=America/New_York:New_York
+13:tz=America/New_York:New York
 14:tz=America/Santiago:Santiago
-15:tz=America/La_Paz:La_Paz
+15:tz=America/La_Paz:La Paz
 16:tz=America/Halifax:Halifax
-17:tz=America/Argentina/Buenos_Aires:Argentina/Buenos_Aires
-18:tz=America/Sao_Paulo:Sao_Paulo
+17:tz=America/Argentina/Buenos_Aires:Buenos Aires
+18:tz=America/Sao_Paulo:Sao Paulo
 19:tz=Atlantic/Reykjavik:Reykjavik
 20:tz=Africa/Casablanca:Casablanca
 21:tz=Europe/Dublin:Dublin
