@@ -422,7 +422,13 @@ my_select_quit() {
 my_select_2() {
     local var=$1  title=$2  default=$3  data=$4  menu=$5  def_str=$6
 
-    local man_page="$MY_DIR/$(basename "$0" .sh).1"
+    # Find man page (FIXME: should only do this once)
+    local man_page have_man
+    for man_page in "" "$MY_DIR/$(basename "$0" .sh).1"; do
+        man -w "$man_page" &>/dev//null || continue
+        have_man=true
+        break
+    done
 
     if [ -n "$def_str" ]; then
         def_str="($(pqq $def_str))"
@@ -430,11 +436,10 @@ my_select_2() {
         def_str="selection"
     fi
 
-    local p2 have_man def_prompt=$(printf $"Press <%s> for the default %s" "$(pqq $"Enter")" "$def_str")
+    local p2 def_prompt=$(printf $"Press <%s> for the default %s" "$(pqq $"Enter")" "$def_str")
 
-    if test -r "$man_page"; then
-        have_man=true
-        p2=$(printf $"Use '%s' for help.  Use '%s' to quit" "$(pqq h)" "$(pqq q)")
+    if [ "$have_man" ]; then
+        p2=$(printf $"Use '%s' for help.  Use '%s' to quit." "$(pqq h)" "$(pqq q)")
     else
         p2=$(printf $"Use '%s' to quit" "$(pqq q)")
     fi
