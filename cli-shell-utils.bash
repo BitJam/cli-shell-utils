@@ -472,7 +472,7 @@ my_select_2() {
                  h) [ -n "$have_men" ] && continue
                     man "$man_page"
                     echo
-                    continue ;;
+                    break ;;
              [0-9]) echo -ne "\b"
                     read -ei "$input_1" input
                     break  ;;
