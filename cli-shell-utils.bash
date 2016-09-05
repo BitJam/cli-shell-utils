@@ -19,6 +19,8 @@
 
 : ${ME:=${0##*/}}
 : ${MY_DIR:=$(dirname "$(readlink -f $0)")}
+: ${MY_LIB_DIR:=$(readlink -f "$MY_DIR/../cli-shell-utils")}
+: ${LIB_DIR:=/usr/local/lib/cli-shell-utils}
 
 : ${DATE_FMT:=%Y-%m-%d %H:%M}
 : ${DEFAULT_USER:=1000}
@@ -28,7 +30,7 @@
 : ${MAJOR_SR_DEV_LIST:=11}
 : ${LIVE_MP:=/live/boot-dev}
 : ${MIN_ISO_SIZE:=180M}
-: ${MENU_PATH:=/usr/local/share/text-menus/}
+: ${MENU_PATH:=$MY_LIB_DIR/text-menus/:$LIB_DIR/text-menus}
 : ${MIN_LINUXFS_SIZE:=120M}
 : ${CONFIG_FILE:=/root/.config/$ME/$ME.conf}
 
@@ -522,7 +524,21 @@ final_quit() {
 #
 #------------------------------------------------------------------------------
 cli_text_menu() {
-    local dir=$MENU_DIR
+    local d dir  path=$MENU_PATH
+
+    local orig_IFS=$IFS  IFS=:
+    for d in $MENU_PATH; do
+        test -d "$d" || continue
+        dir=$d
+        break
+    done
+    IFS=$orig_IFS
+
+    if [ -z "$dir" ]; then
+        warn "Could not find text menus"
+        return 2
+    fi
+
     local var=$1  name=$2  title=$3  blurb=$4  text_menu_val
     local dfile="$dir/$name.data"  mfile="$dir/$name.menu"
 
