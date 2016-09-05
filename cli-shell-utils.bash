@@ -546,7 +546,7 @@ cli_text_menu() {
     for file in "$dfile" "$mfile"; do
         [ -r "$file" ] && continue
         warn "Missing file %s" "$file"
-        return
+        return 2
     done
     [ "$blurb" ] && title="$title\n$blurb"
 
@@ -558,6 +558,8 @@ cli_text_menu() {
     local lab=${text_menu_val##*:}
     msg $"You chose %s" "$(pq $lab)"
     eval $var=\$val
+
+    return 0
 }
 
 #------------------------------------------------------------------------------
