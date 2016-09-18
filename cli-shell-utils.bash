@@ -810,7 +810,6 @@ cli_get_filename() {
 #
 #------------------------------------------------------------------------------
 cli_live_usb_src_menu() {
-    get_lsblk_field_width label --include="$MAJOR_SD_DEV_LIST,$MAJOR_SR_DEV_LIST" >&2
     local exclude=$1
     local dev_width=$(get_lsblk_field_width name  --include="$MAJOR_SD_DEV_LIST,$MAJOR_SR_DEV_LIST")
     local lab_width=$(get_lsblk_field_width label --include="$MAJOR_SD_DEV_LIST,$MAJOR_SR_DEV_LIST")
