@@ -810,8 +810,10 @@ cli_get_filename() {
 #
 #------------------------------------------------------------------------------
 cli_live_usb_src_menu() {
+    get_lsblk_field_width label --include="$MAJOR_SD_DEV_LIST,$MAJOR_SR_DEV_LIST" >&2
     local exclude=$1
-    local dev_width=$(get_lsblk_field_width name --include="$MAJOR_SD_DEV_LIST,$MAJOR_SR_DEV_LIST")
+    local dev_width=$(get_lsblk_field_width name  --include="$MAJOR_SD_DEV_LIST,$MAJOR_SR_DEV_LIST")
+    local lab_width=$(get_lsblk_field_width label --include="$MAJOR_SD_DEV_LIST,$MAJOR_SR_DEV_LIST")
 
     local live_dev
     if its_alive; then
@@ -820,9 +822,9 @@ cli_live_usb_src_menu() {
     fi
 
     printf "iso-file$P_IFS%s\n" $"Copy from an ISO file"
-    menu=$(cli_cdrom_menu $dev_width "dev=" ; cli_partition_menu $dev_width "clone=" $live_dev $exclude)
+    menu=$(cli_cdrom_menu $dev_width "dev=" ; cli_partition_menu "$dev_width" "$lab_width" "clone=" $live_dev $exclude)
     if [ $(count_lines "$menu") -gt 0 ]; then
-        local fmt="$P_IFS$head_co%-${dev_width}s %6s %8s %-16s %s$nc_co\n"
+        local fmt="$P_IFS$head_co%-${dev_width}s %6s %8s %-${lab_width}s %s$nc_co\n"
         printf "$fmt" "dev" $"size" $"fstype" $"label" $"model"
         echo -e "$menu"
     fi
@@ -850,9 +852,9 @@ Cdrom_Menu
 #
 #------------------------------------------------------------------------------
 cli_partition_menu() {
-    local dev_width=$1  preamb=$2 exclude=$(get_drive ${3##*/}) exclude2=$(get_drive ${4##*/})
+    local dev_width=$1 lab_width=${2:-16}  preamb=$3 exclude=$(get_drive ${4##*/}) exclude2=$(get_drive ${5##*/})
     local dev_list=$(lsblk -lno name --include="$MAJOR_SD_DEV_LIST")
-    local fmt="$preamb%s$P_IFS$dev_co%-${dev_width}s$num_co %6s$bold_co %8s$lab_co %-16s$nc_co %16s\n"
+    local fmt="$preamb%s$P_IFS$dev_co%-${dev_width}s$num_co %6s$bold_co %8s$lab_co %-${lab_width}s$nc_co %16s\n"
     local range=1
     force partition && range=$(seq 1 20)
 
