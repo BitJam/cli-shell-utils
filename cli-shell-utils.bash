@@ -1,4 +1,4 @@
-# shell-utils.bash
+# cli-shell-utils.bash
 #
 # An integrated collection of utilites for shell scripting.
 # The .bash version uses $"..." for translation and one other bashism in cmd().
