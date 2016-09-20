@@ -298,6 +298,7 @@ yes_NO_fatal() {
 #------------------------------------------------------------------------------
 expert_YES_no() {
     case $QUESTION_MODE in
+        simple) return 1                ;;
         expert) YES_no "$@" ; return $? ;;
              *) yes_NO "$@" ; return $? ;;
     esac
