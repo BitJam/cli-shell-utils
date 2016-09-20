@@ -1270,11 +1270,11 @@ Print
 #------------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------------
-free_space_data() {
+free_space_menu() {
     local min_percent=$1  total_size=$2  comma_size=$(add_commas $2)
     local w2=${#comma_size}
     local fmt="%s$P_IFS$hi_co %3s%%$num_co %${w2}s $m_co%s$nc_co\n"
-    local size=100 free_size free_percent  free_size
+    local size=100 free_size free_percent
     while [ $size -ge $min_percent ]; do
         free_percent=$((100 - size))
         free_size=$((free_percent * total_size / 100))
@@ -1284,6 +1284,24 @@ free_space_data() {
         [ $size -lt $min_percent ] && size=$min_percent
     done
 }
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+partition_size_menu() {
+    local min_percent=$1  total_size=$2  comma_size=$(add_commas $2)
+    local w2=${#comma_size}
+    local fmt="%s$P_IFS$hi_co %3s%%$num_co %${w2}s $m_co%s$nc_co\n"
+    local percent=100 size
+    while [ $percent -ge $min_percent ]; do
+        size=$((percent * total_size / 100))
+        printf "$fmt" "$percent" "$percent" "$(add_commas $size)" MiB | color_commas
+        [ $percent -eq $min_percent ] && break
+        percent=$((percent - 5))
+        [ $percent -lt $min_percent ] && percent=$min_percent
+    done
+}
+
 
 #==============================================================================
 # Fun with Colors!  (and align unicode test)
