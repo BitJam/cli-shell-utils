@@ -1222,8 +1222,8 @@ usb_stats() {
         shift 4
     done
 
-    local total=$"Total"  used=$"Used"  extra=$"Extra"
-    local w1=5 w2=${#total} w3=${#used} w4=${#extra}
+    local total=$"Total"  allocated=$"Allocated"  extra=$"Extra"
+    local w1=5 w2=${#total} w3=${#allocated} w4=${#extra}
     # Get field widths
     local f1 f2 f3 f4
     while read f1 f2 f3 f4; do
@@ -1244,7 +1244,7 @@ Widths
     local  fmt=" $lab_co%s  $num_co%s  %s  %s$m_co  MiB$nc_co\n"
     f1=$(lpad $w1 "")
     f2=$(lpad $w2 "$total")
-    f3=$(lpad $w3 "$used")
+    f3=$(lpad $w3 "$allocated")
     f4=$(lpad $w4 "$extra")
 
     printf "$hfmt" "$f1" "$f2" "$f3" "$f4"
