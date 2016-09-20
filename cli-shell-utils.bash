@@ -1371,7 +1371,8 @@ pqe() { echo "$hi_co$*$err_co"         ;}
 pqh() { echo "$m_co$*$hi_co"           ;}
 pqb() { echo "$m_co$*$bold_co"         ;}
 bq()  { echo "$bold_co$*$m_co"         ;}
-cq()  { echo "$cheat_co$*$m_co"        ;}
+hq()  { echo "$bold_co$*$m_co"         ;}
+cq()  { echo "$hi_co$*$m_co"           ;}
 nq()  { echo "$num_co$*$m_co"          ;}
 
 #------------------------------------------------------------------------------
