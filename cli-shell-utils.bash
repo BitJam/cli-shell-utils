@@ -525,7 +525,7 @@ my_select_2() {
 final_quit() {
     local input
     echo
-    quest $"Press '%s' again to quit " "$(pqq q)"
+    quest $"Press '%s' again to quit" "$(pqq q)"
     read -n1 input
     echo
     [ "$input" = "q" ] && my_exit
@@ -1730,11 +1730,14 @@ do_flock() {
 #
 #------------------------------------------------------------------------------
 reset_config() {
-    local file=${1:-$CONFIG_FILE}
+    local file=${1:-$CONFIG_FILE}  msg=$2
+
+    [ -n "$msg" ] || msg=$"Resetting config file %s"
+    msg "$msg" "$(pq $file)"
+
     mkdir -p $(dirname "$file") || fatal $"Could not create directory for config file"
     sed -rn "/^#=+\s*BEGIN_CONFIG/,/^#=+\s*END_CONFIG/p" "$0" \
         | egrep -v "^#=+[ ]*(BEGIN|END)_CONFIG" > $file
-    msg $"Reset config file %s" "$(pq $file)"
     return 0
 }
 
@@ -1749,7 +1752,7 @@ read_reset_config_file() {
     [ "$IGNORE_CONFIG" ] && return
 
     if [ "$RESET_CONFIG" -o ! -e "$file" ]; then
-        reset_config "$file"
+        reset_config "$file" $"Creating new config file %s"
     else
         test -r "$file" && . "$file"
     fi
