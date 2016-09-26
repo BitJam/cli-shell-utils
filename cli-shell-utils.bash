@@ -171,15 +171,15 @@ force() {
 # Pause execution if $here or "all" are in comma delimited $PAUSE
 #------------------------------------------------------------------------------
 pause() {
-    local here=$1  ans
+    local here=$1  xlated_here=${2:-$1}  ans
     case ,$PAUSE, in
         *,$here,*)        ;;
           *,all,*)        ;;
                 *) return ;;
     esac
 
-    msg "Paused at '%s'" $here
-    quest "Press <%s> to continue " "$(pqq $Enter)"
+    msg $"Paused at '%s'" $xlated_here
+    quest $"Press <Enter> to continue"
     read ans
 }
 
