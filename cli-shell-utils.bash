@@ -1350,8 +1350,8 @@ set_colors() {
     # FIXME: set more low colors!
     if [ "$param" = "low" ]; then
 
-        from_co=$brown ;       bold_co=$white ;  dev_co=$white ;
-          hi_co=$white ;    version_co=$white ;
+        from_co=$brown ;       bold_co=$white ;    dev_co=$white ;
+          hi_co=$white ;    version_co=$white ;  quest_co=$green ;
            m_co=$nc_co ;      fname_co=$nc_co ;
          num_co=$white ;      date_co=$nc_co  ;
     fi
