@@ -1,0 +1,481 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-10-01 16:32-0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Starting %s"
+msgstr ""
+
+msgid "The live media is not mounted"
+msgstr ""
+
+msgid "Please enter the filename"
+msgstr ""
+
+msgid "by cloning live system %s"
+msgstr ""
+
+msgid "from file %s"
+msgstr ""
+
+msgid "copy device %s"
+msgstr ""
+
+msgid "by cloning device %s"
+msgstr ""
+
+msgid "by cloning directory %s"
+msgstr ""
+
+msgid "Could not find device %s"
+msgstr ""
+
+msgid "Customize language and timezone?"
+msgstr ""
+
+msgid "Ready to make live-usb on device %s by %s"
+msgstr ""
+
+msgid "Shall we begin?"
+msgstr ""
+
+msgid "Please select the source for the new live-usb"
+msgstr ""
+
+msgid "No potential target usb drives were found"
+msgstr ""
+
+msgid "Only one target usb device was found: %s"
+msgstr ""
+
+msgid "Please select the target usb device"
+msgstr ""
+
+msgid "entire drive"
+msgstr ""
+
+msgid "main partition"
+msgstr ""
+
+msgid "uefi partition"
+msgstr ""
+
+msgid "Already using over 90% of the device"
+msgstr ""
+
+msgid "Do you want change how much of the device is used?"
+msgstr ""
+
+msgid "Have set size to %s (%s MiB)"
+msgstr ""
+
+msgid "Please select how much space to use for the live-usb partitions"
+msgstr ""
+
+msgid "Please wait while we mount disc at %s"
+msgstr ""
+
+msgid "Could not find iso file %s"
+msgstr ""
+
+msgid "Could not read iso file %s"
+msgstr ""
+
+msgid "Could not mount iso file %s"
+msgstr ""
+
+msgid "No '%s' file found in any directory on clone device at '%s'"
+msgstr ""
+
+msgid "Using %s partitioning"
+msgstr ""
+
+msgid "Partitioning failed"
+msgstr ""
+
+msgid "Copying files ..."
+msgstr ""
+
+msgid "Error when copying files to live usb"
+msgstr ""
+
+msgid "Error when copying %s files to fat partition"
+msgstr ""
+
+msgid "Could not find %s file to update"
+msgstr ""
+
+msgid "Making directory %s failed"
+msgstr ""
+
+msgid "Could not find %s file"
+msgstr ""
+
+msgid "Could not find file %s"
+msgstr ""
+
+msgid "Create syslinux directory from %s"
+msgstr ""
+
+msgid "Could not find a syslinux or isolinux directory"
+msgstr ""
+
+msgid "Not enough space on %s partition"
+msgstr ""
+
+msgid "Less than %s MiB would remain on %s partition"
+msgstr ""
+
+msgid "Exit"
+msgstr ""
+
+msgid "Current running kernel is %s"
+msgstr ""
+
+msgid "This is not a live-usb system"
+msgstr ""
+
+msgid "Will use running live system"
+msgstr ""
+
+msgid "The device '%s' does not appear to be a usb device"
+msgstr ""
+
+msgid "Can't find first partition on device %s"
+msgstr ""
+
+msgid "Device %s is not a disk partition"
+msgstr ""
+
+msgid "Will use live-usb device %s"
+msgstr ""
+
+msgid "No '%s' found in any directory in '%s'"
+msgstr ""
+
+msgid "Could not find '%s' or '%s' on the live-usb"
+msgstr ""
+
+msgid "Found %s file %s in directory %s"
+msgstr ""
+
+msgid "Could not find initrd file: %s"
+msgstr ""
+
+msgid "total live kernel"
+msgstr ""
+
+msgid "total live kernels"
+msgstr ""
+
+msgid "default live kernel"
+msgstr ""
+
+msgid "default live kernels"
+msgstr ""
+
+msgid "old live kernel"
+msgstr ""
+
+msgid "old live kernels"
+msgstr ""
+
+msgid "total installed kernel"
+msgstr ""
+
+msgid "total installed kernels"
+msgstr ""
+
+msgid "new installed kernel"
+msgstr ""
+
+msgid "new installed kernels"
+msgstr ""
+
+msgid "Live kernels:"
+msgstr ""
+
+msgid "Boot kernels:"
+msgstr ""
+
+msgid "Only one new installed kernel found:"
+msgstr ""
+
+msgid "New installed kernels:"
+msgstr ""
+
+msgid "There are %s new kernels.  Only showing the most recent %s."
+msgstr ""
+
+msgid "No kernels found in the boot directory"
+msgstr ""
+
+#. fatal_k0 "$boot_mod" $"No valid kernels found in the boot directory"
+msgid "No kernels found in the live boot directory"
+msgstr ""
+
+msgid "No new kernels were found"
+msgstr ""
+
+msgid "Can only update the initrd file"
+msgstr ""
+
+msgid "You must install a kernel and then remaster before a kernel upgrade"
+msgstr ""
+
+msgid "No new kernels were found and there's no template initrd file"
+msgstr ""
+
+msgid "live kernel update"
+msgstr ""
+
+msgid "Current"
+msgstr ""
+
+msgid "New"
+msgstr ""
+
+msgid "(new)"
+msgstr ""
+
+msgid " live kernel rollback"
+msgstr ""
+
+msgid "Old"
+msgstr ""
+
+msgid "live initrd update"
+msgstr ""
+
+msgid "Update initrd using file"
+msgstr ""
+
+msgid "Ready to make the following %s:"
+msgstr ""
+
+msgid "The current Live System on %s"
+msgstr ""
+
+msgid "The system is not a live-usb and no usb drives were detected"
+msgstr ""
+
+msgid "Please select the system to upgrade"
+msgstr ""
+
+msgid "Update"
+msgstr ""
+
+msgid "from"
+msgstr ""
+
+msgid "Rollback"
+msgstr ""
+
+msgid "to"
+msgstr ""
+
+msgid "No update or rollback actions are available"
+msgstr ""
+
+msgid "Please select an action to perform"
+msgstr ""
+
+msgid "Did not find any new kernels in the boot directory"
+msgstr ""
+
+msgid "Found one kernel matching the requested version %s"
+msgstr ""
+
+msgid "Found one new kernel %s"
+msgstr ""
+
+msgid "Please select the new kernel from this list"
+msgstr ""
+
+msgid "Compressing ..."
+msgstr ""
+
+msgid "install %s"
+msgstr ""
+
+msgid "Overwriting backup"
+msgstr ""
+
+msgid "Target file %s does not exist"
+msgstr ""
+
+msgid "Could not find old %s file to roll back"
+msgstr ""
+
+msgid "Roll back %s to %s"
+msgstr ""
+
+msgid "done"
+msgstr ""
+
+msgid "in pretend mode"
+msgstr ""
+
+msgid "Expected a parameter after: %s"
+msgstr ""
+
+msgid "Suspicious argument after %s: %s"
+msgstr ""
+
+msgid "Paused at '%s'"
+msgstr ""
+
+msgid "Press <Enter> to continue"
+msgstr ""
+
+msgid "Unknown command: %s"
+msgstr ""
+
+msgid "yes"
+msgstr ""
+
+msgid "no"
+msgstr ""
+
+msgid "quit"
+msgstr ""
+
+msgid "default"
+msgstr ""
+
+msgid "pretend mode"
+msgstr ""
+
+msgid "Press <%s> for the default %s"
+msgstr ""
+
+msgid "Enter"
+msgstr ""
+
+msgid "Use '%s' for help.  Use '%s' to quit."
+msgstr ""
+
+msgid "Use '%s' to quit"
+msgstr ""
+
+msgid "You must enter a number"
+msgstr ""
+
+msgid "You must enter a number or press <enter>"
+msgstr ""
+
+msgid "The number '%s' is out of range"
+msgstr ""
+
+msgid "Press '%s' again to quit"
+msgstr ""
+
+msgid "You chose %s"
+msgstr ""
+
+msgid "Please select the live boot directory"
+msgstr ""
+
+msgid "You entered: %s"
+msgstr ""
+
+msgid "Is this correct?"
+msgstr ""
+
+msgid "Clone this live system"
+msgstr ""
+
+msgid "Copy from an ISO file"
+msgstr ""
+
+msgid "size"
+msgstr ""
+
+msgid "fstype"
+msgstr ""
+
+msgid "label"
+msgstr ""
+
+msgid "model"
+msgstr ""
+
+msgid "Check md5 of the file %s?"
+msgstr ""
+
+msgid "Checking md5 ..."
+msgstr ""
+
+msgid "Keep going anyway?"
+msgstr ""
+
+msgid "The %s program failed!"
+msgstr ""
+
+msgid "Version"
+msgstr ""
+
+msgid "Date"
+msgstr ""
+
+msgid "File"
+msgstr ""
+
+msgid "From"
+msgstr ""
+
+msgid "To"
+msgstr ""
+
+msgid "Total"
+msgstr ""
+
+msgid "Allocated"
+msgstr ""
+
+msgid "Extra"
+msgstr ""
+
+msgid "Error"
+msgstr ""
+
+msgid "Warning"
+msgstr ""
+
+msgid "Creating new config file %s"
+msgstr ""
+
+msgid "Could not find program %s.  Skipping %s."
+msgstr ""
+
+msgid "Could not find required program '%s'"
+msgstr ""
+
+msgid "The %s directory '%s' is not writable"
+msgstr ""
+
+msgid "Distro: %s"
+msgstr ""
+
+msgid "Distro: %s on %s"
+msgstr ""
+
+msgid "file"
+msgstr ""
+
+msgid "This script must be run as root"
+msgstr ""
