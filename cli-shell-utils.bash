@@ -17,6 +17,8 @@
 #
 #==============================================================================
 
+export TEXTDOMAIN="cli-shell-utils"
+
 : ${ME:=${0##*/}}
 : ${MY_DIR:=$(dirname "$(readlink -f $0)")}
 : ${MY_LIB_DIR:=$(readlink -f "$MY_DIR/../cli-shell-utils")}
