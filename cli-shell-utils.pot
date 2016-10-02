@@ -1,14 +1,14 @@
 # SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
+# Copyright (C) YEAR antiX Linux
+# This file is distributed under the same license as the antiX Development package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-10-01 16:32-0600\n"
+"Project-Id-Version: antiX Development\n"
+"Report-Msgid-Bugs-To: translation@antixlinux.org\n"
+"POT-Creation-Date: 2016-10-01 23:00-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,28 +17,38 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#. starting <program name>
 msgid "Starting %s"
 msgstr ""
 
 msgid "The live media is not mounted"
 msgstr ""
 
+#. Ready to make live-usb on device X by <copying|cloning> directory Y
+msgid "copying"
+msgstr ""
+
 msgid "Please enter the filename"
 msgstr ""
 
-msgid "by cloning live system %s"
+#. What thing we are copying or cloning from: file, device or directory
+msgid "file"
 msgstr ""
 
-msgid "from file %s"
+#. What thing we are copying or cloning from: file, device or directory
+msgid "device"
 msgstr ""
 
-msgid "copy device %s"
+#. Cloning only copies certain files to make a brand-new live-usb
+msgid "cloning"
 msgstr ""
 
-msgid "by cloning device %s"
+#. What thing we are copying or cloning from: file, device or directory
+msgid "directory"
 msgstr ""
 
-msgid "by cloning directory %s"
+#. Will use source <file XYZ>
+msgid "Will use source %s"
 msgstr ""
 
 msgid "Could not find device %s"
@@ -47,6 +57,7 @@ msgstr ""
 msgid "Customize language and timezone?"
 msgstr ""
 
+#. Ready to make live-usb on device X by <cloning|copying directory Y>
 msgid "Ready to make live-usb on device %s by %s"
 msgstr ""
 
@@ -56,7 +67,7 @@ msgstr ""
 msgid "Please select the source for the new live-usb"
 msgstr ""
 
-msgid "No potential target usb drives were found"
+msgid "No available target usb devices were found"
 msgstr ""
 
 msgid "Only one target usb device was found: %s"
@@ -65,6 +76,7 @@ msgstr ""
 msgid "Please select the target usb device"
 msgstr ""
 
+#. Table headers for sizes of: entire drive, main partition, uefi partition
 msgid "entire drive"
 msgstr ""
 
@@ -80,12 +92,14 @@ msgstr ""
 msgid "Do you want change how much of the device is used?"
 msgstr ""
 
+#. Have set the size to <13%> (1,200 MiB)
 msgid "Have set size to %s (%s MiB)"
 msgstr ""
 
 msgid "Please select how much space to use for the live-usb partitions"
 msgstr ""
 
+#. [ a 'disc' is cd or dvd]
 msgid "Please wait while we mount disc at %s"
 msgstr ""
 
@@ -101,6 +115,7 @@ msgstr ""
 msgid "No '%s' file found in any directory on clone device at '%s'"
 msgstr ""
 
+#. Using <gpt|msdos> partitioning
 msgid "Using %s partitioning"
 msgstr ""
 
@@ -110,27 +125,29 @@ msgstr ""
 msgid "Copying files ..."
 msgstr ""
 
-msgid "Error when copying files to live usb"
+msgid "Error while copying files to live usb"
 msgstr ""
 
-msgid "Error when copying %s files to fat partition"
+msgid "Error while copying %s files to fat partition"
 msgstr ""
 
-msgid "Could not find %s file to update"
+msgid "Could not find '%s' file to update"
 msgstr ""
 
-msgid "Making directory %s failed"
+msgid "Making directory '%s' failed"
 msgstr ""
 
-msgid "Could not find %s file"
+msgid "Could not find '%s file"
 msgstr ""
 
 msgid "Could not find file %s"
 msgstr ""
 
+#. Create syslinux directory from <boot/isolinux>
 msgid "Create syslinux directory from %s"
 msgstr ""
 
+#. [don't translate syslinux or isolinux]
 msgid "Could not find a syslinux or isolinux directory"
 msgstr ""
 
@@ -140,6 +157,7 @@ msgstr ""
 msgid "Less than %s MiB would remain on %s partition"
 msgstr ""
 
+#. Pause at '<Exit>'
 msgid "Exit"
 msgstr ""
 
@@ -164,42 +182,53 @@ msgstr ""
 msgid "Will use live-usb device %s"
 msgstr ""
 
-msgid "No '%s' found in any directory in '%s'"
+msgid "No '%s' file found in any directory in '%s'"
 msgstr ""
 
+#. Could not find '<linuxfs.new>' or '<linuxfs>' on the live-usb
 msgid "Could not find '%s' or '%s' on the live-usb"
 msgstr ""
 
+#. Found <linuxfs> file in directory antiX
 msgid "Found %s file %s in directory %s"
 msgstr ""
 
 msgid "Could not find initrd file: %s"
 msgstr ""
 
+#. [a table of what was found will follow]
+msgid "Found:"
+msgstr ""
+
+#. singular and plural: 1 total live kernel
 msgid "total live kernel"
 msgstr ""
 
 msgid "total live kernels"
 msgstr ""
 
+#. singular and plural
 msgid "default live kernel"
 msgstr ""
 
 msgid "default live kernels"
 msgstr ""
 
+#. singular and plural
 msgid "old live kernel"
 msgstr ""
 
 msgid "old live kernels"
 msgstr ""
 
+#. singular and plural
 msgid "total installed kernel"
 msgstr ""
 
 msgid "total installed kernels"
 msgstr ""
 
+#. singular and plural
 msgid "new installed kernel"
 msgstr ""
 
@@ -212,7 +241,7 @@ msgstr ""
 msgid "Boot kernels:"
 msgstr ""
 
-msgid "Only one new installed kernel found:"
+msgid "Only one new installed kernel was found:"
 msgstr ""
 
 msgid "New installed kernels:"
@@ -221,11 +250,10 @@ msgstr ""
 msgid "There are %s new kernels.  Only showing the most recent %s."
 msgstr ""
 
-msgid "No kernels found in the boot directory"
+msgid "No kernels were found in the boot directory"
 msgstr ""
 
-#. fatal_k0 "$boot_mod" $"No valid kernels found in the boot directory"
-msgid "No kernels found in the live boot directory"
+msgid "No kernels were found in the live boot directory"
 msgstr ""
 
 msgid "No new kernels were found"
@@ -234,7 +262,7 @@ msgstr ""
 msgid "Can only update the initrd file"
 msgstr ""
 
-msgid "You must install a kernel and then remaster before a kernel upgrade"
+msgid "You must install a kernel and then remaster before doing a kernel update"
 msgstr ""
 
 msgid "No new kernels were found and there's no template initrd file"
@@ -243,6 +271,7 @@ msgstr ""
 msgid "live kernel update"
 msgstr ""
 
+#. Current kernel and New/Old kernel specs
 msgid "Current"
 msgstr ""
 
@@ -252,7 +281,7 @@ msgstr ""
 msgid "(new)"
 msgstr ""
 
-msgid " live kernel rollback"
+msgid "live kernel rollback"
 msgstr ""
 
 msgid "Old"
@@ -261,9 +290,12 @@ msgstr ""
 msgid "live initrd update"
 msgstr ""
 
+#. Update initrd using file <filename> [NOTE: no "%s" here!]
 msgid "Update initrd using file"
 msgstr ""
 
+#. Ready to make the following <live kernel update>
+#. Will be followed by details so we have a ":" at the end
 msgid "Ready to make the following %s:"
 msgstr ""
 
@@ -285,6 +317,8 @@ msgstr ""
 msgid "Rollback"
 msgstr ""
 
+#. Update|Rollback <file> to <new-version> (date)
+#. Translate the "to"
 msgid "to"
 msgstr ""
 
@@ -309,6 +343,7 @@ msgstr ""
 msgid "Compressing ..."
 msgstr ""
 
+#. install <filename>
 msgid "install %s"
 msgstr ""
 
@@ -321,6 +356,7 @@ msgstr ""
 msgid "Could not find old %s file to roll back"
 msgstr ""
 
+#. Roll back <file-1> to <file-2>
 msgid "Roll back %s to %s"
 msgstr ""
 
@@ -360,6 +396,10 @@ msgstr ""
 msgid "pretend mode"
 msgstr ""
 
+msgid "selection"
+msgstr ""
+
+#. Press <Enter> for the default selection
 msgid "Press <%s> for the default %s"
 msgstr ""
 
@@ -375,7 +415,7 @@ msgstr ""
 msgid "You must enter a number"
 msgstr ""
 
-msgid "You must enter a number or press <enter>"
+msgid "You must enter a number or press <Enter>"
 msgstr ""
 
 msgid "The number '%s' is out of range"
@@ -387,19 +427,21 @@ msgstr ""
 msgid "You chose %s"
 msgstr ""
 
-msgid "Please select the live boot directory"
-msgstr ""
-
 msgid "You entered: %s"
 msgstr ""
 
 msgid "Is this correct?"
 msgstr ""
 
+#. [A clone is different from a copy, with clone we make a fresh new system]
 msgid "Clone this live system"
 msgstr ""
 
 msgid "Copy from an ISO file"
+msgstr ""
+
+#. device, size, filesystem-type, label, model
+msgid "dev"
 msgstr ""
 
 msgid "size"
@@ -426,6 +468,7 @@ msgstr ""
 msgid "The %s program failed!"
 msgstr ""
 
+#. [We will convert from kernel "From" to kernel "To"]
 msgid "Version"
 msgstr ""
 
@@ -441,6 +484,7 @@ msgstr ""
 msgid "To"
 msgstr ""
 
+#. Space in a drive or partition: Total = Allocated + Extra
 msgid "Total"
 msgstr ""
 
@@ -468,13 +512,12 @@ msgstr ""
 msgid "The %s directory '%s' is not writable"
 msgstr ""
 
+#. Which distro we are going to copy or clone
 msgid "Distro: %s"
 msgstr ""
 
+#. Distro X on device Y
 msgid "Distro: %s on %s"
-msgstr ""
-
-msgid "file"
 msgstr ""
 
 msgid "This script must be run as root"

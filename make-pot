@@ -1,0 +1,48 @@
+#!/bin/bash
+
+COPYRIGHT_HOLDER="antiX Linux"
+PACKAGE_NAME="antiX Development"
+BUGS_TO="translation@antixlinux.org"
+
+out_dir="Private/pot/"
+cat_file="cli-shell-utils.pot"
+
+files="
+../live-usb-maker/live-usb-maker
+../live-kernel-updater/live-kernel-updater
+../cli-shell-utils/cli-shell-utils.bash"
+
+xgt_opts="--no-location --add-comments --no-wrap --language=Shell"
+#xgt_opts="--add-comments --no-wrap --language=Shell"
+
+ofile_list=
+
+mkdir -p "$out_dir"
+
+all_file="${out_dir%/}/all"
+
+cat $files > "$all_file"
+
+ofile=$cat_file
+
+xgettext $xgt_opts \
+    --copyright-holder="$COPYRIGHT_HOLDER" \
+    --package-name="$PACKAGE_NAME" \
+    --msgid-bugs-address="$BUGS_TO" \
+    -o "$ofile" "$all_file" 2>/dev/null
+
+sed -i "s/charset=CHARSET/charset=UTF-8/" $ofile
+
+lines=$(grep ^msgid $cat_file | wc -l)
+words=$(grep ^msgid $cat_file | wc -w)
+words=$((words - lines))
+lines=$((lines - 1))
+
+egrep "^(msgid|#\.)" $cat_file \
+    | sed "s/^msgid //" | sed -r 's/^"|"$//g' > strings
+
+echo
+echo "$lines strings to translate"
+echo "$words words in the strings"
+
+
