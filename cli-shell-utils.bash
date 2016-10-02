@@ -333,7 +333,7 @@ _yes_no() {
         local menu def_entry
         case $def_entry in
             1) menu=$(printf "  1) $yes ($default)\n  2) $no\n") ;;
-            2) menu=$(printf "  1) $yes\n  2) $no (default)\n")  ;;
+            2) menu=$(printf "  1) $yes\n  2) $no ($default)\n") ;;
             *) fatal "Internal error in _yes_no()"               ;;
         esac
 
@@ -448,9 +448,10 @@ my_select_2() {
     if [ -n "$def_str" ]; then
         def_str="($(pqq $def_str))"
     else
-        def_str="selection"
+        def_str=$"selection"
     fi
 
+    # Press <Enter> for the default selection
     local p2 def_prompt=$(printf $"Press <%s> for the default %s" "$(pqq $"Enter")" "$def_str")
 
     if [ "$have_man" ]; then
@@ -502,7 +503,7 @@ my_select_2() {
         [ -z "$input" -a -n "$default" ] && input=$default
         if ! echo "$input" | grep -q "^[0-9]\+$"; then
             err_msg=$"You must enter a number"
-            [ "$default" ] && err_msg=$"You must enter a number or press <enter>"
+            [ "$default" ] && err_msg=$"You must enter a number or press <Enter>"
             continue
         fi
 
@@ -580,7 +581,7 @@ cli_text_menu() {
 #------------------------------------------------------------------------------
 find_live_boot_dir() {
     local var=$1  mp=$2  fname=$3  title=$4  min_size=${5:-$MIN_LINUXFS_SIZE}
-    [ ${#title} -eq 0 ] && title=$"Please select the live boot directory"
+    [ ${#title} -eq 0 ] && title="Please select the live boot directory"
 
     local find_opts="-maxdepth 2 -mindepth 2 -type f -name $fname -size +$MIN_LINUXFS_SIZE"
 
@@ -820,6 +821,7 @@ cli_live_usb_src_menu() {
     local live_dev
     if its_alive; then
         live_dev=$(get_live_dev)
+        # [A clone is different from a copy, with clone we make a fresh new system]
         is_mountpoint $LIVE_MP && printf "clone$P_IFS%s (%s)\n" $"Clone this live system" "$(pq $live_dev)"
     fi
 
@@ -827,7 +829,8 @@ cli_live_usb_src_menu() {
     menu=$(cli_cdrom_menu $dev_width "dev=" ; cli_partition_menu "$dev_width" "$lab_width" "clone=" $live_dev $exclude)
     if [ $(count_lines "$menu") -gt 0 ]; then
         local fmt="$P_IFS$head_co%-${dev_width}s %6s %8s %-${lab_width}s %s$nc_co\n"
-        printf "$fmt" "dev" $"size" $"fstype" $"label" $"model"
+        # device, size, filesystem-type, label, model
+        printf "$fmt" $"dev" $"size" $"fstype" $"label" $"model"
         echo -e "$menu"
     fi
 }
@@ -1133,6 +1136,7 @@ kernel_stats() {
         shift 5
     done
 
+    # [We will convert from kernel "From" to kernel "To"]
     local version=$"Version" date=$"Date"  from=$"From"  to=$"To"
     local w1=5  w2=${#version}  w3=${#date}  w4=${#from}
     # Get field widths
@@ -1224,6 +1228,7 @@ usb_stats() {
         shift 4
     done
 
+    # Space in a drive or partition: Total = Allocated + Extra
     local total=$"Total"  allocated=$"Allocated"  extra=$"Extra"
     local w1=5 w2=${#total} w3=${#allocated} w4=${#extra}
     # Get field widths
@@ -1923,11 +1928,13 @@ show_distro_version()  {
 
     if [ ${#dev} -eq 0 ]; then
         [ ${#iso_version} -gt 0 ]                || return 1
+        # Which distro we are going to copy or clone
         msg $"Distro: %s" "$(pq $iso_version)"
         return 0
     fi
 
     if [ ${#iso_version} -gt 0 ]; then
+        # Distro X on device Y
         msg $"Distro: %s on %s" "$(pq $iso_version)" "$(pq $dev)"
     else
         warn "No version file found on %s" "$(pqw "$dev")"
@@ -1974,7 +1981,7 @@ get_partition() {
 #
 #------------------------------------------------------------------------------
 device_str() {
-    local file=$1  file_type=${2:-$"file"}
+    local file=$1  file_type=${2:-"file"}
     local dev=$(expand_device "$file")
     case $(stat -c %t "${dev:-$file}") in
                  0) echo "$file_type"      ;;
