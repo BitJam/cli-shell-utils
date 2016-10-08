@@ -820,8 +820,8 @@ cli_live_usb_src_menu() {
     local lab_w=$(get_lsblk_field_width label --include="$MAJOR_SD_DEV_LIST,$MAJOR_SR_DEV_LIST")
     local size_w=6  fs_w=8
 
-    # Japanese: Please don't translate these: device size filesystem label model
-    local dev_str=$"device"  size_str=$"size"  fs_str=$"filesystem" lab_str=$"label" mod_str=$"model"
+    # Japanese: Please don't translate these: Device, Size, Filesystem, Label, Model
+    local dev_str=$"Device"  size_str=$"Size"  fs_str=$"Filesystem" lab_str=$"Label" mod_str=$"Model"
     [ $dev_w  -lt ${#dev_str}  ] &&  dev_w=${#dev_str}
     [ $fs_w   -lt ${#fs_str}   ] &&   fs_w=${#fs_str}
     [ $size_w -lt ${#size_str} ] && size_w=${#size_str}
@@ -1197,6 +1197,7 @@ usb_stats() {
     done
 
     # Space in a drive or partition: Total = Allocated + Extra
+    # Japanese: please don't translate: Total, Allocated, Extra
     local total=$"Total"  allocated=$"Allocated"  extra=$"Extra"
     local w1=5 w2=${#total} w3=${#allocated} w4=${#extra}
     # Get field widths
