@@ -1132,7 +1132,7 @@ Print
 }
 
 #------------------------------------------------------------------------------
-# Show a  specical 5-column list of kernels:
+# Show a  special 5-column list of kernels:
 #  label, version, date, from-fname, to-fname
 #------------------------------------------------------------------------------
 kernel_stats() {
