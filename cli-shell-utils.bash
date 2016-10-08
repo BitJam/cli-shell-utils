@@ -599,7 +599,7 @@ find_live_boot_dir() {
 $(echo "$list")
 Live_Boot_Dir
 
-    my_select_quit $var "$title" "$menu"
+    my_select $var "$title" "$menu"
     return 0
 }
 
@@ -652,7 +652,7 @@ cli_search_file() {
             continue
         fi
 
-        my_select_quit _sf_input "$title" "$(select_file_menu $invalid)"
+        my_select _sf_input "$title" "$(select_file_menu $invalid)"
         invalid=
 
         # FIXME: need to make some of these entries more specfic
@@ -1033,7 +1033,7 @@ Print
 
     IFS=$orig_ifs
 
-    my_select_quit $var "$title" "$data"
+    my_select $var "$title" "$data"
 }
 
 #------------------------------------------------------------------------------
@@ -1066,7 +1066,7 @@ Print
 
     IFS=$orig_ifs
 
-    my_select_quit $var "$title" "$data" "$menu"
+    my_select $var "$title" "$data"
 }
 
 #------------------------------------------------------------------------------
