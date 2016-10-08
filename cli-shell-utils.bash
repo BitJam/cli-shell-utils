@@ -1183,48 +1183,6 @@ Print
     IFS=$orig_ifs
 }
 
-old_kernel_stats() {
-    local list=$1  orig_ifs=$IFS
-    IFS=$K_IFS
-
-    # Get field widths
-    local f1 f2 f3 f4 f5 f6 w1=5 w2=5 w3=5 w4=5 w6=5
-    while read f1 f2 f3 f4 f5 f6; do
-        [ ${#f1} -gt 0 ] || continue
-        [ $w1 -lt ${#f1} ] && w1=${#f1}
-        [ $w2 -lt ${#f2} ] && w2=${#f2}
-        [ $w3 -lt ${#f3} ] && w3=${#f3}
-        [ $w4 -lt ${#f4} ] && w4=${#f4}
-        [ $w6 -lt ${#f6} ] && w6=${#f6}
-    done<<Widths
-$(echo -e "$list")
-Widths
-
-    #echo "$w1:$w4:$w6:$w2"
-
-    local hfmt=" $head_co%s %s  %s  %s %s$nc_co\n"
-    local  fmt=" $lab_co%s $version_co%s  $date_co%s  $fname_co%s %s$nc_co\n"
-    f1=$(lpad $w1 "")
-    f4=$(rpad $w4 $"Version")
-    f6=$(rpad $w6 $"Date")
-    f2=$(rpad $w2 $"From")
-    printf "$hfmt" "$f1" "$f4" "$f6" "$f2" $"To"
-
-    while read f1 f2 f3 f4 f5 f6; do
-        [ ${#f1} -gt 0 ] || continue
-        f1=$(lpad $w1 "$f1")
-        f2=$(rpad $w2 "$f2")
-        f4=$(rpad $w4 "$f4")
-        f6=$(rpad $w6 "$f6")
-        printf "$fmt" "$f1" "$f4" "$f6" "$f2" "$f3"
-    done<<Print
-$(echo -e "$list")
-Print
-
-    IFS=$orig_ifs
-}
-
-
 #------------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------------
