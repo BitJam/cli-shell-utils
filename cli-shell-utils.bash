@@ -1152,7 +1152,7 @@ kernel_stats() {
     # Get field widths
     local f1 f2 f3 f4 f5
     while read f1 f2 f3 f4 f5; do
-        [ ${#f1} -gt 0 ] || continue
+        [ ${#f1} -gt 0   ] || continue
         [ $w1 -lt ${#f1} ] && w1=${#f1}
         [ $w2 -lt ${#f2} ] && w2=${#f2}
         [ $w3 -lt ${#f3} ] && w3=${#f3}
