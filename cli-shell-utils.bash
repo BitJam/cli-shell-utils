@@ -852,7 +852,6 @@ cli_live_usb_src_menu() {
 cli_cdrom_menu() {
     local fmt=$1  lab_w=$2
     local opts="--nodeps --include=$MAJOR_SR_DEV_LIST"
-    #local fmt="%s$P_IFS$dev_co%-${dev_width}s$num_co %6s$bold_co %8s$lab_co %-16s$nc_co %-16s\n"
     local model=$(bq cd/dvd disc)
     local NAME SIZE FSTYPE LABEL
     while read line; do
