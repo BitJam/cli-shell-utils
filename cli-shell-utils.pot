@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: antiX Development\n"
 "Report-Msgid-Bugs-To: translation@antixlinux.org\n"
-"POT-Creation-Date: 2016-10-08 03:49-0600\n"
+"POT-Creation-Date: 2016-10-08 15:25-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -36,7 +36,6 @@ msgid "file"
 msgstr ""
 
 #. What thing we are copying or cloning from: file, device or directory
-#. Japanese: Please don't translate these: device size filesystem label model
 msgid "device"
 msgstr ""
 
@@ -453,16 +452,20 @@ msgstr ""
 msgid "Is this correct?"
 msgstr ""
 
-msgid "size"
+#. Japanese: Please don't translate these: Device, Size, Filesystem, Label, Model
+msgid "Device"
 msgstr ""
 
-msgid "filesystem"
+msgid "Size"
 msgstr ""
 
-msgid "label"
+msgid "Filesystem"
 msgstr ""
 
-msgid "model"
+msgid "Label"
+msgstr ""
+
+msgid "Model"
 msgstr ""
 
 #. [A clone is different from a copy, with clone we make a fresh new system]
@@ -502,6 +505,7 @@ msgid "To"
 msgstr ""
 
 #. Space in a drive or partition: Total = Allocated + Extra
+#. Japanese: please don't translate: Total, Allocated, Extra
 msgid "Total"
 msgstr ""
 
