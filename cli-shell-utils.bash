@@ -1146,6 +1146,7 @@ kernel_stats() {
     done
 
     # [We will convert from kernel "From" to kernel "To"]
+    # Japanese: please don't translate: Version, Date, From To
     local version=$"Version" date=$"Date"  from=$"From"  to=$"To"
     local w1=5  w2=${#version}  w3=${#date}  w4=${#from}
     # Get field widths
