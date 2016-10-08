@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: antiX Development\n"
 "Report-Msgid-Bugs-To: translation@antixlinux.org\n"
-"POT-Creation-Date: 2016-10-07 22:56-0600\n"
+"POT-Creation-Date: 2016-10-08 03:49-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -36,6 +36,7 @@ msgid "file"
 msgstr ""
 
 #. What thing we are copying or cloning from: file, device or directory
+#. Japanese: Please don't translate these: device size filesystem label model
 msgid "device"
 msgstr ""
 
@@ -452,27 +453,23 @@ msgstr ""
 msgid "Is this correct?"
 msgstr ""
 
-#. [A clone is different from a copy, with clone we make a fresh new system]
-msgid "Clone this live system"
-msgstr ""
-
-msgid "Copy from an ISO file"
-msgstr ""
-
-#. device, size, filesystem-type, label, model
-msgid "dev"
-msgstr ""
-
 msgid "size"
 msgstr ""
 
-msgid "fstype"
+msgid "filesystem"
 msgstr ""
 
 msgid "label"
 msgstr ""
 
 msgid "model"
+msgstr ""
+
+#. [A clone is different from a copy, with clone we make a fresh new system]
+msgid "Clone this live system"
+msgstr ""
+
+msgid "Copy from an ISO file"
 msgstr ""
 
 msgid "Check md5 of the file %s?"
@@ -488,6 +485,7 @@ msgid "The %s program failed!"
 msgstr ""
 
 #. [We will convert from kernel "From" to kernel "To"]
+#. Japanese: please don't translate: Version, Date, From, To
 msgid "Version"
 msgstr ""
 
