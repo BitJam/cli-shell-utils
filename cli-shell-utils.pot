@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: antiX Development\n"
 "Report-Msgid-Bugs-To: translation@antixlinux.org\n"
-"POT-Creation-Date: 2016-10-03 21:18-0600\n"
+"POT-Creation-Date: 2016-10-07 22:56-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -297,6 +297,13 @@ msgstr ""
 msgid "Update initrd using file"
 msgstr ""
 
+msgid "live modules update"
+msgstr ""
+
+#. Update initrd using file <filename> [NOTE: no "%s" here!]
+msgid "Add initrd modules"
+msgstr ""
+
 #. Ready to make the following <live kernel update>
 #. Will be followed by details so we have a ":" at the end
 msgid "Ready to make the following %s:"
@@ -341,6 +348,15 @@ msgid "Found one new kernel %s"
 msgstr ""
 
 msgid "Please select the new kernel from this list"
+msgstr ""
+
+msgid "kernel"
+msgstr ""
+
+msgid "Copy initrd modules failed for kernel %s"
+msgstr ""
+
+msgid "No modules were copied to the initrd"
 msgstr ""
 
 msgid "Compressing ..."
