@@ -529,6 +529,7 @@ final_quit() {
     local input
     echo
     quest $"Press '%s' again to quit" "$(pqq q)"
+    echo -n " "
     read -n1 input
     echo
     [ "$input" = "q" ] && my_exit
