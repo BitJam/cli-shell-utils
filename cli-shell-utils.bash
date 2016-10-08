@@ -1338,18 +1338,18 @@ set_colors() {
 # leading color, all the args, and then a trailing color.  This is easier and
 # more compact that using colors as strings.
 #------------------------------------------------------------------------------
-pq()  { echo "$hi_co$*$m_co"           ;}
-vq()  { echo "$version_co$*$m_co"      ;}
-pqq() { echo "$hi_co$*$quest_co"       ;}
-pnq() { echo "$num_co$*$quest_co"      ;}
-pqw() { echo "$warn_co$*$hi_co"        ;}
-pqe() { echo "$hi_co$*$err_co"         ;}
-pqh() { echo "$m_co$*$hi_co"           ;}
-pqb() { echo "$m_co$*$bold_co"         ;}
-bq()  { echo "$bold_co$*$m_co"         ;}
-hq()  { echo "$bold_co$*$m_co"         ;}
-cq()  { echo "$hi_co$*$m_co"           ;}
-nq()  { echo "$num_co$*$m_co"          ;}
+pq()  { echo "$hi_co$*$m_co"      ;}
+vq()  { echo "$version_co$*$m_co" ;}
+pqq() { echo "$hi_co$*$quest_co"  ;}
+pnq() { echo "$num_co$*$quest_co" ;}
+pqw() { echo "$warn_co$*$hi_co"   ;}
+pqe() { echo "$hi_co$*$err_co"    ;}
+pqh() { echo "$m_co$*$hi_co"      ;}
+pqb() { echo "$m_co$*$bold_co"    ;}
+bq()  { echo "$bold_co$*$m_co"    ;}
+hq()  { echo "$bold_co$*$m_co"    ;}
+cq()  { echo "$hi_co$*$m_co"      ;}
+nq()  { echo "$num_co$*$m_co"     ;}
 
 #------------------------------------------------------------------------------
 # Intended to add colors to menus used by my_select_2() menus.
