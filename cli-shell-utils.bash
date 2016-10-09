@@ -835,7 +835,7 @@ cli_live_usb_src_menu() {
     fi
 
     printf "iso-file$P_IFS%s\n" $"Copy from an ISO file"
-    local  fmt="%s$P_IFS$dev_co%-${dev_w}s$num_co %${size_w}s$bold_co %${fs_w}s$lab_co %-${lab_w}s$nc_co %s\n"
+    local  fmt="%s$P_IFS$dev_co%-${dev_w}s$num_co %${size_w}s$fs_co %${fs_w}s$lab_co %-${lab_w}s$nc_co %s\n"
     local hfmt="%s$P_IFS$head_co%s %s %s %s %s$nc_co\n"
 
     menu=$(cli_cdrom_menu "dev=$fmt" $lab_w ; cli_partition_menu "clone=$fmt" $lab_w "$live_dev" $exclude)
@@ -1325,11 +1325,11 @@ set_colors() {
 
     fi
 
-         head_co=$white    ;   dev_co=$lt_green  ; quit_co=$yellow    ;
+         head_co=$white    ;  quit_co=$yellow    ;
         fname_co=$white    ;  date_co=$lt_cyan   ;  lab_co=$lt_cyan   ;  version_co=$magenta   ;
         cheat_co=$white    ;   err_co=$red       ;   hi_co=$white     ;    quest_co=$lt_green  ;
           cmd_co=$white    ;  from_co=$lt_green  ;   mp_co=$magenta   ;      num_co=$magenta   ;
-          dev_co=$magenta  ;     m_co=$lt_cyan   ;   ok_co=$lt_green  ;
+          dev_co=$white    ;     m_co=$lt_cyan   ;   ok_co=$lt_green  ;       fs_co=$lt_blue   ;
            to_co=$lt_green ;  warn_co=$yellow    ; bold_co=$yellow    ;
 
     # FIXME: set more low colors!
