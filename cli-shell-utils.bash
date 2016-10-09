@@ -1019,8 +1019,8 @@ $(echo "$list")
 Widths
 
     local fmt="$version_co%-${w1}s $date_co%s$nc_co\n"
-    local hfmt="$head_co%-${w1}s %s$nc_co\n"
-    local data="$P_IFS$(printf "$hfmt" $"Version" $"Date")\n"
+    local hfmt="$head_co%s %s$nc_co\n"
+    local data="$P_IFS$(printf "$hfmt" "$(rpad $w1 $"Version")" $"Date")\n"
 
     local payload
     while read f1 f2 f3; do
@@ -1038,23 +1038,28 @@ Print
 
 #------------------------------------------------------------------------------
 # This is the three column version:  Fname Version  Date
+# NOTE: not used, therefore not recently tested
 #------------------------------------------------------------------------------
 select_kernel_3() {
     local title=$1 var=$2 list=$3  orig_ifs=$IFS
     IFS=$K_IFS
 
+    # Japanese: please do not translate: File, Version, Date
+    local file=$"File"  version=$"Version"  date=$"Date"
     # Get field widths
+    local file_w=${#files}  ver_w=${#version}
     local f1 f2 f3  w1=5 w2=5
+
     while read f1 f2 f3; do
-        [ $w1 -lt ${#f1} ] && w1=${#f1}
-        [ $w2 -lt ${#f2} ] && w2=${#f2}
+        [ $ver_w -lt ${#f1}  ] &&  ver_w=${#f1}
+        [ $file_w -lt ${#f2} ] && file_w=${#f2}
     done<<Widths
 $(echo "$list")
 Widths
 
-    local fmt="$fname_co%-${w2}s $version_co%-${w1}s $date_co%-s$nc_co"
-    local hfmt="$head_co%-${w2}s %-${w1}s %-s$nc_co\n"
-    local data="$P_IFS$(printf "$hfmt" $"File" $"Version" $"Date")\n"
+    local fmt="$fname_co%-${file_w}s $version_co%-${ver_w}s $date_co%-s$nc_co"
+    local hfmt="$head_co%s %s %-s$nc_co\n"
+    local data="$P_IFS$(printf "$hfmt" "$(rpad $"File")" "$(rpad $"Version")" $"Date")\n"
     local payload
     while read f1 f2 f3; do
         [ ${#f1} -gt 0 ] || continue
@@ -1088,8 +1093,8 @@ $(echo "$list")
 Widths
 
     local  fmt=" $version_co%-${w1}s $date_co%s$nc_co\n"
-    local hfmt=" $head_co%-${w1}s %s$nc_co\n"
-    printf "$hfmt" $"Version" $"Date"
+    local hfmt=" $head_co%s %s$nc_co\n"
+    printf "$hfmt" "$(rpad $w1 $"Version")" $"Date"
     while read  f1 f2 f3; do
         [ ${#f1} -gt 0 ] || continue
         printf "$fmt" "$f1" "$f3"
@@ -1106,21 +1111,24 @@ show_kernel_3() {
     local title=$1  list=$2  orig_ifs=$IFS
     IFS=$K_IFS
 
+    local file=$"File"  version=$"Version"  date=$"Date"
+    local file_w=${#file}  ver_w=${#version}
+
     echo
     [ "$title" ] && echo "$m_co$title$nc_co"
 
     # Get field widths
     local f1 f2 f3  w1=5 w2=5
     while read f1 f2 f3; do
-        [ $w1 -lt ${#f1} ] && w1=${#f1}
-        [ $w2 -lt ${#f2} ] && w2=${#f2}
+        [ $ver_w  -lt ${#f1} ] &&  ver_w=${#f1}
+        [ $file_w -lt ${#f2} ] && file_w=${#f2}
     done<<Widths
 $(echo "$list")
 Widths
 
-    local fmt=" $fname_co%-${w2}s $version_co%-${w1}s $date_co%-s$nc_co\n"
-    local hfmt=" $head_co%-${w2}s %-${w1}s %-s$nc_co\n"
-    printf "$hfmt" $"File" $"Version" $"Date"
+    local fmt=" $fname_co%-${file_w}s $version_co%-${ver_w}s $date_co%-s$nc_co\n"
+    local hfmt=" $head_co%s %s %-s$nc_co\n"
+    printf "$hfmt" "$(rpad $file_w $"File")" "$(rpad $ver_w $"Version")" $"Date"
     while read f1 f2 f3; do
         [ ${#f1} -gt 0 ] || continue
         printf "$fmt" "$f2" "$f1" "$f3"
