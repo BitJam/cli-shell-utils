@@ -23,6 +23,7 @@ export TEXTDOMAIN="cli-shell-utils"
 : ${MY_DIR:=$(dirname "$(readlink -f $0)")}
 : ${MY_LIB_DIR:=$(readlink -f "$MY_DIR/../cli-shell-utils")}
 : ${LIB_DIR:=/usr/local/lib/cli-shell-utils}
+: ${LOCK_FILE:=/run/lock/$ME}
 
 : ${DATE_FMT:=%Y-%m-%d %H:%M}
 : ${DEFAULT_USER:=1000}
@@ -1690,12 +1691,14 @@ umount_all() {
 # if the flock program is missing
 #------------------------------------------------------------------------------
 do_flock() {
-    file=$1  me=$2
-    unset FLOCK_FAILED
+    file=${1:-$LOCK_FILE}  me=${2:-$ME}
+    unset NO_FLOCK
 
     if which flock &> /dev/null; then
         exec 18> $file
+        FLOCK_FAILED=true
         flock -n 18 || fatal 101 "A %s process is running.  If you think this is an error, remove %s" "$me" "$file"
+        unset FLOCK_FAILED
         echo $$ >&18
         return
     fi
@@ -1707,7 +1710,12 @@ do_flock() {
         "Use %s to always ignore this warning"     \
         "The %s program was not found." "flock"
 
-    FLOCK_FAILED=true
+    NO_FLOCK=true
+}
+
+unflock() {
+    local file=${1:-$LOCK_FILE}
+    [ "$FLOCK_FAILED" ] || rm -f $file
 }
 
 #------------------------------------------------------------------------------
