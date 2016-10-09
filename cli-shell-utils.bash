@@ -338,7 +338,6 @@ _yes_no() {
             *) fatal "Internal error in _yes_no()"               ;;
         esac
 
-        [ "$NO_QUIT" ] || menu="$menu  0) $quit\n"
         local data=$(printf "1:1\n2:2\n0:0")
         my_select_2 answer "$quest_co$question$nc_co" $def_entry "$data" "$menu\n"
     fi
@@ -402,22 +401,6 @@ My_Select
 
     IFS=$orig_ifs
     my_select_2 $var "$title" "$default" "$data" "$menu" "$def_str"
-}
-
-#------------------------------------------------------------------------------
-# Same as my_select but with a "quit" entry added to bottom of the menu
-#------------------------------------------------------------------------------
-my_select_quit() {
-    if [ "$NO_QUIT" ]; then
-        my_select "$@"
-        return
-    fi
-    local var=$1  title=$2  menu=$3  def_str=$4
-    menu=$(printf "%s\nquit$P_IFS%s\n" "$menu" $"quit")
-    local ans
-    my_select ans "$title" "$menu" "$def_str"
-    [ "$ans" = "quit" ] && my_exit
-    eval $var=\$ans
 }
 
 #------------------------------------------------------------------------------
