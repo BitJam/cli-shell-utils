@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: antiX Development\n"
 "Report-Msgid-Bugs-To: translation@antixlinux.org\n"
-"POT-Creation-Date: 2016-10-09 12:59-0600\n"
+"POT-Creation-Date: 2016-10-09 19:50-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -92,7 +92,7 @@ msgstr ""
 msgid "Already using over 90% of the device"
 msgstr ""
 
-msgid "Do you want change how much of the device is used?"
+msgid "Do you want to change how much of the device is used?"
 msgstr ""
 
 #. Have set the size to <13%> (1,200 MiB)
@@ -102,8 +102,7 @@ msgstr ""
 msgid "Please select how much space to use for the live-usb partitions"
 msgstr ""
 
-#. [ a 'disc' is cd or dvd]
-msgid "Please wait while we mount disc at %s"
+msgid "Please wait while we mount optical disc at %s"
 msgstr ""
 
 msgid "Could not find iso file %s"
@@ -115,6 +114,7 @@ msgstr ""
 msgid "Could not mount iso file %s"
 msgstr ""
 
+#. No <file-name> file found in any directory on clone device at <root-directory>
 msgid "No '%s' file found in any directory on clone device at '%s'"
 msgstr ""
 
@@ -131,9 +131,11 @@ msgstr ""
 msgid "Error while copying files to live usb"
 msgstr ""
 
+#. Error while copying <EFI|efi|boot> files to fat partition
 msgid "Error while copying %s files to fat partition"
 msgstr ""
 
+#. Could not find '<grub.cfg>' file to update
 msgid "Could not find '%s' file to update"
 msgstr ""
 
@@ -192,7 +194,7 @@ msgstr ""
 msgid "Could not find '%s' or '%s' on the live-usb"
 msgstr ""
 
-#. Found <linuxfs> file in directory antiX
+#. Found <type> file <file-name> in directory <dir-name>
 msgid "Found %s file %s in directory %s"
 msgstr ""
 
@@ -379,10 +381,11 @@ msgstr ""
 msgid "Roll back %s to %s"
 msgstr ""
 
-msgid "done"
+#. "pretend mode" goes through the steps withoute altering your system
+msgid "in pretend mode"
 msgstr ""
 
-msgid "in pretend mode"
+msgid "done"
 msgstr ""
 
 msgid "Expected a parameter after: %s"
@@ -531,6 +534,7 @@ msgstr ""
 msgid "Could not find required program '%s'"
 msgstr ""
 
+#. The <type> directory <dir-name> is not writable
 msgid "The %s directory '%s' is not writable"
 msgstr ""
 
