@@ -1807,6 +1807,7 @@ check_writable() {
     local dir=$1  type=$2
     test -e "$dir"     || fatal  "The %s directory '%s' does not exist"     "$type" "$dir"
     test -d "$dir"     || fatal  "The %s directory '%s' is not a directory" "$type" "$dir"
+    # The <type> directory <dir-name> is not writable
     is_writable "$dir" || fatal $"The %s directory '%s' is not writable"    "$type" "$dir"
 }
 
