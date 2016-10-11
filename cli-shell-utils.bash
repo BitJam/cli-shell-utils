@@ -1306,11 +1306,6 @@ set_colors() {
         lt_red="$e[1;31m" ; magenta="$e[1;35m" ;   yellow="$e[1;33m" ;   white="$e[1;37m" ;
          nc_co="$e[0m"    ;
 
-        #               ;       bold_co=$white ;    dev_co=$white ;
-        #  hi_co=$white ;    version_co=$white ;  quest_co=$green ;
-        #   m_co=$lt_gray ;    fname_co=$nc_co ;    lab_co=$nc_co ;
-        #  num_co=$white ;      date_co=$nc_co  ;
-
     case $color in
         high)
          bold_co=$yellow     ;    fs_co=$lt_blue   ;      num_co=$magenta    ;
