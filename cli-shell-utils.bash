@@ -1280,17 +1280,11 @@ partition_size_menu() {
 # and $loco are used to control what colors get assigned, if any.
 #------------------------------------------------------------------------------
 set_colors() {
-    local param=${1:-high}
+    local color=${1:-high}
 
-    case $param in
-        high) ;;
-         low) ;;
-         off) ;;
-           *) fatal color "Unknown color parameter '%s'.  Expected high, low, or off" "$param" ;;
-    esac
     local e=$(printf "\e")
 
-    if [ "$param" = "off" ]; then
+    if [ "$color" = "off" ]; then
 
          black=  ;    blue=  ;    green=  ;    cyan=  ;
            red=  ;  purple=  ;    brown=  ; lt_gray=  ;
@@ -1298,7 +1292,13 @@ set_colors() {
         lt_red=  ; magenta=  ;   yellow=  ;   white=  ;
          nc_co=  ;
 
-    else
+         bold_co=            ;    fs_co=           ;      num_co=            ;
+         date_co=            ;  head_co=           ;    quest_co=            ;
+          dev_co=            ;    hi_co=           ;     quit_co=            ;
+          err_co=            ;   lab_co=           ;  version_co=            ;
+        fname_co=            ;     m_co=           ;     warn_co=            ;
+         return
+     fi
 
          black="$e[0;30m" ;    blue="$e[0;34m" ;    green="$e[0;32m" ;    cyan="$e[0;36m" ;
            red="$e[0;31m" ;  purple="$e[0;35m" ;    brown="$e[0;33m" ; lt_gray="$e[0;37m" ;
@@ -1306,23 +1306,43 @@ set_colors() {
         lt_red="$e[1;31m" ; magenta="$e[1;35m" ;   yellow="$e[1;33m" ;   white="$e[1;37m" ;
          nc_co="$e[0m"    ;
 
-    fi
+        #               ;       bold_co=$white ;    dev_co=$white ;
+        #  hi_co=$white ;    version_co=$white ;  quest_co=$green ;
+        #   m_co=$lt_gray ;    fname_co=$nc_co ;    lab_co=$nc_co ;
+        #  num_co=$white ;      date_co=$nc_co  ;
 
-         head_co=$white    ;  quit_co=$yellow    ;
-        fname_co=$white    ;  date_co=$lt_cyan   ;  lab_co=$lt_cyan   ;  version_co=$magenta   ;
-        cheat_co=$white    ;   err_co=$red       ;   hi_co=$white     ;    quest_co=$lt_green  ;
-          cmd_co=$white    ;  from_co=$lt_green  ;   mp_co=$magenta   ;      num_co=$magenta   ;
-          dev_co=$white    ;     m_co=$lt_cyan   ;   ok_co=$lt_green  ;       fs_co=$lt_blue   ;
-           to_co=$lt_green ;  warn_co=$yellow    ; bold_co=$yellow    ;
+    case $color in
+        high)
+         bold_co=$yellow     ;    fs_co=$lt_blue   ;      num_co=$magenta    ;
+         date_co=$lt_cyan    ;  head_co=$white     ;    quest_co=$lt_green   ;
+          dev_co=$white      ;    hi_co=$white     ;     quit_co=$yellow     ;
+          err_co=$red        ;   lab_co=$lt_cyan   ;  version_co=$white      ;
+        fname_co=$white      ;     m_co=$lt_cyan   ;     warn_co=$yellow     ; ;;
 
-    # FIXME: set more low colors!
-    if [ "$param" = "low" ]; then
+        low)
+         bold_co=$white      ;    fs_co=$nc_co     ;      num_co=$white      ;
+         date_co=$nc_co      ;  head_co=$white     ;    quest_co=$lt_green   ;
+          dev_co=$white      ;    hi_co=$white     ;     quit_co=$lt_green   ;
+          err_co=$red        ;   lab_co=$nc_co     ;  version_co=$white      ;
+        fname_co=$white      ;     m_co=$nc_co     ;     warn_co=$yellow     ; ;;
 
-        from_co=$brown ;       bold_co=$white ;    dev_co=$white ;
-          hi_co=$white ;    version_co=$white ;  quest_co=$green ;
-           m_co=$lt_gray ;    fname_co=$nc_co ;    lab_co=$nc_co ;
-         num_co=$white ;      date_co=$nc_co  ;
-    fi
+        low2)
+         bold_co=$white      ;    fs_co=$nc_co     ;      num_co=$white      ;
+         date_co=$nc_co      ;  head_co=$white     ;    quest_co=$green      ;
+          dev_co=$white      ;    hi_co=$white     ;     quit_co=$green      ;
+          err_co=$red        ;   lab_co=$nc_co     ;  version_co=$white      ;
+        fname_co=$white      ;     m_co=$nc_co     ;     warn_co=$yellow     ; ;;
+
+        bw)
+         bold_co=$white      ;    fs_co=$nc_co     ;      num_co=$white      ;
+         date_co=$nc_co      ;  head_co=$white     ;    quest_co=$white      ;
+          dev_co=$white      ;    hi_co=$white     ;     quit_co=$white      ;
+          err_co=$white      ;   lab_co=$lt_gray   ;  version_co=$lt_gray    ;
+        fname_co=$white      ;     m_co=$nc_co     ;     warn_co=$white      ; ;;
+
+        *)
+            fatal "Unknown color parameter '%s'.  Expected high, low. low2, bw, or off" "$color" ;;
+    esac
 }
 
 #------------------------------------------------------------------------------
