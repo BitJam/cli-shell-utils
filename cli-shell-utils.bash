@@ -1290,7 +1290,7 @@ set_colors() {
            red=  ;  purple=  ;    brown=  ; lt_gray=  ;
        dk_gray=  ; lt_blue=  ; lt_green=  ; lt_cyan=  ;
         lt_red=  ; magenta=  ;   yellow=  ;   white=  ;
-         nc_co=  ;
+         nc_co=  ;   brown=  ;
 
          bold_co=            ;    fs_co=           ;      num_co=            ;
          date_co=            ;  head_co=           ;    quest_co=            ;
@@ -1304,7 +1304,7 @@ set_colors() {
            red="$e[0;31m" ;  purple="$e[0;35m" ;    brown="$e[0;33m" ; lt_gray="$e[0;37m" ;
        dk_gray="$e[1;30m" ; lt_blue="$e[1;34m" ; lt_green="$e[1;32m" ; lt_cyan="$e[1;36m" ;
         lt_red="$e[1;31m" ; magenta="$e[1;35m" ;   yellow="$e[1;33m" ;   white="$e[1;37m" ;
-         nc_co="$e[0m"    ;
+         nc_co="$e[0m"    ;   brown="$e[0;33m" ;
 
     case $color in
         high)
@@ -1313,6 +1313,13 @@ set_colors() {
           dev_co=$white      ;    hi_co=$white     ;     quit_co=$yellow     ;
           err_co=$red        ;   lab_co=$lt_cyan   ;  version_co=$white      ;
         fname_co=$white      ;     m_co=$lt_cyan   ;     warn_co=$yellow     ; ;;
+
+        dark)
+         bold_co=$brown      ;    fs_co=$lt_blue   ;      num_co=$brown   ;
+         date_co=$cyan       ;  head_co=$nc_co     ;    quest_co=$green   ;
+          dev_co=$nc_co      ;    hi_co=$nc_co     ;     quit_co=$brown   ;
+          err_co=$red        ;   lab_co=$cyan      ;  version_co=$nc_co   ;
+        fname_co=$nc_co      ;     m_co=$cyan      ;     warn_co=$brown   ; ;;
 
         low)
          bold_co=$white      ;    fs_co=$nc_co     ;      num_co=$white      ;
@@ -1336,7 +1343,8 @@ set_colors() {
         fname_co=$white      ;     m_co=$nc_co     ;     warn_co=$white      ; ;;
 
         *)
-            fatal "Unknown color parameter '%s'.  Expected high, low. low2, bw, or off" "$color" ;;
+            error "Unknown color parameter: %s" "$color"
+            fatal "Expected high, low. low2, bw, dark, or off" ;;
     esac
 }
 
@@ -1509,7 +1517,7 @@ error() {
     local fmt=$1 ; shift
     printf "${err_co}%s:$hi_co $fmt$nc_co\n" $"Error" "$@" >&2
     printf "${err_co}%s:$hi_co $fmt$nc_co\n" $"Error" "$@" | strip_color >> $LOG_FILE
-    pipe_up "error: $fmt" "$@"
+    #pipe_up "error: $fmt" "$@"
 }
 
 #------------------------------------------------------------------------------
