@@ -1,0 +1,14 @@
+#!/bin/bash
+
+name="cli-shell-utils"
+from_dir="../translations/antix-development.$name"
+to_dir="locale"
+
+for from_file in $from_dir/*.po; do
+    egrep -q 'msgstr "[^"]+"' $from_file || continue
+    lang=$(basename $from_file .po)
+    echo $lang
+    to_file=$to_dir/$lang/LC_MESSAGES/$name.mo
+    mkdir -p $(dirname $to_file)
+    msgfmt -o $to_file $from_file
+done
