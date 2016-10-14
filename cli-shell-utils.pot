@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: antiX Development\n"
 "Report-Msgid-Bugs-To: translation@antixlinux.org\n"
-"POT-Creation-Date: 2016-10-09 19:50-0600\n"
+"POT-Creation-Date: 2016-10-14 11:34-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -422,10 +422,11 @@ msgid "selection"
 msgstr ""
 
 #. Press <Enter> for the default selection
-msgid "Press <%s> for the default %s"
+msgid "Enter"
 msgstr ""
 
-msgid "Enter"
+#. Press <Enter> for the default selection
+msgid "Press <%s> for the default %s"
 msgstr ""
 
 msgid "Use '%s' for help.  Use '%s' to quit."
