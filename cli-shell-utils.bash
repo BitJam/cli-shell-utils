@@ -436,7 +436,9 @@ my_select_2() {
     fi
 
     # Press <Enter> for the default selection
-    local p2 def_prompt=$(printf $"Press <%s> for the default %s" "$(pqq $"Enter")" "$def_str")
+    local enter=$"Enter"
+    # Press <Enter> for the default selection
+    local p2 def_prompt=$(printf $"Press <%s> for the default %s" "$(pqq "$enter")" "$def_str")
 
     if [ "$have_man" ]; then
         p2=$(printf $"Use '%s' for help.  Use '%s' to quit." "$(pqq h)" "$(pqq q)")
@@ -1754,9 +1756,7 @@ read_reset_config_file() {
     else
         test -r "$file" && . "$file"
     fi
-
 }
-
 
 #==============================================================================
 # General System Utilities
