@@ -17,8 +17,6 @@
 #
 #==============================================================================
 
-export TEXTDOMAIN="cli-shell-utils"
-
 : ${ME:=${0##*/}}
 : ${MY_DIR:=$(dirname "$(readlink -f $0)")}
 : ${MY_LIB_DIR:=$(readlink -f "$MY_DIR/../cli-shell-utils")}
@@ -36,6 +34,10 @@ export TEXTDOMAIN="cli-shell-utils"
 : ${MENU_PATH:=$MY_LIB_DIR/text-menus/:$LIB_DIR/text-menus}
 : ${MIN_LINUXFS_SIZE:=120M}
 : ${CONFIG_FILE:=/root/.config/$ME/$ME.conf}
+
+export TEXTDOMAIN="cli-shell-utils"
+domain_dir=$(readlink -f "$MY_DIR/../cli-shell-utils/locale")
+test -d "$domain_dir" && export TEXTDOMAINDIR=$domain_dir
 
 #------------------------------------------------------------------------------
 # Sometimes it's useful to process some arguments (-h --help, for example)
