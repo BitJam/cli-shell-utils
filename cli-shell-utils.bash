@@ -260,8 +260,10 @@ always_cmd() { PRETEND_MODE= cmd "$@" ;}
 # the command.
 #------------------------------------------------------------------------------
 cmd() {
-    echo " > $*" >> $LOG_FILE
-    [ "$BE_VERBOSE"   ] && echo " >" "$@" | sed "s|$WORK_DIR|.|g"
+    local pre=" >"
+    [ "$PRETEND_MODE" ] && pre="p>"
+    echo "$pre $*" >> $LOG_FILE
+    [ "$BE_VERBOSE"   ] && echo "$pre" "$@" | sed "s|$WORK_DIR|.|g"
     [ "$PRETEND_MODE" ] && return 0
     "$@" 2>&1 | tee -a $LOG_FILE
     # Warning: Bashism
