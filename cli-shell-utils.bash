@@ -1784,6 +1784,7 @@ read_reset_config_file() {
 
     if [ "$RESET_CONFIG" -o ! -e "$file" ]; then
         reset_config "$file" $"Creating new config file %s"
+        exit 0
     else
         test -r "$file" && . "$file"
     fi
