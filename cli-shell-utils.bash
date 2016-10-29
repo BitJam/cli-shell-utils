@@ -1733,6 +1733,31 @@ unflock() {
 #------------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------------
+config_header() {
+    local file=${1:-$CONFIG_FILE}  me=${2:-$ME}
+    cat<<Config_Header
+#----------------------------------------------------------------------
+# Configuration file for $me
+# File: $file
+# Created: $(date +"$DATE_FMT")
+#
+# Config file options:
+#
+#   -R --reset-config   Write fresh config file with default values
+#   -W --write-config   Write config file with current (cli) options
+#   -I --ignore-config  Ignore this file
+#----------------------------------------------------------------------
+
+Config_Header
+}
+
+config_footer() {
+    echo  "#--- End of config file -----------------------------------------------"
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
 reset_config() {
     local file=${1:-$CONFIG_FILE}  msg=$2
 
@@ -1740,8 +1765,10 @@ reset_config() {
     msg "$msg" "$(pq $file)"
 
     mkdir -p $(dirname "$file") || fatal "Could not create directory for config file"
+    (config_header "$file" "$ME"
     sed -rn "/^#=+\s*BEGIN_CONFIG/,/^#=+\s*END_CONFIG/p" "$0" \
-        | egrep -v "^#=+[ ]*(BEGIN|END)_CONFIG" > $file
+        | egrep -v "^#=+[ ]*(BEGIN|END)_CONFIG"
+        config_footer ) > $file
     return 0
 }
 
