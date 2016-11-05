@@ -145,9 +145,15 @@ read_params() {
 # If true print a small "==> $cmd" message
 #------------------------------------------------------------------------------
 need() {
+    need_q "$@" || return 1
+    local cmd=$1  cmd2=${1%%-*}
+    Msg "=> $cmd"
+    return 0
+}
+
+need_q() {
     local cmd=$1  cmd2=${1%%-*}
     echo "$CMDS" | egrep -q "(^| )($cmd|$cmd2|all)( |$)" || return 1
-    Msg "=> $cmd"
     return 0
 }
 
