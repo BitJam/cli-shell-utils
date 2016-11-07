@@ -172,6 +172,7 @@ Output
 
 test_magic() {
     local file=$1
+    # Add "tr" work-around for bug in Bash-4.4
     magic=$(dd if=$file count=4 skip=514 bs=1 2>/dev/null | tr \\0 0)
     [ x"$magic" = x"HdrS" ]
     return $?
