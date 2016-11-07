@@ -1916,7 +1916,7 @@ my_mount() {
 #------------------------------------------------------------------------------
 its_alive() {
     # return 0
-    local root_fstype=$(sed -rn "s|^([a-z]+) / .*|\1|p" /proc/mounts | head -n1)
+    local root_fstype=$(df -T / | tail -n1 | awk '{print $2}')
     case $root_fstype in
         aufs|overlay) return 0 ;;
                    *) return 1 ;;
