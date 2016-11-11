@@ -35,6 +35,8 @@
 : ${MIN_LINUXFS_SIZE:=120M}
 : ${CONFIG_FILE:=/root/.config/$ME/$ME.conf}
 
+FORCE_UMOUNT=true
+
 export TEXTDOMAIN="cli-shell-utils"
 domain_dir=$(readlink -f "$MY_DIR/../cli-shell-utils/locale")
 test -d "$domain_dir" && export TEXTDOMAINDIR=$domain_dir
@@ -1677,7 +1679,7 @@ umount_all() {
     # fatal "One or more partitions on device %s are mounted at: %s"
     # This makes it easier on the translators (and my validation)
     local msg="One or more partitions on device %s are mounted at"
-    force umount || yes_NO_fatal "umount" \
+     [ "$FORCE_UMOUNT" ] || force umount || yes_NO_fatal "umount" \
         "Do you want those partitions unmounted?" \
         "Use %s to always have us unmount mounted target partitions" \
         "$msg:\n  %s" "$dev" "$(echo $mounted)"
