@@ -435,7 +435,7 @@ my_select_2() {
 
     # Find man page (FIXME: should only do this once)
     local man_page have_man
-    for man_page in "" "$MY_DIR/$(basename "$0" .sh).1"; do
+    for man_page in "$ME" "$MY_DIR/$(basename "$0" .sh).1"; do
         man -w "$man_page" &>/dev//null || continue
         have_man=true
         break
