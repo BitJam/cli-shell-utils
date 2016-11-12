@@ -1,32 +1,42 @@
 
-ROOT       := .
+ROOT        := .
 
-ME         := cli-shell-utils
-SCRIPTS    := live-usb-maker live-kernel-updater
-MY_DIR     := $(ROOT)/usr/local/lib/$(ME)
-BIN_DIR    := $(ROOT)/usr/local/bin
-LOCALE_DIR := $(ROOT)/usr/share/
-DESK_DIR   := $(ROOT)/usr/share/applications/antix
-MAN_DIR    := $(ROOT)/usr/share/man/man1
+SHELL       := /bin/bash
 
-ALL_DIRS   := $(MY_DIR) $(BIN_DIR) $(LOCALE_DIR) $(DESK_DIR) $(MAN_DIR)
+ME          := cli-shell-utils
+SCRIPTS     := live-usb-maker live-kernel-updater live-usb-maker-gui
+LIB_DIR     := $(ROOT)/usr/local/lib/$(ME)
+BIN_DIR     := $(ROOT)/usr/local/bin
+LOCALE_DIR  := $(ROOT)/usr/share/
+DESK_DIR    := $(ROOT)/usr/share/applications/antix
+MAN_DIR     := $(ROOT)/usr/share/man/man1
+SCRIPTS_ALL := $(addsuffix -all, $(SCRIPTS))
 
-.PHONY: $(SCRIPTS) help install
+ALL_DIRS   := $(LIB_DIR) $(BIN_DIR) $(LOCALE_DIR) $(DESK_DIR) $(MAN_DIR)
+
+.PHONY: $(SCRIPTS) help all lib $(SCRIPTS_ALL)
 
 help:
-	@echo "make help               show this help"
-	@echo "make install            install to current directory"
-	@echo "make install ROOT=      install to /"
-	@echo "make install ROOT=dir   install to directory dir"
+	@echo "make help                show this help"
+	@echo "make all                 install to current directory"
+	@echo "make all ROOT=           install to /"
+	@echo "make all ROOT=dir        install to directory dir"
+	@echo "make lib                 install the lib and aux files"
+	@echo "make live-usb-maker      install live-usb-maker
+	@echo "make live-kernel-updater install live-kernel-updater"
+	@echo ""
 	@echo ""
 
-install: $(SCRIPTS) | $(MY_DIR) $(LOCALE_DIR)
-	cp -r $(ME).bash bin text-menus $(MY_DIR)
+all: $(SCRIPTS) lib
+
+lib: | $(LIB_DIR) $(LOCALE_DIR)
+	cp -r $(ME).bash bin text-menus $(LIB_DIR)
+	cp -r locale $(LOCALE_DIR)
 
 $(SCRIPTS): | $(BIN_DIR) $(DESK_DIR) $(MAN_DIR)
 	cp ../$@/$@ $(BIN_DIR)
-	cp ../$@/$@.desktop $(DESK_DIR)
-	gzip -c ../$@/$@.1 > $(MAN_DIR)/$@.1.gz
+	test -e ../$@/$@.desktop && cp ../$@/$@.desktop $(DESK_DIR) || true
+	test -e ../$@/$@.1 && gzip -c ../$@/$@.1 > $(MAN_DIR)/$@.1.gz || true
 
 $(ALL_DIRS):
 	mkdir -p $@
