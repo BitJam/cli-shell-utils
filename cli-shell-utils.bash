@@ -181,6 +181,16 @@ force() {
 }
 
 #------------------------------------------------------------------------------
+# See if QUESTION_MODE matches any of the arguments
+#------------------------------------------------------------------------------
+q_mode() {
+    local mode
+    for mode; do
+        [ "$QUESTION_MODE" = "$mode" ] && return 0
+    done
+    return 1
+}
+#------------------------------------------------------------------------------
 # Pause execution if $here or "all" are in comma delimited $PAUSE
 #------------------------------------------------------------------------------
 pause() {
@@ -295,6 +305,8 @@ yes_NO_fatal() {
     shift 4
     local msg=$(printf "$fmt" "$@")
 
+    q_mode qui && fatal "$msg"
+
     [ -n "$continuation" -a -z "${continuation##*%s*}" ] \
         && continuation=$(printf "$continuation" "$(pq "--force=$code")")
 
@@ -313,7 +325,7 @@ yes_NO_fatal() {
 #------------------------------------------------------------------------------
 expert_YES_no() {
     case $QUESTION_MODE in
-        simple) return 1                ;;
+    gui|simple) return 1                ;;
         expert) YES_no "$@" ; return $? ;;
              *) yes_NO "$@" ; return $? ;;
     esac
@@ -919,6 +931,7 @@ Ls_Blk
 check_md5() {
     local file=$1 md5_file="$1.md5"
     test -f "$md5_file" || return
+    q_mode gui && return
     yes_NO $"Check md5 of the file %s?" "$(basename "$file")" || return
     Msg $"Checking md5 ..."
     (cd "$(dirname "$md5_file")" && md5sum -c "$(basename "$md5_file")") && return
