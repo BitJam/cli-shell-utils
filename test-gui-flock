@@ -11,7 +11,7 @@ main() {
 
     echo "creating lock ..."
     trap unflock EXIT
-    gui_flock $LOCK_FILE || fatal "already locked"
+    gui_flock $LOCK_FILE || error "already locked"
     rm -f $ERR_FILE
 
     echo "calling cli code ..."
@@ -26,6 +26,11 @@ main() {
     else
         echo "cli code ran without error"
     fi
+}
+
+error() {
+    echo "Error: $*" >&2
+    exit 3
 }
 
 main "$@"
