@@ -1,0 +1,32 @@
+#!/bin/bash
+
+source ./cli-shell-utils.bash
+
+CLI_NAME="live-usb-maker"
+
+LOCK_FILE="/run/lock/$CLI_NAME"
+ERR_FILE="/var/log/$CLI_NAME.errors"
+
+main() {
+
+    echo "creating lock ..."
+    trap unflock EXIT
+    gui_flock $LOCK_FILE || fatal "already locked"
+    rm -f $ERR_FILE
+
+    echo "calling cli code ..."
+    ../live-usb-maker/live-usb-maker --force=flock -p gui
+
+    echo "returned from cli code"
+    echo -n "press <Enter> "
+    read x
+    echo
+    if test -f $ERR_FILE; then 
+        echo "cli code had a fatal error"
+        cat $ERR_FILE
+    else
+        echo "cli code ran without error"
+    fi
+}
+
+main "$@"
