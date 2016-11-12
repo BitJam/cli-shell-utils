@@ -20,7 +20,6 @@ main() {
     echo "returned from cli code"
     echo -n "press <Enter> "
     read x
-    echo
     if test -f $ERR_FILE; then 
         echo "cli code had a fatal error"
         cat $ERR_FILE
