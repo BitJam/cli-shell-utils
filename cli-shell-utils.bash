@@ -1725,7 +1725,8 @@ umount_all() {
 #------------------------------------------------------------------------------
 do_flock() {
     file=${1:-$LOCK_FILE}  me=${2:-$ME}
-    unset NO_FLOCK
+
+    force flock && return
 
     if which flock &> /dev/null; then
         exec 18> $file
@@ -1742,12 +1743,21 @@ do_flock() {
         "Do you want to continue without locking?" \
         "Use %s to always ignore this warning"     \
         "The %s program was not found." "flock"
+}
 
-    NO_FLOCK=true
+gui_flock() {
+    file=${1:-$LOCK_FILE}  me=${2:-$ME}
+        exec 18> $file
+        FLOCK_FAILED=true
+        flock -n 18 || return 1
+        unset FLOCK_FAILED
+        echo $$ >&18
+        return 0
 }
 
 unflock() {
     local file=${1:-$LOCK_FILE}
+    force flock && return
     [ "$FLOCK_FAILED" ] || rm -f $file
 }
 
