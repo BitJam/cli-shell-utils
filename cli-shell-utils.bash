@@ -34,6 +34,8 @@
 : ${MENU_PATH:=$MY_LIB_DIR/text-menus/:$LIB_DIR/text-menus}
 : ${MIN_LINUXFS_SIZE:=120M}
 : ${CONFIG_FILE:=/root/.config/$ME/$ME.conf}
+: ${PROG_FILE:=/dev/null}
+: ${LOG_FILE:=/dev/null}
 
 FORCE_UMOUNT=true
 
@@ -1441,7 +1443,7 @@ strip_color() {
 #------------------------------------------------------------------------------
 msg() {
     local fmt=$1 ; shift
-    printf "$fmt\n" "$@" | strip_color >> $LOG_FILE
+    prog_log "$fmt" "$@"
     [ -z "$QUIET" ] && printf "$m_co$fmt$nc_co\n" "$@"
 }
 
@@ -1459,8 +1461,7 @@ msg_1() {
 #------------------------------------------------------------------------------
 Msg() {
     local fmt=$1 ; shift
-    printf "$fmt\n" "$@" | strip_color >> $LOG_FILE
-    printf "$m_co$fmt$nc_co\n" "$@"
+    prog_log_echo "$m_co$fmt$nc_co" "$@"
     pipe_up "info: $fmt" "$@"
 }
 
@@ -1469,8 +1470,7 @@ Msg() {
 #------------------------------------------------------------------------------
 Shout() {
     local fmt=$1 ; shift
-    printf "$fmt\n" "$@" | strip_color >> $LOG_FILE
-    printf "$bold_co$fmt$nc_co\n" "$@"
+    prog_log_echo "$bold_co$fmt$nc_co" "$@"
 }
 
 #------------------------------------------------------------------------------
@@ -1478,10 +1478,9 @@ Shout() {
 #------------------------------------------------------------------------------
 shout() {
     local fmt=$1 ; shift
-    printf "$fmt\n" "$@" | strip_color >> $LOG_FILE
+    prog_log "$fmt" "$@"
     [ -z "$QUIET" ] && printf "$bold_co$fmt$nc_co\n" "$@"
 }
-
 
 #------------------------------------------------------------------------------
 # Run a command and send output to screen and log file
@@ -1508,12 +1507,11 @@ fatal() {
     fi
 
     local fmt=$1 ; shift
-    printf "${err_co}%s:$hi_co $fmt$nc_co\n" $"Error" "$@" >&2
-    printf "Error: $fmt\n" "$@" | strip_color >> $LOG_FILE
+
+    prog_log_echo "${err_co}%s:$hi_co $fmt$nc_co"   $"Error" "$@" >&2
     fmt=$(echo "$fmt" | sed 's/\\n/ /g')
-    printf "$code:$fmt\n" "$@"        | strip_color >> $ERR_FILE
+    printf "$code:$fmt\n" "$@" | strip_color >> $ERR_FILE
     [ -n "$FATAL_QUESTION" ] && echo "Q:$FATAL_QUESTION" >> $ERR_FILE
-    pipe_up "fatal: $fmt" "$@"
     FIFO_MODE=
     my_exit ${EXIT_NUM:-100}
 }
@@ -1532,9 +1530,7 @@ warn_0()  { [ $1    -ne 0 ] && return;  shift;  warn  "$@" ;}
 #------------------------------------------------------------------------------
 warn() {
     local fmt=$1 ; shift
-    printf "${warn_co}%s:$hi_co $fmt$nc_co\n" $"Warning" "$@" >&2
-    printf "${warn_co}%s:$hi_co $fmt$nc_co\n" $"Warning" "$@" | strip_color >> $LOG_FILE
-    pipe_up "warn: $fmt" "$@"
+    prog_log_echo "${warn_co}%s:$hi_co $fmt$nc_co" $"Warning" "$@" >&2
 }
 
 #------------------------------------------------------------------------------
@@ -1542,17 +1538,28 @@ warn() {
 #------------------------------------------------------------------------------
 error() {
     local fmt=$1 ; shift
-    printf "${err_co}%s:$hi_co $fmt$nc_co\n" $"Error" "$@" >&2
-    printf "${err_co}%s:$hi_co $fmt$nc_co\n" $"Error" "$@" | strip_color >> $LOG_FILE
-    #pipe_up "error: $fmt" "$@"
+    prog_log_echo "${err_co}%s:$hi_co $fmt$nc_co" $"Error" "$@" >&2
 }
 
 #------------------------------------------------------------------------------
 # Display a question
 #------------------------------------------------------------------------------
 quest() {
-    local fmt=$1; shift
+    local fmt=$1 ; shift
     printf "$quest_co$fmt$nc_co" "$@"
+}
+
+prog_log_echo()  {
+    local fmt="$1" ;  shift;
+    printf "$fmt\n" "$@"
+    prog_log "$fmt" "$@"
+}
+
+
+prog_log()  {
+    local fmt="$1\n" ;  shift;
+    printf "$fmt" "$@" | strip_color >> $LOG_FILE
+    printf "$fmt" "$@" | strip_color >> $PROG_FILE
 }
 
 #==============================================================================
