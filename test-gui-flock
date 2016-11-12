@@ -5,7 +5,7 @@ source ./cli-shell-utils.bash
 CLI_NAME="live-usb-maker"
 
 LOCK_FILE="/run/lock/$CLI_NAME"
-ERR_FILE="/var/log/$CLI_NAME.errors"
+ERR_FILE="/var/log/$CLI_NAME.error"
 
 main() {
 
