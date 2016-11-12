@@ -149,9 +149,9 @@ read_params() {
 # If true print a small "==> $cmd" message
 #------------------------------------------------------------------------------
 need() {
-    need_q "$@" || return 1
-    local cmd=$1
-    Msg "=> $cmd"
+    need_q "$1" || return 1
+    local cmd=$1  xlat=${2:-$1}
+    Msg "=> $xlat"
     return 0
 }
 
