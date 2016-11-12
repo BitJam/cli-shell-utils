@@ -1915,6 +1915,25 @@ my_mount() {
 }
 
 #------------------------------------------------------------------------------
+# Mount an iso file
+#------------------------------------------------------------------------------
+mount_iso_file() {
+    local file=$1  dir=$2
+
+    test -e "$file" || fatal $"Could not find iso file %s" "$file"
+    test -r "$file" || fatal $"Could not read iso file %s" "$file"
+
+    local type
+    for type in iso9660 udf; do
+        mount -t $type -o loop,ro "$file" $dir 2>/dev/null
+        is_mountpoint $dir && return 0
+    done
+
+    fatal $"Could not mount iso file %s" "$file"
+}
+
+
+#------------------------------------------------------------------------------
 # Returns true on a live antiX/MX system, returns false otherwise.  May work
 # correctly on other live systems but has not been tested.
 #------------------------------------------------------------------------------
