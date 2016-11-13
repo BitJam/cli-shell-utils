@@ -1754,12 +1754,12 @@ do_flock() {
 
 gui_flock() {
     file=${1:-$LOCK_FILE}  me=${2:-$ME}
-        exec 18> $file
-        FLOCK_FAILED=true
-        flock -n 18 || return 1
-        unset FLOCK_FAILED
-        echo $$ >&18
-        return 0
+    exec 18> $file
+    FLOCK_FAILED=true
+    flock -n 18 || return 1
+    unset FLOCK_FAILED
+    echo $$ >&18
+    return 0
 }
 
 unflock() {
