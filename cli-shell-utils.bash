@@ -1769,23 +1769,49 @@ umount_all() {
 do_flock() {
     file=${1:-$LOCK_FILE}  me=${2:-$ME}
 
+    HAVE_FLOCK=
     force flock && return
 
-    if which flock &> /dev/null; then
-        exec 18> $file
-        FLOCK_FAILED=true
-        flock -n 18 || fatal 101 "A %s process is running.  If you think this is an error, remove %s" "$me" "$file"
-        unset FLOCK_FAILED
-        echo $$ >&18
-        return
-    fi
-
-    force flock && return
-
-    yes_NO_fatal "flock" \
+    if ! hash flock &> /dev/null; then
+        yes_NO_fatal "flock" \
         "Do you want to continue without locking?" \
         "Use %s to always ignore this warning"     \
-        "The %s program was not found." "flock"
+        "The %s program was not found." "flock" && return
+        exit
+    fi
+
+    exec 18>> $file
+
+    local pid
+    while true; do
+
+        flock -n 18 && break
+
+        sleep 0.1
+
+        pid=$(flock_pid $file)
+
+        [ ${#pid} -gt 0 ] && fatal 101 "A %s process is already running with PID %s" "$me" "$pid"
+
+        warn "Deleting stale lock file %s" $file
+        rm -f $file
+        flock -n 18 && break
+
+        fatal 101 "Failed to obtain lock on %s" "$file"
+    done
+
+    HAVE_FLOCK=true
+    echo $$ > "$file"
+    return
+}
+
+flock_pid() {
+    file=${1:-$LOCK_FILE}
+    local pid
+    read pid >/dev/null <$file
+    [ ${#pid} -gt 0 ] || return
+    test -d /proc/$pid || return
+    echo $pid
 }
 
 #------------------------------------------------------------------------------
@@ -1793,10 +1819,10 @@ do_flock() {
 #------------------------------------------------------------------------------
 gui_flock() {
     file=${1:-$LOCK_FILE}  me=${2:-$ME}
+    HAVE_FLOCK=
     exec 18> $file
-    FLOCK_FAILED=true
     flock -n 18 || return 1
-    unset FLOCK_FAILED
+    HAVE_FLOCK=true
     echo $$ >&18
     return 0
 }
@@ -1807,7 +1833,7 @@ gui_flock() {
 unflock() {
     local file=${1:-$LOCK_FILE}
     force flock && return
-    [ "$FLOCK_FAILED" ] || rm -f $file
+    [ "$HAVE_FLOCK" ] && rm -f $file &>/dev/null
 }
 
 #------------------------------------------------------------------------------
