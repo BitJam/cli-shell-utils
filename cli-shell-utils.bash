@@ -1810,6 +1810,9 @@ do_flock() {
     return
 }
 
+#------------------------------------------------------------------------------
+# Print the contents of the lock file if it is a PID of an active process.
+#------------------------------------------------------------------------------
 flock_pid() {
     file=${1:-$LOCK_FILE}
     local pid
