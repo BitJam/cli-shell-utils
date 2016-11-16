@@ -1796,7 +1796,10 @@ do_flock() {
 
         pid=$(flock_pid $file)
 
-        [ ${#pid} -gt 0 ] && fatal 101 "A %s process is already running with PID %s" "$me" "$pid"
+        if [ ${#pid} -gt 0 ]; then
+            error     "A %s process (using PID %s) is already running" "$me" "$pid"
+            fatal 101 "Please close that process before starting a new one"
+        fi
 
         warn "Deleting stale lock file %s" $file
         rm -f $file
