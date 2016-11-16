@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: antiX Development\n"
 "Report-Msgid-Bugs-To: translation@antixlinux.org\n"
-"POT-Creation-Date: 2016-11-06 14:24-0700\n"
+"POT-Creation-Date: 2016-11-16 14:12-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -62,6 +62,12 @@ msgid "Ready to make live-usb on device %s by %s"
 msgstr ""
 
 msgid "Shall we begin?"
+msgstr ""
+
+msgid "install"
+msgstr ""
+
+msgid "done"
 msgstr ""
 
 msgid "The --from parameter '%s' was not recognized"
@@ -121,15 +127,6 @@ msgid "Please select how much space to use for the live-usb partitions"
 msgstr ""
 
 msgid "Please wait while we mount optical disc at %s"
-msgstr ""
-
-msgid "Could not find iso file %s"
-msgstr ""
-
-msgid "Could not read iso file %s"
-msgstr ""
-
-msgid "Could not mount iso file %s"
 msgstr ""
 
 #. No <file-name> file found in any directory on clone device at <root-directory>
@@ -403,9 +400,6 @@ msgstr ""
 msgid "in pretend mode"
 msgstr ""
 
-msgid "done"
-msgstr ""
-
 msgid "Expected a parameter after: %s"
 msgstr ""
 
@@ -544,6 +538,15 @@ msgstr ""
 msgid "Warning"
 msgstr ""
 
+msgid "A %s process (using PID %s) is already running"
+msgstr ""
+
+msgid "Please close that process before starting a new one"
+msgstr ""
+
+msgid "Failed to obtain lock on %s"
+msgstr ""
+
 msgid "Creating new config file %s"
 msgstr ""
 
@@ -555,6 +558,15 @@ msgstr ""
 
 #. The <type> directory <dir-name> is not writable
 msgid "The %s directory '%s' is not writable"
+msgstr ""
+
+msgid "Could not find iso file %s"
+msgstr ""
+
+msgid "Could not read iso file %s"
+msgstr ""
+
+msgid "Could not mount iso file %s"
 msgstr ""
 
 #. Which distro we are going to copy or clone
