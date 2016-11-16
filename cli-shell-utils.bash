@@ -2200,7 +2200,9 @@ sub_user_home() {
 #------------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------------
-need_root() { [ $UID -eq 0 ] || fatal 099 $"This script must be run as root" ;}
+need_root() {
+    [ $UID -eq 0 ] || fatal 099 $"This script must be run as root" 
+}
 
 #------------------------------------------------------------------------------
 # Insert commas into number like: 123,456.  We colorize separately because
