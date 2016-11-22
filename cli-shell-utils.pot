@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: antiX Development\n"
 "Report-Msgid-Bugs-To: translation@antixlinux.org\n"
-"POT-Creation-Date: 2016-11-16 16:33-0700\n"
+"POT-Creation-Date: 2016-11-22 11:16-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,158 +17,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. starting <program name>
-msgid "Starting %s"
-msgstr ""
-
-msgid "The live media is not mounted"
-msgstr ""
-
-#. Ready to make live-usb on device X by <copying|cloning> directory Y
-msgid "copying"
-msgstr ""
-
-msgid "Please enter the filename"
-msgstr ""
-
-#. What thing we are copying or cloning from: file, device or directory
-msgid "file"
-msgstr ""
-
-#. What thing we are copying or cloning from: file, device or directory
-msgid "device"
-msgstr ""
-
-#. Cloning only copies certain files to make a brand-new live-usb
-msgid "cloning"
-msgstr ""
-
-#. What thing we are copying or cloning from: file, device or directory
-msgid "directory"
-msgstr ""
-
-#. Will use source <file XYZ>
-msgid "Will use source %s"
+msgid "Could not find a syslinux or isolinux directory"
 msgstr ""
 
 msgid "Could not find device %s"
-msgstr ""
-
-msgid "Customize language and timezone?"
-msgstr ""
-
-#. Ready to make live-usb on device X by <cloning|copying directory Y>
-msgid "Ready to make live-usb on device %s by %s"
-msgstr ""
-
-msgid "Shall we begin?"
-msgstr ""
-
-msgid "install"
-msgstr ""
-
-msgid "done"
-msgstr ""
-
-msgid "The --from parameter '%s' was not recognized"
-msgstr ""
-
-msgid "Make a full-featured live-usb"
-msgstr ""
-
-msgid "Make a customized live-usb"
-msgstr ""
-
-msgid "Update UUIDS on existing live-usb"
-msgstr ""
-
-msgid "Update boot parameters on existing live-usb"
-msgstr ""
-
-msgid "Reinstall legacy bootloader on existing live-usb"
-msgstr ""
-
-msgid "Please select what action to perform"
-msgstr ""
-
-msgid "Please select the source for the new live-usb"
-msgstr ""
-
-msgid "No available target usb devices were found"
-msgstr ""
-
-msgid "Only one target usb device was found: %s"
-msgstr ""
-
-msgid "Please select the target usb device"
-msgstr ""
-
-#. Table headers for sizes of: entire drive, main partition, uefi partition
-msgid "entire drive"
-msgstr ""
-
-msgid "main partition"
-msgstr ""
-
-msgid "uefi partition"
-msgstr ""
-
-msgid "Already using over 90% of the device"
-msgstr ""
-
-msgid "Do you want to change how much of the device is used?"
-msgstr ""
-
-#. Have set the size to <13%> (1,200 MiB)
-msgid "Have set size to %s (%s MiB)"
-msgstr ""
-
-msgid "Please select how much space to use for the live-usb partitions"
-msgstr ""
-
-msgid "Please wait while we mount optical disc at %s"
-msgstr ""
-
-#. No <file-name> file found in any directory on clone device at <root-directory>
-msgid "No '%s' file found in any directory on clone device at '%s'"
-msgstr ""
-
-#. Using <gpt|msdos> partitioning
-msgid "Using %s partitioning"
-msgstr ""
-
-msgid "Partitioning failed"
-msgstr ""
-
-msgid "Copying files ..."
-msgstr ""
-
-msgid "Error while copying files to live usb"
-msgstr ""
-
-#. Error while copying <EFI|efi|boot> files to fat partition
-msgid "Error while copying %s files to fat partition"
-msgstr ""
-
-#. Could not find '<grub.cfg>' file to update
-msgid "Could not find '%s' file to update"
-msgstr ""
-
-msgid "Making directory '%s' failed"
-msgstr ""
-
-msgid "Could not find '%s' file"
-msgstr ""
-
-msgid "Could not find file %s"
-msgstr ""
-
-#. Create syslinux directory from <boot/isolinux>
-msgid "Create syslinux directory from %s"
-msgstr ""
-
-#. [don't translate syslinux or isolinux]
-msgid "Could not find a syslinux or isolinux directory"
 msgstr ""
 
 msgid "Not enough space on %s partition"
@@ -179,6 +31,13 @@ msgstr ""
 
 #. Pause at '<Exit>'
 msgid "Exit"
+msgstr ""
+
+#. starting <program name>
+msgid "Starting %s"
+msgstr ""
+
+msgid "The live media is not mounted"
 msgstr ""
 
 msgid "Current running kernel is %s"
@@ -400,6 +259,9 @@ msgstr ""
 msgid "in pretend mode"
 msgstr ""
 
+msgid "done"
+msgstr ""
+
 msgid "Expected a parameter after: %s"
 msgstr ""
 
@@ -425,6 +287,9 @@ msgid "quit"
 msgstr ""
 
 msgid "default"
+msgstr ""
+
+msgid "Shall we begin?"
 msgstr ""
 
 msgid "pretend mode"
