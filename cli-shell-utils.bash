@@ -36,6 +36,9 @@
 : ${CONFIG_FILE:=/root/.config/$ME/$ME.conf}
 : ${PROG_FILE:=/dev/null}
 : ${LOG_FILE:=/dev/null}
+: ${SCREEN_WIDTH:=$(stty size | cut -d" " -f2)}
+: ${SCREEN_WIDTH:=80}
+: ${DIRTY_BYTES:=20000000}  # Need this small size for the progress bar to work
 
 FORCE_UMOUNT=true
 
@@ -2210,6 +2213,102 @@ need_root() {
 #------------------------------------------------------------------------------
 add_commas()   { echo "$1" | sed ":a;s/\B[0-9]\{3\}\>/,&/;ta" ;}
 color_commas() { sed "s/,/$m_co,$num_co/g" ;}
+
+
+x2() { awk "BEGIN{ printf \"%4.2f\n\", $*; }" ; }
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+bogo_meter() {
+    local indent=${#1}  width=${2:-$SCREEN_WIDTH}
+    : ${width:=80}
+    local delay=10  dot=.
+
+    local cnt=$(( width * 80 / 100 ))
+    local sleep=$(x2 "$delay/$cnt")
+
+    while true; do
+        for s in $(seq 1 $cnt); do
+            sleep $sleep
+            echo -n "$dot"
+        done
+        printf "\n%${indent}s" ""
+    done
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+prog_copy() {
+    local from=$1  to=$2  err_msg=${3:-Copy error}
+    # TEST directories or fatal error
+
+    local final_size=$(du_size $from)
+    local base_size=$(du_size $to)
+
+    local cur_size=$base_size  last_x=0  cur_x
+    #printf "  final size: %5s\n" $final_size
+    #printf "current size: %5s\n" $cur_size
+
+    local max_x=$((SCREEN_WIDTH * 80 / 100))
+
+    local dirty_ratio=$(sysctl -n vm.dirty_ratio)
+    local dirty_bytes=$(sysctl -n vm.dirty_bytes)
+    sysctl vm.dirty_bytes=$DIRTY_BYTES >> $LOG_FILE
+    (cp -a $from/* $to/ || fatal "$err_msg") &
+    COPY_PID=$!
+    echo "copy pid: $COPY_PID" >> $LOG_FILE
+
+    # Create end-points and save our location on the screen
+    printf "\e[s$green|$nc_co"
+    printf "\e[u\e[$((max_x + 1))C$green|$nc_co\e[u"
+
+    while true; do
+        test -d /proc/$COPY_PID || break
+        sleep 0.2
+        cur_size=$(du_size $to)
+        cur_x=$((max_x * cur_size / final_size))
+        [ $cur_x -ge $max_x ] && cur_x=$max_x
+        [ $cur_x -eq $last_x ] && continue
+        prog_bar $cur_x $last_x $max_x
+        [ $cur_x -ge $max_x ] && break
+        last_x=$cur_x
+    done
+    echo
+
+    sync
+    # Use ERR_FILE as a semaphore from (...)& process
+    test -e $ERR_FILE && exit 2
+
+    sysctl vm.dirty_bytes=$dirty_bytes >> $LOG_FILE
+    sysctl vm.dirty_ratio=$dirty_ratio >> $LOG_FILE
+
+    test -d /proc/$COPY_PID && wait $COPY_PID
+}
+
+prog_bar() {
+    local x=$1  prev=$2  max=$3
+    local diff=$((x - prev))
+    local bar=$(printf "$cyan%${diff}s$yellow>$nc_co" "" | tr ' ' '=')
+    printf "\e[u\e[$((prev))C$bar\e[u\e[$((max_x + 1))C"
+}
+
+#------------------------------------------------------------------------------
+# Return du size in meg
+#------------------------------------------------------------------------------
+du_size() { du -scm "$@" 2>/dev/null | tail -n1 | cut -f1 ; }
+
+kill_pids() {
+    local pid
+    for pid; do
+        test -z $pid       && continue
+        test -d /proc/$PID || continue
+        pkill -P $pid 2>/dev/null
+        disown   $pid 2>/dev/null
+        kill     $pid 2>/dev/null
+    done
+}
 
 #==============================================================================
 #===== END ====================================================================
