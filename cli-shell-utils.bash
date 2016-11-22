@@ -1525,6 +1525,16 @@ log_it() {
 }
 
 #------------------------------------------------------------------------------
+# Run a command and send output to log file.  Only send to screen if not quiet
+#------------------------------------------------------------------------------
+log_it_q() {
+    local msg=$("$@")
+    [ -z "$QUIET" ] && echo "$msg"
+    echo "$msg" 2>&1 | strip_color >> $LOG_FILE
+}
+
+
+#------------------------------------------------------------------------------
 # Throw a fatal error.  There is some funny business to include a question in
 # the error log that may need to be tweaked or changed.
 #------------------------------------------------------------------------------
