@@ -36,7 +36,7 @@
 : ${CONFIG_FILE:=/root/.config/$ME/$ME.conf}
 : ${PROG_FILE:=/dev/null}
 : ${LOG_FILE:=/dev/null}
-: ${SCREEN_WIDTH:=$(stty size | cut -d" " -f2)}
+: ${SCREEN_WIDTH:=$(stty size 2>/dev/null | cut -d" " -f2)}
 : ${SCREEN_WIDTH:=80}
 : ${DIRTY_BYTES:=20000000}  # Need this small size for the progress bar to work
 
