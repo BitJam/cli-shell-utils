@@ -2311,7 +2311,7 @@ du_size() { du -scm "$@" 2>/dev/null | tail -n1 | cut -f1 ; }
 kill_pids() {
     local pid
     for pid; do
-        test -z $pid       && continue
+        test -z "$pid"     && continue
         test -d /proc/$PID || continue
         pkill -P $pid 2>/dev/null
         disown   $pid 2>/dev/null
