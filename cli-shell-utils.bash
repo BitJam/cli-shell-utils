@@ -1,20 +1,21 @@
-# cli-shell-utils.bash
-#
-# An integrated collection of utilites for shell scripting.
-# The .bash version uses $"..." for translation and one other bashism in cmd().
-
 #==============================================================================
-# Reading command-line arguments and options
+# cli-shell-utils.bash
+# An integrated collection of utilites for shell scripting.
+# The .bash version uses $"..." for translation and another bashism in cmd().
 #
-# This is the oldest part of the code base.  Thie idea is to make it was for
-# programs that use this library to provide an easy and intuitive and clear
+# (C) 2016 BitJam for antiX <antiX@operamail.com>
+# License: GPLv3 or later
+#
+# Note regarding reading command-line arguments and options:
+#
+# This is the oldest part of the code base.  Thie idea is to make it easy for
+# programs that use this library to provide an easy, intuitive, and clear
 # command line user interface.
 #
 #   SHORT_STACK               variable, list of single chars that stack
 #   fatal(msg)                routine,  fatal([errnum] [errlabel] "error message")
 #   takes_param(arg)          routine,  true if arg takes a value
 #   eval_argument(arg, [val]) routine,  do whatever you want with $arg and $val
-#
 #==============================================================================
 
 : ${ME:=${0##*/}}
