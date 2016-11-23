@@ -2300,7 +2300,7 @@ prog_bar() {
     local x=$1  prev=$2  max=$3
     local diff=$((x - prev))
     local bar=$(printf "$cyan%${diff}s$yellow>$nc_co" "" | tr ' ' '=')
-    printf "\e[u\e[$((prev))C$bar\e[u\e[$((max_x + 1))C"
+    printf "\e[u\e[$((prev))C$bar\e[u\e[$((max + 1))C"
 }
 
 #------------------------------------------------------------------------------
