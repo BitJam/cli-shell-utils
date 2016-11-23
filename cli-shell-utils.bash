@@ -2180,9 +2180,16 @@ my_mkdir() {
 }
 
 #------------------------------------------------------------------------------
-#  Report the size of all the directories and files give in MiB.
+# Report the size of all the directories and files give in MiB.
 #------------------------------------------------------------------------------
-du_size() {
+du_size() { du -scm "$@" 2>/dev/null | tail -n1 | cut -f1 ; }
+
+
+#------------------------------------------------------------------------------
+# Report the APPARENT size of all the directories and files give in MiB.
+# This includes the space allocated by not used by sparse files.
+#------------------------------------------------------------------------------
+du_ap_size() {
     du --apparent-size -scm "$@" 2>/dev/null | tail -n 1 | cut -f1
 }
 
@@ -2302,11 +2309,6 @@ prog_bar() {
     local bar=$(printf "$cyan%${diff}s$yellow>$nc_co" "" | tr ' ' '=')
     printf "\e[u\e[$((prev))C$bar\e[u\e[$((max + 1))C"
 }
-
-#------------------------------------------------------------------------------
-# Return du size in meg
-#------------------------------------------------------------------------------
-du_size() { du -scm "$@" 2>/dev/null | tail -n1 | cut -f1 ; }
 
 kill_pids() {
     local pid
