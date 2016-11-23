@@ -2258,9 +2258,8 @@ prog_copy() {
     local base_size=$(du_size $to)
 
     local cur_size=$base_size  last_x=0  cur_x
-    #printf "  final size: %5s\n" $final_size
-    #printf "current size: %5s\n" $cur_size
 
+    # Make progress bar 80% of screen width
     local max_x=$((SCREEN_WIDTH * 80 / 100))
 
     local dirty_ratio=$(sysctl -n vm.dirty_ratio)
