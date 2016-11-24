@@ -40,6 +40,7 @@
 : ${SCREEN_WIDTH:=$(stty size 2>/dev/null | cut -d" " -f2)}
 : ${SCREEN_WIDTH:=80}
 : ${DIRTY_BYTES:=20000000}  # Need this small size for the progress bar to work
+: ${PROG_BAR_WIDTH:=90}     # Width of progress bar in percent of screen width
 
 FORCE_UMOUNT=true
 
@@ -2268,7 +2269,7 @@ prog_copy() {
     local cur_size=$base_size  last_x=0  cur_x
 
     # Make progress bar 80% of screen width
-    local max_x=$((SCREEN_WIDTH * 80 / 100))
+    local max_x=$((SCREEN_WIDTH * PROG_BAR_WIDTH / 100))
 
     local dirty_ratio=$(sysctl -n vm.dirty_ratio)
     local dirty_bytes=$(sysctl -n vm.dirty_bytes)
