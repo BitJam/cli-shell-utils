@@ -41,6 +41,7 @@
 : ${SCREEN_WIDTH:=80}
 : ${DIRTY_BYTES:=20000000}  # Need this small size for the progress bar to work
 : ${PROG_BAR_WIDTH:=90}     # Width of progress bar in percent of screen width
+: ${VM_VERSION_PROG:=vmlinuz-version}
 
 FORCE_UMOUNT=true
 
@@ -626,8 +627,29 @@ find_live_boot_dir() {
 $(echo "$list")
 Live_Boot_Dir
 
-    my_select $var "$title" "$menu"
-    return 0
+    if ! q_mode gui; then
+        my_select $var "$title" "$menu"
+        return 0
+    fi
+
+    # Try to find the directory that has our running kernel
+
+    need_prog "$VM_VERSION_PROG"
+
+    local cnt=0 the_dir
+    while read dir; do
+       $VM_VERSION_PROG -c "$mp$dir" &>/dev/null || continue
+       cnt=$((cnt + 1))
+       the_dir=$dir
+    done<<Live_Boot_Dir
+$(echo "$list")
+Live_Boot_Dir
+
+    case $cnt in
+        0) return 2 ;;
+        1) eval $var=\$the_dir ;;
+        *) return 3 ;;
+    esac
 }
 
 #==============================================================================
