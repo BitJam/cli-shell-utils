@@ -42,4 +42,5 @@ live-usb-maker-gui: | $(BIN_DIR)
 	cp ../gui-live-usb-maker/live-usb-maker-gui $(BIN_DIR)
 
 $(ALL_DIRS):
+	test -d $(ROOT)/
 	mkdir -p $@
