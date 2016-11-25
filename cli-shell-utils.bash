@@ -2317,12 +2317,13 @@ prog_copy() {
     done
     echo
 
-    sync
-    # Use ERR_FILE as a semaphore from (...)& process
-    test -e $ERR_FILE && exit 2
+    sync ; sync
 
     sysctl vm.dirty_bytes=$dirty_bytes >> $LOG_FILE
     sysctl vm.dirty_ratio=$dirty_ratio >> $LOG_FILE
+
+    # Use ERR_FILE as a semaphore from (...)& process
+    test -e $ERR_FILE && exit 2
 
     test -d /proc/$COPY_PID && wait $COPY_PID
 }
