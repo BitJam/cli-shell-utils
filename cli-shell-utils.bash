@@ -2300,6 +2300,9 @@ prog_copy() {
     COPY_PID=$!
     echo "copy pid: $COPY_PID" >> $LOG_FILE
 
+    # Disable cursor
+    printf "\e[?25l"
+
     # Create end-points and save our location on the screen
     printf "\e[s$green|$nc_co"
     printf "\e[u\e[$((max_x + 1))C$green|$nc_co\e[u"
@@ -2318,6 +2321,9 @@ prog_copy() {
     echo
 
     sync ; sync
+
+    # Enable cursor
+    printf "\e[?25h"
 
     sysctl vm.dirty_bytes=$dirty_bytes >> $LOG_FILE
     sysctl vm.dirty_ratio=$dirty_ratio >> $LOG_FILE
