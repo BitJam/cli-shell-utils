@@ -2337,6 +2337,7 @@ prog_copy() {
     test -e $ERR_FILE && exit 2
 
     test -d /proc/$COPY_PID && wait $COPY_PID
+    unset COPY_PID
 }
 
 prog_bar() {
