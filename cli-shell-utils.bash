@@ -2362,6 +2362,9 @@ kill_pids() {
 #------------------------------------------------------------------------------
 lib_clean_up() {
 
+    # Enable cursor
+    printf "\e[?25h"
+
     # Kill off background copy process
     [ "$COPY_PID" ] && test -d /proc/$COPY_PID && kill_pids $COPY_PID
 
