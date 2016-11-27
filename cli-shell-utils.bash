@@ -39,9 +39,12 @@
 : ${LOG_FILE:=/dev/null}
 : ${SCREEN_WIDTH:=$(stty size 2>/dev/null | cut -d" " -f2)}
 : ${SCREEN_WIDTH:=80}
-: ${DIRTY_BYTES:=20000000}  # Need this small size for the progress bar to work
+: ${USB_DIRTY_BYTES:=20000000}  # Need this small size for the progress bar to work
 : ${PROG_BAR_WIDTH:=90}     # Width of progress bar in percent of screen width
 : ${VM_VERSION_PROG:=vmlinuz-version}
+
+# Make sure these start out empty.  See lib_clean_up()
+unset ORIG_DIRTY_BYTES ORIG_DIRTY_RATIO COPY_PID
 
 FORCE_UMOUNT=true
 
@@ -2293,9 +2296,9 @@ prog_copy() {
     # Make progress bar 80% of screen width
     local max_x=$((SCREEN_WIDTH * PROG_BAR_WIDTH / 100))
 
-    local dirty_ratio=$(sysctl -n vm.dirty_ratio)
-    local dirty_bytes=$(sysctl -n vm.dirty_bytes)
-    sysctl vm.dirty_bytes=$DIRTY_BYTES >> $LOG_FILE
+    ORIG_DIRTY_RATIO=$(sysctl -n vm.dirty_ratio)
+    ORIG_DIRTY_BYTES=$(sysctl -n vm.dirty_bytes)
+    sysctl vm.dirty_bytes=$USB_DIRTY_BYTES >> $LOG_FILE
     (cp -a $from/* $to/ || fatal "$err_msg") &
     COPY_PID=$!
     echo "copy pid: $COPY_PID" >> $LOG_FILE
@@ -2325,8 +2328,10 @@ prog_copy() {
     # Enable cursor
     printf "\e[?25h"
 
-    sysctl vm.dirty_bytes=$dirty_bytes >> $LOG_FILE
-    sysctl vm.dirty_ratio=$dirty_ratio >> $LOG_FILE
+    sysctl vm.dirty_bytes=$ORIG_DIRTY_BYTES >> $LOG_FILE
+    sysctl vm.dirty_ratio=$ORIG_DIRTY_RATIO >> $LOG_FILE
+
+    unset ORIG_DIRTY_BYTES ORIG_DIRTY_RATIO
 
     # Use ERR_FILE as a semaphore from (...)& process
     test -e $ERR_FILE && exit 2
@@ -2351,6 +2356,19 @@ kill_pids() {
         kill     $pid 2>/dev/null
     done
 }
+
+#------------------------------------------------------------------------------
+# Possible cleanup need by this library
+#------------------------------------------------------------------------------
+lib_clean_up() {
+
+    # Kill off background copy process
+    [ "$COPY_PID" ] && test -d /proc/$COPY_PID && kill_pids $COPY_PID
+
+    [ "$ORIG_DIRTY_BYTES" ] && sysctl vm.dirty_bytes=$ORIG_DIRTY_BYTES >> $LOG_FILE
+    [ "$ORIG_DIRTY_RATIO" ] && sysctl vm.dirty_ratio=$ORIG_DIRTY_RATIO >> $LOG_FILE
+}
+
 
 #==============================================================================
 #===== END ====================================================================
