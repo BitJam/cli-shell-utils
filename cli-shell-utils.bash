@@ -2174,7 +2174,7 @@ get_partition() {
     local dev=$1  num=$2
 
     case $dev in
-        *mmcbk*) echo  ${dev}p$num  ;;
+       *mmcblk*) echo  ${dev}p$num  ;;
               *) echo  ${dev}$num   ;;
     esac
 }
