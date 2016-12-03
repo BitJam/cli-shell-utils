@@ -299,7 +299,9 @@ cmd() {
     [ "$PRETEND_MODE" ] && return 0
     "$@" 2>&1 | tee -a $LOG_FILE
     # Warning: Bashism
-    return ${PIPESTATUS[0]}
+    local ret=${PIPESTATUS[0]}
+    test -e $ERR_FILE && exit 3
+    return $ret
 }
 
 #==============================================================================
