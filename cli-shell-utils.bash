@@ -1787,6 +1787,8 @@ umount_all() {
         "Use %s to always have us unmount mounted target partitions" \
         "$msg:\n  %s" "$dev" "$(echo $mounted)"
 
+    sync ; sync
+
     local i part
     for part in $(mount | egrep -o "^$dev[^ ]*"); do
         umount --all-targets $part 2>/dev/null
