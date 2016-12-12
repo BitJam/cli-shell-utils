@@ -663,7 +663,7 @@ Live_Boot_Dir
 #==============================================================================
 
 #------------------------------------------------------------------------------
-#
+# Expand ~/ to the actual user's home directory (we run as root).
 #------------------------------------------------------------------------------
 expand_directories() {
     local dir
@@ -684,7 +684,7 @@ expand_directories() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Use "find" command to provide a list of .iso files.  WORK IN PROGRESS.
 #------------------------------------------------------------------------------
 cli_search_file() {
     local var=$1  spec=$2  dir_list=$3  max_depth=$4  max_found=${5:-20}  min_size=${6:-$MIN_ISO_SIZE}
@@ -802,13 +802,13 @@ File_Menu_2
 }
 
 #------------------------------------------------------------------------------
-#
+# Used to fill in the file date and size in a menu of files.
 #------------------------------------------------------------------------------
 _file_date() { date "+${DATE_FMT#+}" -d @$(stat -c %Y "$1") ;}
 _file_size() { echo "$(( $(stat -c %s "$1") /1024 /1024))M" ;}
 
 #------------------------------------------------------------------------------
-#
+# Used to fill in the file name in a menu. Try to keep it compact.
 #------------------------------------------------------------------------------
 _file_name() {
     local file=$1  one_dir=$2
@@ -825,7 +825,7 @@ _file_name() {
 }
 
 #------------------------------------------------------------------------------
-#
+# A menu of options for the select file menu
 #------------------------------------------------------------------------------
 select_file_menu() {
     local invalid=$1
@@ -837,7 +837,7 @@ select_file_menu() {
 
 
 #------------------------------------------------------------------------------
-#
+# Simple input of strings
 #------------------------------------------------------------------------------
 cli_get_text() {
     local var=$1  title=$2
@@ -986,7 +986,7 @@ Ls_Blk
 }
 
 #------------------------------------------------------------------------------
-#
+# Offer to check the md5sum if $file.md5 exists.
 #------------------------------------------------------------------------------
 check_md5() {
     local file=$1 md5_file="$1.md5"
@@ -999,7 +999,8 @@ check_md5() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Get the width of a single lsblk output.  Used for making things line up
+# in neat columns.
 #------------------------------------------------------------------------------
 get_lsblk_field_width() {
     local name=$1  field fwidth width=0 ; shift
@@ -1067,7 +1068,7 @@ find_kernel_fname()   {
 }
 
 #------------------------------------------------------------------------------
-#
+# Throw a fatal error if there are zero lines in "$1"
 #------------------------------------------------------------------------------
 fatal_k0() {
     local cnt=$(count_lines "$1") ; shift
@@ -1267,7 +1268,7 @@ Print
 }
 
 #------------------------------------------------------------------------------
-#
+# Make a table of values for displaying the partitions on a target usb device
 #------------------------------------------------------------------------------
 usb_stats() {
     local orig_ifs=$IFS
@@ -1327,7 +1328,7 @@ Print
 }
 
 #------------------------------------------------------------------------------
-#
+# NOT USED.  See below.
 #------------------------------------------------------------------------------
 free_space_menu() {
     local min_percent=$1  total_size=$2  comma_size=$(add_commas $2)
@@ -1345,7 +1346,7 @@ free_space_menu() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Create a menu of sizes if user wants to use lees than all of a usb device
 #------------------------------------------------------------------------------
 partition_size_menu() {
     local min_percent=$1  total_size=$2  comma_size=$(add_commas $2)
@@ -1627,7 +1628,9 @@ quest() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Progress, log, and echo.
+# printf a string then send it on to be output to the log file and to the
+# progress file.
 #------------------------------------------------------------------------------
 prog_log_echo()  {
     local fmt="$1" ;  shift;
@@ -1637,7 +1640,8 @@ prog_log_echo()  {
 
 
 #------------------------------------------------------------------------------
-#
+# Printf a string to the log file and maybe to the progress file.
+# Note: $PROG_FILE is set to /dev/null to disable the progress file.
 #------------------------------------------------------------------------------
 prog_log()  {
     local fmt="$1\n" ;  shift;
@@ -1870,7 +1874,7 @@ flock_pid() {
 }
 
 #------------------------------------------------------------------------------
-#
+# A flock routine to be called by a gui wrapper.
 #------------------------------------------------------------------------------
 gui_flock() {
     file=${1:-$LOCK_FILE}  me=${2:-$ME}
@@ -1883,7 +1887,7 @@ gui_flock() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Release the flock unless we are running with --force=flock.
 #------------------------------------------------------------------------------
 unflock() {
     local file=${1:-$LOCK_FILE}
@@ -1892,7 +1896,7 @@ unflock() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Create a nice header for the .config file.
 #------------------------------------------------------------------------------
 config_header() {
     local file=${1:-$CONFIG_FILE}  me=${2:-$ME}
@@ -1912,12 +1916,16 @@ config_header() {
 Config_Header
 }
 
+#------------------------------------------------------------------------------
+# Create a one-line footer for the confiig file
+#------------------------------------------------------------------------------
 config_footer() {
     echo  "#--- End of config file -----------------------------------------------"
 }
 
 #------------------------------------------------------------------------------
-#
+# Use a fancy sed command to reset the config file to the default options but
+# reading directly from "$0".
 #------------------------------------------------------------------------------
 reset_config() {
     local file=${1:-$CONFIG_FILE}  msg=$2
@@ -1971,7 +1979,7 @@ is_mountpoint() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Return true if the device shows up in /proc/mounts
 #------------------------------------------------------------------------------
 is_mounted() {
     local dev=$1
@@ -2100,7 +2108,8 @@ its_alive() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Return true if running live and we can write to $LIVE_MP (/live/boot-dev)
+# FIXME: Can this be easily fooled by "toram"?
 #------------------------------------------------------------------------------
 its_alive_usb() {
     its_alive || return 1
@@ -2111,7 +2120,7 @@ its_alive_usb() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Get the device mounted at $LIVE_MP (usually /live/boot-dev)
 #------------------------------------------------------------------------------
 get_live_dev() {
     local live_dev=$(sed -rn "s|^([^ ]+) $LIVE_MP .*|\1|p" /proc/mounts)
@@ -2119,7 +2128,8 @@ get_live_dev() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Way overly complicated way to show the distro of a live system mounted at
+# at directory.  I tried to cram in extra information.  FIXME
 #------------------------------------------------------------------------------
 show_distro_version()  {
     local dir=$1  dev=${2##*/}
@@ -2184,7 +2194,7 @@ get_partition() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Not currently used
 #------------------------------------------------------------------------------
 device_str() {
     local file=$1  file_type=${2:-"file"}
@@ -2225,7 +2235,7 @@ du_ap_size() {
 }
 
 #------------------------------------------------------------------------------
-#
+# All the mounted partitions of a give device
 #------------------------------------------------------------------------------
 mounted_partitions() {
     mount | egrep "^$1[^ ]*" | cut -d" " -f3 | grep .
@@ -2233,7 +2243,7 @@ mounted_partitions() {
 }
 
 #------------------------------------------------------------------------------
-#
+# The home directory of the "default user".
 #------------------------------------------------------------------------------
 get_user_home() {
     local user=${1:-$DEFAULT_USER}
@@ -2241,7 +2251,7 @@ get_user_home() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Substitute the "default user's" home direcotry for %USER_HOME%
 #------------------------------------------------------------------------------
 sub_user_home() {
     local user_home=$(get_user_home)
@@ -2249,7 +2259,7 @@ sub_user_home() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Issue a simple fatal error if we are not running as root
 #------------------------------------------------------------------------------
 need_root() {
     [ $UID -eq 0 ] || fatal 099 $"This script must be run as root"
@@ -2266,7 +2276,8 @@ color_commas() { sed "s/,/$m_co,$num_co/g" ;}
 x2() { awk "BEGIN{ printf \"%4.2f\n\", $*; }" ; }
 
 #------------------------------------------------------------------------------
-#
+# Not used.  Create a series of "marching dots" to indicate progress or at
+# least indicate the program is not entirely dead.
 #------------------------------------------------------------------------------
 bogo_meter() {
     local indent=${#1}  width=${2:-$SCREEN_WIDTH}
@@ -2286,7 +2297,8 @@ bogo_meter() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Copy a directory while showing a true progress bar of the progress.
+# FIXME: rename to progbar_copy_dir() or something like that.
 #------------------------------------------------------------------------------
 prog_copy() {
     local from=$1  to=$2  err_msg=${3:-Copy error}
@@ -2344,6 +2356,10 @@ prog_copy() {
     unset COPY_PID
 }
 
+#------------------------------------------------------------------------------
+# Update the progress bar based on the current x-value, the previous x-value,
+# and the maximum x-value.
+#------------------------------------------------------------------------------
 prog_bar() {
     local x=$1  prev=$2  max=$3
     local diff=$((x - prev))
@@ -2351,11 +2367,16 @@ prog_bar() {
     printf "\e[u\e[$((prev))C$bar\e[u\e[$((max + 1))C"
 }
 
+#------------------------------------------------------------------------------
+# Try to kill off a list of PIDs in a way that does not cause any problems or
+# create extra output to stderr.
+#------------------------------------------------------------------------------
 kill_pids() {
     local pid
     for pid; do
         test -z "$pid"     && continue
         test -d /proc/$PID || continue
+
         pkill -P $pid 2>/dev/null
         disown   $pid 2>/dev/null
         kill     $pid 2>/dev/null
@@ -2364,6 +2385,8 @@ kill_pids() {
 
 #------------------------------------------------------------------------------
 # Possible cleanup need by this library
+# Enable the cursor, kill of bg processes, and restore dirty settings.
+# Most of these are only needed if we are interrupted during prog_copy().
 #------------------------------------------------------------------------------
 lib_clean_up() {
 
