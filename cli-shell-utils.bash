@@ -2385,7 +2385,7 @@ kill_pids() {
 
 #------------------------------------------------------------------------------
 # Possible cleanup need by this library
-# Enable the cursor, kill of bg processes, and restore dirty settings.
+# Enable the cursor, kill off bg processes, and restore dirty settings.
 # Most of these are only needed if we are interrupted during prog_copy().
 #------------------------------------------------------------------------------
 lib_clean_up() {
