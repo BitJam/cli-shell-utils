@@ -2375,7 +2375,7 @@ kill_pids() {
     local pid
     for pid; do
         test -z "$pid"     && continue
-        test -d /proc/$PID || continue
+        test -d /proc/$pid || continue
 
         pkill -P $pid 2>/dev/null
         disown   $pid 2>/dev/null
