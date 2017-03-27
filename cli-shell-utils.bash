@@ -44,7 +44,7 @@
 : ${VM_VERSION_PROG:=vmlinuz-version}
 
 # Make sure these start out empty.  See lib_clean_up()
-unset ORIG_DIRTY_BYTES ORIG_DIRTY_RATIO COPY_PID
+unset ORIG_DIRTY_BYTES ORIG_DIRTY_RATIO COPY_PPID COPY_PID
 
 FORCE_UMOUNT=true
 
@@ -2316,8 +2316,11 @@ prog_copy() {
     ORIG_DIRTY_BYTES=$(sysctl -n vm.dirty_bytes)
     sysctl vm.dirty_bytes=$USB_DIRTY_BYTES >> $LOG_FILE
     (cp -a $from/* $to/ || fatal "$err_msg") &
-    COPY_PID=$!
-    echo "copy pid: $COPY_PID" >> $LOG_FILE
+    sleep 0.01
+    COPY_PPID=$!
+    COPY_PID=$(pgrep -P $COPY_PPID)
+
+    echo "copy pids: $(echo $COPY_PPID $COPY_PID)" >> $LOG_FILE
 
     # Disable cursor
     printf "\e[?25l"
@@ -2327,7 +2330,7 @@ prog_copy() {
     printf "\e[u\e[$((max_x + 1))C$green|$nc_co\e[u"
 
     while true; do
-        test -d /proc/$COPY_PID || break
+        test -d /proc/$COPY_PPID || break
         sleep 0.2
         cur_size=$(du_size $to)
         cur_x=$((max_x * cur_size / final_size))
@@ -2352,8 +2355,8 @@ prog_copy() {
     # Use ERR_FILE as a semaphore from (...)& process
     test -e $ERR_FILE && exit 2
 
-    test -d /proc/$COPY_PID && wait $COPY_PID
-    unset COPY_PID
+    test -d /proc/$COPY_PPID && wait $COPY_PPID
+    unset COPY_PPID COPY_PID
 }
 
 #------------------------------------------------------------------------------
@@ -2394,7 +2397,7 @@ lib_clean_up() {
     printf "\e[?25h"
 
     # Kill off background copy process
-    kill_pids $COPY_PID
+    kill_pids $COPY_PPID $COPY_PID
 
     [ "$ORIG_DIRTY_BYTES" ] && sysctl vm.dirty_bytes=$ORIG_DIRTY_BYTES >> $LOG_FILE
     [ "$ORIG_DIRTY_RATIO" ] && sysctl vm.dirty_ratio=$ORIG_DIRTY_RATIO >> $LOG_FILE
