@@ -2394,7 +2394,7 @@ lib_clean_up() {
     printf "\e[?25h"
 
     # Kill off background copy process
-    [ "$COPY_PID" ] && test -d /proc/$COPY_PID && kill_pids $COPY_PID
+    kill_pids $COPY_PID
 
     [ "$ORIG_DIRTY_BYTES" ] && sysctl vm.dirty_bytes=$ORIG_DIRTY_BYTES >> $LOG_FILE
     [ "$ORIG_DIRTY_RATIO" ] && sysctl vm.dirty_ratio=$ORIG_DIRTY_RATIO >> $LOG_FILE
