@@ -2331,7 +2331,7 @@ prog_copy() {
 
     while true; do
         test -d /proc/$COPY_PPID || break
-        sleep 0.2
+        sleep 0.1
         cur_size=$(du_size $to)
         cur_x=$((max_x * cur_size / final_size))
         [ $cur_x -ge $max_x ] && cur_x=$max_x
