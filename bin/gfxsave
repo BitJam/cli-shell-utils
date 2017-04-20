@@ -1,4 +1,4 @@
-#!/live/bin/sh
+#!/bin/bash
 
 OLD_GFX_CONFIG_FILE="/live/config/gfxsave.conf"
          GFX_SUFFIX=".def"

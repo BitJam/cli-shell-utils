@@ -1,4 +1,4 @@
-#!/live/bin/sh
+#!/bin/bash
 
 ME=${0##*/}
 
