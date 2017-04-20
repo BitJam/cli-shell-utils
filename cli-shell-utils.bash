@@ -1293,7 +1293,7 @@ usb_stats() {
 
     # Space in a drive or partition: Total = Allocated + Extra
     # Japanese: please don't translate: Total, Allocated, Extra
-    local total=$"Total"  allocated=$"Allocated"  extra=$"Extra"
+    local total=$"Total"  allocated=$"Used"  extra=$"Extra"
     local w1=5 w2=${#total} w3=${#allocated} w4=${#extra}
     # Get field widths
     local f1 f2 f3 f4
