@@ -2000,7 +2000,7 @@ is_mounted() {
 
 #------------------------------------------------------------------------------
 # Needs a better name.  Requires all the programs on the list to be on the PATH
-# or use returns false and says it is Skipping $stage.
+# or returns false and says it is Skipping $stage.
 #------------------------------------------------------------------------------
 require() {
     local stage=$1  prog ret=0 ; shift;
