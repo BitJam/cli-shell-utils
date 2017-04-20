@@ -2246,6 +2246,15 @@ du_ap_size() {
 }
 
 #------------------------------------------------------------------------------
+# Find apparent sizes based on a directory name and a single variable that
+# allows file globs, etc.
+#------------------------------------------------------------------------------
+du_ap_size_spec() {
+    dir=$1  spec=$2
+    (cd $dir; eval du --apparent-size -scm $spec 2>/dev/null) | tail -n 1 | cut -f1
+}
+
+#------------------------------------------------------------------------------
 # All the mounted partitions of a give device
 #------------------------------------------------------------------------------
 mounted_partitions() {
