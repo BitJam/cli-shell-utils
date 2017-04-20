@@ -2111,7 +2111,7 @@ mount_iso_file() {
 #------------------------------------------------------------------------------
 its_alive() {
     # return 0
-    local root_fstype=$(df -T / | tail -n1 | awk '{print $2}')
+    local root_fstype=$(df -PT / | tail -n1 | awk '{print $2}')
     case $root_fstype in
         aufs|overlay) return 0 ;;
                    *) return 1 ;;
