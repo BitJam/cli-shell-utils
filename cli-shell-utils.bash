@@ -348,6 +348,17 @@ expert_YES_no() {
 }
 
 #------------------------------------------------------------------------------
+#  Always default no
+#------------------------------------------------------------------------------
+expert_yes_NO() {
+    case $QUESTION_MODE in
+    gui|simple) return 1                ;;
+        expert) yes_NO "$@" ; return $? ;;
+             *) yes_NO "$@" ; return $? ;;
+    esac
+}
+
+#------------------------------------------------------------------------------
 # Simple "yes" "no" questions.  Ask a question, wait for a valid response.  The
 # responses are all numbers which might be better for internationalizations.
 # I'm not sure if we should include the "quit" option or not.  The difference
