@@ -16,10 +16,11 @@ program on a reasonable path:
     $PROG_PATH
 
 Options:
-   -h --help       Show this help
-   -f --force      Overwrite \$program-libs directory
-   -p --prefix     Directory prefix for grabbing libs
-   -v --verbose    Print more
+   -h --help         Show this help
+   -f --force        Overwrite \$program-libs directory
+   -p --prefix       Directory prefix for grabbing libs
+   -o --output=<dir> Directory to put libs in
+   -v --verbose      Print more
 
 Short options can be stacked.  Example:
 
@@ -37,9 +38,9 @@ main() {
 
     [ $# -eq 0 ] && usage 0
 
-    local short_stack="hfpv"
+    local short_stack="hfopv"
 
-    while [ $# -gt 1 -a -n "$1" -a -z "${1##-*}" ]; do
+    while [ $# -gt 0 -a -n "$1" -a -z "${1##-*}" ]; do
         local arg=${1#-}; shift
 
         case $arg in
@@ -55,13 +56,19 @@ main() {
            -force|f) FORCE=true        ;;
          -verbose|v) VERBOSE=true      ;;
       -prefix=*|p=*) PREFIX=${arg#*=}  ;;
+      -output=*|o=*) TARGET=${arg#*=}  ;;
 
           -prefix|p) [ $# -gt 0 ] || fatal "Expected argument after: -$arg"
                      PREFIX=$1; shift  ;;
 
+          -output|o) [ $# -gt 0 ] || fatal "Expected argument after: -$arg"
+                     TARGET=$1; shift  ;;
+
                   *) fatal "Unknown argment: -$arg" ;;
         esac
     done
+
+    [ -n "$TARGET" -a -n "$FORCE" ] && fatal "Can't use --force with --output"
 
     case $# in
         0) fatal "Missing program parameter" ;;
@@ -69,7 +76,13 @@ main() {
         *) fatal "Extra parameters: $*"      ;;
     esac
 
-    targ="$(basename $prog-libs)"
+    local orig_prog=$prog
+    test -e $prog || prog=$(which $prog 2>/dev/null)
+    test -e $prog || fatal "Could not find program %s" $orig_prog
+
+    targ="$(basename $prog)-libs"
+    [ -n "$TARGET" ] && targ=$TARGET
+
     local preprog=$PREFIX$prog
 
     if [ ! -e "$preprog" -a -n "${prog##/*}" ]; then
@@ -85,7 +98,7 @@ main() {
     [ -e $preprog ] || fatal "Could not find program: $prog"
 
     [ "$FORCE" ] && rm -r $targ
-    [ -e "$targ" ] && fatal "Use -f option to overwrite $targ directory"
+    [ -z "$TARGET" -a -e "$targ" ] && fatal "Use -f option to overwrite $targ directory"
 
     mkdir -p $targ
     [ -e "$targ" ] || fatal "Could not create $targ directory"
