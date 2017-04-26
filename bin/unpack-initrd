@@ -6,7 +6,8 @@ ME=${0##*/}
 
 INITRD_FILE=/live/boot-dev/antiX/initrd.gz
 INITRD_DIR=./initrd
-CPIO_OPTS="-o -H newc --owner root:root"
+REPACK_ARGS="-o -H newc --owner root:root --quiet"
+UNPACK_ARGS="-idum --quiet"
 
 
 usage() {
@@ -67,10 +68,10 @@ main() {
     [ $# -gt 0 ] && fatal "Unexpected arguments: %s" "$*"
 
     if [ "$REPACK" ]; then
-        qsay "Repack <%s> from directory <%s>" "$INITRD_FILE" "$INITRD_DIR"
+        qsay "Repack: %s ---> %s" "$(pq $INITRD_FILE)" "$(pq ${INITRD_DIR%/}/)"
         repack_initrd "$INITRD_FILE" "$INITRD_DIR"
     else
-        qsay "Unpack <%s> to directory <%s>" "$INITRD_FILE" "$INITRD_DIR"
+        qsay "Unpack: %s ---> %s" "$(pq ${INITRD_DIR%/}/)" "$(pq $INITRD_FILE)"
         unpack_initrd "$INITRD_FILE" "$INITRD_DIR"
     fi
 
@@ -97,7 +98,7 @@ unpack_initrd() {
 
     cmd mkdir -p "$dir" || fatal "Could not make directory %s" "$dir"
 
-    cmd gunzip -c "$file" | (cd "$dir" && cmd cpio -idum) || fatal "Unpack failed"
+    cmd gunzip -c "$file" | (cd "$dir" && cmd cpio $UNPACK_ARGS) || fatal "Unpack failed"
 }
 
 repack_initrd() {
@@ -108,8 +109,8 @@ repack_initrd() {
     local targ_dir=$(dirname "$file")
     cmd mkdir -p "$targ_dir"
 
-    (cd "$dir" && cmd find . | grep -v "^\./\." | cmd cpio $CPIO_OPTS) \
-        | gzip -9 | cmd write_file "$file" 
+    (cd "$dir" && cmd find . | grep -v "^\./\." | cmd cpio $REPACK_ARGS) \
+        | gzip -9 | cmd write_file "$file"
 
     local fname=$(basename $file)
     (cd "$targ_dir" && cmd md5sum "$(basename "$fname")" | cmd write_file "$fname.md5")
@@ -193,14 +194,33 @@ qsay() {
     [ "$QUIET" ] && return
     local fmt=$1
     shift
-    printf "$fmt\n" "$@"
+    printf "$m_co$fmt$nc_co\n" "$@"
 }
 
 fatal() {
     local fmt=$1; shift
-    printf "$ME fatal error: $fmt\n" "$@" >&2
+    printf "$ME$err_co fatal error:$warn_co $fmt\n" "$@" >&2
     exit 2
 }
 
+pq()  { echo "$hi_co$*$m_co"      ;}
+
+set_colors() {
+   local e=$(printf "\e")
+
+         black="$e[0;30m" ;    blue="$e[0;34m" ;    green="$e[0;32m" ;    cyan="$e[0;36m" ;
+           red="$e[0;31m" ;  purple="$e[0;35m" ;    brown="$e[0;33m" ; lt_gray="$e[0;37m" ;
+       dk_gray="$e[1;30m" ; lt_blue="$e[1;34m" ; lt_green="$e[1;32m" ; lt_cyan="$e[1;36m" ;
+        lt_red="$e[1;31m" ; magenta="$e[1;35m" ;   yellow="$e[1;33m" ;   white="$e[1;37m" ;
+         nc_co="$e[0m"    ;   brown="$e[0;33m" ;
+
+           m_co=$cyan
+          hi_co=$white
+          err_co=$red
+         bold_co=$yellow
+         warn_co=$yellow
+}
+
+set_colors
 main "$@"
 
