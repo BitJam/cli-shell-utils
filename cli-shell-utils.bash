@@ -297,7 +297,11 @@ cmd() {
     echo "$pre $*" >> $LOG_FILE
     [ "$BE_VERBOSE"   ] && echo "$pre" "$@" | sed "s|$WORK_DIR|.|g"
     [ "$PRETEND_MODE" ] && return 0
-    "$@" 2>&1 | tee -a $LOG_FILE
+    if [ "$BE_VERBOSE" ]; then
+        "$@" 2>&1 | tee -a $LOG_FILE
+    else
+        "$@" 2>&1 | tee -a $LOG_FILE &>/dev/null
+    fi
     # Warning: Bashism
     local ret=${PIPESTATUS[0]}
     test -e $ERR_FILE && exit 3
