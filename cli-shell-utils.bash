@@ -160,6 +160,7 @@ read_params() {
 need() {
     need_q "$1" || return 1
     local cmd=$1  xlat=${2:-$1}
+    log_it echo &>/dev/null
     Msg "=> $xlat"
     return 0
 }
