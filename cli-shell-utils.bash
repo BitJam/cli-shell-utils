@@ -3,7 +3,7 @@
 # An integrated collection of utilites for shell scripting.
 # The .bash version uses $"..." for translation and another bashism in cmd().
 #
-# (C) 2016 Paul Banham <antiX@operamail.com>
+# (C) 2016 -- 2017 Paul Banham <antiX@operamail.com>
 # License: GPLv3 or later
 #
 # Note regarding reading command-line arguments and options:
@@ -2168,6 +2168,15 @@ its_alive_usb() {
 get_live_dev() {
     local live_dev=$(sed -rn "s|^([^ ]+) $LIVE_MP .*|\1|p" /proc/mounts)
     echo ${live_dev##*/}
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+read_initrd_config() {
+    file=${1:-/live/config/initrd.out}  pre=${2:-INITRD_}
+    test -r "$file" || fatal "Could not find/read file %s" "$file"
+    eval $(sed -r -n "s/^\s*([A-Z0-9_]+=)/$pre\1/p" $file)
 }
 
 #------------------------------------------------------------------------------
