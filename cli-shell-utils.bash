@@ -2094,6 +2094,32 @@ my_mount() {
 }
 
 #------------------------------------------------------------------------------
+# mount_if_needed $dev $mp  [options]
+#------------------------------------------------------------------------------
+mount_if_needed() {
+    local dev=$1  mp=$2 ; shift 2
+    test -e "$mp" && ! test -d "$mp" && fatal "Mountpoint %s is not a directory"
+    test -d "$mp" || cmd mkdir -p "$mp"
+
+    grep -q -- "^$dev $mp " /proc/mounts && return
+
+    local exist_mp=$(get_mp $dev)
+    if [ -n "$exist_mp" ]; then
+        always_cmd mount --bind "$exist_mp" "$mp" \
+            || fatal "Could not bind mount %s to %s" "$exist_mp" "$mp"
+    else
+        always_cmd mount "$dev" "$mp" "$@" \
+            || fatal "Could not mount device %s" "$dev"
+    fi
+    is_mountpoint "$mp" || fatal "Failed to mount %s at %s" "$dev" "$mp"
+    cleanup_mp "$mp"
+}
+
+get_mp() { grep "^$1 " /proc/mounts | head -n1 | cut -d" " -f2 ;}
+
+cleanup_mp() { CLEANUP_MPS="$*${CLEANUP_MPS:+ }$CLEANUP_MPS" ;}
+
+#------------------------------------------------------------------------------
 # Mount an iso file
 #------------------------------------------------------------------------------
 mount_iso_file() {
@@ -2110,7 +2136,6 @@ mount_iso_file() {
 
     fatal $"Could not mount iso file %s" "$file"
 }
-
 
 #------------------------------------------------------------------------------
 # Returns true on a live antiX/MX system, returns false otherwise.  May work
@@ -2430,6 +2455,27 @@ lib_clean_up() {
     [ "$ORIG_DIRTY_RATIO" ] && sysctl vm.dirty_ratio=$ORIG_DIRTY_RATIO >> $LOG_FILE
 }
 
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+mp_cleanup() {
+    local dir  i busy
+
+    for i in $(seq 1 10); do
+        busy=
+        for dir in $CLEANUP_MPS "$@" ; do
+            [ ${#dir} -eq 0 ] && continue
+            is_mountpoint "$dir" || continue
+            busy=true
+            umount --recursive "$dir"
+            #is_mountpoint "$dir" || rmdir "$dir"
+        done
+        sleep 0.1
+        [ "$busy" ] && continue
+        printf "umount done at iteration %s\n" $i >> $LOG_FILE
+        exit 0
+    done
+}
 
 #==============================================================================
 #===== END ====================================================================
