@@ -2475,14 +2475,24 @@ mp_cleanup() {
             [ ${#dir} -eq 0 ] && continue
             is_mountpoint "$dir" || continue
             busy=true
-            umount --recursive "$dir"
+            umount --recursive "$dir" &>/dev/null
             #is_mountpoint "$dir" || rmdir "$dir"
         done
         sleep 0.1
         [ "$busy" ] && continue
         printf "umount done at iteration %s\n" $i >> $LOG_FILE
-        exit 0
+        return
     done
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+luks_close() {
+    local name=$1
+    [ -z "$name" ] && return
+    test -e /dev/mapper/$name || return
+    cryptsetup close $name
 }
 
 #==============================================================================
