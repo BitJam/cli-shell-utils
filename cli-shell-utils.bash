@@ -171,9 +171,6 @@ need() {
 need_q() {
     local cmd=$1  cmd2=${1%%-*}
 
-    # Only do the encryption steps if encryption is enabled
-    ! encrypt && [ -z "${cmd##*encrypt*}" ] && return 1
-
     echo "$CMDS" | egrep -q "(^| )($cmd|$cmd2|all)( |$)" || return 1
     return 0
 }
