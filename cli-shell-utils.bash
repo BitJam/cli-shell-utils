@@ -1379,7 +1379,6 @@ partition_size_menu() {
     done
 }
 
-
 #==============================================================================
 # Fun with Colors!  (and align unicode test)
 #
@@ -2099,7 +2098,7 @@ my_mount() {
 mount_if_needed() {
     local dev=$1  mp=$2 ; shift 2
     test -e "$mp" && ! test -d "$mp" && fatal "Mountpoint %s is not a directory"
-    test -d "$mp" || cmd mkdir -p "$mp"
+    test -d "$mp" || always_cmd mkdir -p "$mp"
 
     grep -q -- "^$dev $mp " /proc/mounts && return
 
