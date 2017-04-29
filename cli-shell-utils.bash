@@ -1466,6 +1466,7 @@ vq()  { echo "$version_co$*$m_co" ;}
 pqq() { echo "$hi_co$*$quest_co"  ;}
 bqq() { echo "$bold_co$*$quest_co";}
 pnq() { echo "$num_co$*$quest_co" ;}
+pnh() { echo "$num_co$*$hi_co"    ;}
 pqw() { echo "$warn_co$*$hi_co"   ;}
 pqe() { echo "$hi_co$*$err_co"    ;}
 pqh() { echo "$m_co$*$hi_co"      ;}
