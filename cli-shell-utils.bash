@@ -1997,7 +1997,7 @@ read_reset_config_file() {
 #------------------------------------------------------------------------------
 is_mountpoint() {
     local file=$1
-    cut -d" " -f2 /proc/mounts | grep -q "^$(readlink -f $file)$"
+    cut -d" " -f2 /proc/mounts | grep -q "^$(readlink -f $file 2>/dev/null)$"
     return $?
 }
 
