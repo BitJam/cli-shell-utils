@@ -2468,7 +2468,9 @@ text_progress() {
         esac
 
         cur_x=$((max_x * input / 100))
-        progbar_draw $cur_x $last_x
+        # Note we always draw entire bar to avoid problems when switching
+        # virtual terminals while the bar is being drawn
+        progbar_draw $cur_x 0
 
         last_x=$cur_x
 
