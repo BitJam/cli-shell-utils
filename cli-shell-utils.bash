@@ -2365,55 +2365,55 @@ bogo_meter() {
 }
 
 #------------------------------------------------------------------------------
-# Copy a directory while showing a true progress bar of the progress.
-# FIXME: rename to progbar_copy_dir() or something like that.
+# Copy a directory while sending percentage done to an external program
+# So that program can draw a progress bar.
 #------------------------------------------------------------------------------
-prog_copy() {
-    local from=$1  to=$2  err_msg=${3:-Copy error}
-    # TEST directories or fatal error
+copy_with_progress() {
+    local from=$1  to=$2  err_msg=$3  prog=$4 ; shift 3
 
-    local final_size=$(du_size $from)
+    hide_cursor
+
+    echo "Using progress program: $*" >> $LOG_FILE
+
+    if [ "$PRETEND_MODE" ]; then
+        pretend_progress "$@" 2>/dev/null
+        restore_cursor
+        return 0
+    fi
+
+    local final_size=$(du_size $from/$files)
     local base_size=$(du_size $to)
 
-    local cur_size=$base_size  last_x=0  cur_x
-
-    # Make progress bar 80% of screen width
-    local max_x=$((SCREEN_WIDTH * PROG_BAR_WIDTH / 100))
+    local cur_size=$base_size  cur_pct=0  last_pct=0
 
     ORIG_DIRTY_RATIO=$(sysctl -n vm.dirty_ratio)
     ORIG_DIRTY_BYTES=$(sysctl -n vm.dirty_bytes)
     sysctl vm.dirty_bytes=$USB_DIRTY_BYTES >> $LOG_FILE
-    (cp -a $from/* $to/ || fatal "$err_msg") &
+
+    (cp -a $from/$files $to/ || fatal "$err_msg") &
     sleep 0.01
     COPY_PPID=$!
     COPY_PID=$(pgrep -P $COPY_PPID)
 
     echo "copy pids: $(echo $COPY_PPID $COPY_PID)" >> $LOG_FILE
 
-    # Disable cursor
-    printf "\e[?25l"
-
-    # Create end-points and save our location on the screen
-    printf "\e[s$green|$nc_co"
-    printf "\e[u\e[$((max_x + 1))C$green|$nc_co\e[u"
-
     while true; do
-        test -d /proc/$COPY_PPID || break
+        if ! test -d /proc/$COPY_PPID; then
+            echo 100
+            break
+        fi
         sleep 0.1
+
         cur_size=$(du_size $to)
-        cur_x=$((max_x * cur_size / final_size))
-        [ $cur_x -ge $max_x ] && cur_x=$max_x
-        [ $cur_x -eq $last_x ] && continue
-        prog_bar $cur_x $last_x $max_x
-        [ $cur_x -ge $max_x ] && break
-        last_x=$cur_x
-    done
-    echo
+        cur_pct=$((cur_size * 100 / final_size))
+        [ $cur_pct -gt $last_pct ] || continue
+        echo $cur_pct
+        last_pct=$cur_pct
 
+    done | "$@"
+
+    restore_cursor
     sync ; sync
-
-    # Enable cursor
-    printf "\e[?25h"
 
     sysctl vm.dirty_bytes=$ORIG_DIRTY_BYTES >> $LOG_FILE
     sysctl vm.dirty_ratio=$ORIG_DIRTY_RATIO >> $LOG_FILE
@@ -2428,14 +2428,73 @@ prog_copy() {
 }
 
 #------------------------------------------------------------------------------
-# Update the progress bar based on the current x-value, the previous x-value,
-# and the maximum x-value.
+# Hide cursor and prepare restore_cursor() to work just once
 #------------------------------------------------------------------------------
-prog_bar() {
-    local x=$1  prev=$2  max=$3
+hide_cursor() {
+    RESTORE_CURSOR="\e[?25h\n"
+
+    # Disable cursor
+    printf "\e[?25l"
+}
+
+#------------------------------------------------------------------------------
+# Only works once after hide_cursor() runs.  This allows me to call it in the
+# normal flow and at clean up.
+#------------------------------------------------------------------------------
+restore_cursor() {
+    printf "$RESTORE_CURSOR"
+    RESTORE_CURSOR=
+}
+
+#------------------------------------------------------------------------------
+# This acts like an external program to draw a progress bar on the screen.
+# It expects integer percentages as input on stdin to move the bar.
+#------------------------------------------------------------------------------
+text_progress() {
+    local max_x=$((SCREEN_WIDTH * PROG_BAR_WIDTH / 100))
+
+    # length of ">|100%" plus one = 7
+    max_x=$((max_x - 7))
+
+    # Create end-points and save our location on the screen
+    printf "\e[s$green|$nc_co"
+    printf "\e[u\e[$((max_x + 1))C$green|$nc_co\e[u"
+
+    local cur_x last_x=0
+    while read input; do
+        case $input in
+            [0-9]|[0-9][0-9]|[0-9][0-9][0-9]) ;;
+            *) break;;
+        esac
+
+        cur_x=$((max_x * input / 100))
+        progbar_draw $cur_x $last_x
+
+        last_x=$cur_x
+
+        printf "\e[$((max_x + 2))C%3s%%" "$input"
+        [ $input -ge 100 ] && exit
+    done
+}
+
+#------------------------------------------------------------------------------
+# Draw progress arrow and update percentage
+#------------------------------------------------------------------------------
+progbar_draw() {
+    local x=$1  prev=$2
     local diff=$((x - prev))
     local bar=$(printf "$cyan%${diff}s$yellow>$nc_co" "" | tr ' ' '=')
-    printf "\e[u\e[$((prev))C$bar\e[u\e[$((max + 1))C"
+    printf "\e[u\e[$((prev))C$bar\e[u"
+}
+
+#------------------------------------------------------------------------------
+# Exercise external/internal progress bar when in pretend mode
+#------------------------------------------------------------------------------
+pretend_progress() {
+    for i in $(seq 0 2 100); do
+        echo $i
+        sleep 0.05
+    done | "$@"
 }
 
 #------------------------------------------------------------------------------
@@ -2457,12 +2516,11 @@ kill_pids() {
 #------------------------------------------------------------------------------
 # Possible cleanup need by this library
 # Enable the cursor, kill off bg processes, and restore dirty settings.
-# Most of these are only needed if we are interrupted during prog_copy().
+# Most of these are only needed if we are interrupted during progbar_copy().
 #------------------------------------------------------------------------------
 lib_clean_up() {
 
-    # Enable cursor
-    printf "\e[?25h"
+    restore_cursor
 
     # Kill off background copy process
     kill_pids $COPY_PPID $COPY_PID
