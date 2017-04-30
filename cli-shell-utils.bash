@@ -87,14 +87,18 @@ read_early_params() {
 read_all_cmdline_mingled() {
 
     : ${PARAM_CNT:=0}
+    SHIFT_2=0
 
     while [ $# -gt 0 ]; do
         read_params "$@"
         shift $SHIFT
+        SHIFT_2=$((SHIFT_2 + SHIFT))
+        [ -n "$END_CMDLINE" ] && return
         while [ $# -gt 0 -a ${#1} -gt 0 -a -n "${1##-*}" ]; do
             PARAM_CNT=$((PARAM_CNT + 1))
             assign_parameter $PARAM_CNT "$1"
             shift
+            SHIFT_2=$((SHIFT_2 + 1))
         done
     done
 }
@@ -145,6 +149,7 @@ read_params() {
         fi
 
         eval_argument "$arg" "$val"
+        [ "$END_CMDLINE" ] && return
     done
 }
 
