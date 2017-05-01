@@ -40,7 +40,7 @@
 : ${SCREEN_WIDTH:=$(stty size 2>/dev/null | cut -d" " -f2)}
 : ${SCREEN_WIDTH:=80}
 : ${USB_DIRTY_BYTES:=20000000}  # Need this small size for the progress bar to work
-: ${PROG_BAR_WIDTH:=90}     # Width of progress bar in percent of screen width
+: ${PROG_BAR_WIDTH:=100}     # Width of progress bar in percent of screen width
 : ${VM_VERSION_PROG:=vmlinuz-version}
 
 # Make sure these start out empty.  See lib_clean_up()
@@ -2405,7 +2405,7 @@ text_progress() {
 
     # Create end-points and save our location on the screen
     printf "\e[s$green|$nc_co"
-    printf "\e[u\e[$((max_x + 1))C$green|$nc_co\e[u"
+    #printf "\e[u\e[$((max_x + 1))C$green|$nc_co\e[u"
 
     local cur_x last_x=0
     while read input; do
@@ -2427,7 +2427,7 @@ text_progress() {
 }
 
 #------------------------------------------------------------------------------
-# Draw progress arrow and update percentage
+# Draw progress arrow
 #------------------------------------------------------------------------------
 progbar_draw() {
     local x=$1  prev=$2
