@@ -2320,7 +2320,7 @@ copy_with_progress() {
 
     hide_cursor
 
-    echo "Using progress program: $*" >> $LOG_FILE
+    printf "Using progress %s: $*\n" "$(my_type $1)" >> $LOG_FILE
 
     if [ "$PRETEND_MODE" ]; then
         pretend_progress "$@" 2>/dev/null
@@ -2434,6 +2434,19 @@ progbar_draw() {
     local diff=$((x - prev))
     local bar=$(printf "$cyan%${diff}s$yellow>$nc_co" "" | tr ' ' '=')
     printf "\e[u\e[$((prev))C$bar\e[u"
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+my_type() {
+    local prog=$1
+    local type=$(type -t $prog)
+    case $type in
+        file) echo "command" ;;
+    function) echo $type     ;;
+           *) echo $type     ;;
+    esac
 }
 
 #------------------------------------------------------------------------------
