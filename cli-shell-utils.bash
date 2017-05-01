@@ -296,15 +296,16 @@ always_cmd() { PRETEND_MODE= cmd "$@" ;}
 
 #------------------------------------------------------------------------------
 # Always send the command line and all output to the log file.  Set the log
-# file to /dev/null to disable this feature.  If BE_VERBOSE then also echo
-# the command line to the screen.  If PRETEND_MODE then don't actually run
-# the command.
+# file to /dev/null to disable this feature.
+# If BE_VERBOSE then send output to the screen as well as the log file.
+# If VERY_VERBOSE then send commands to screen was well as the long file.
+# If PRETEND_MODE then don't actually run the command.
 #------------------------------------------------------------------------------
 cmd() {
     local pre=" >"
     [ "$PRETEND_MODE" ] && pre="p>"
     echo "$pre $*" >> $LOG_FILE
-    [ "$BE_VERBOSE"   ] && echo "$pre" "$@" | sed "s|$WORK_DIR|.|g"
+    [ "$VERY_VERBOSE" ] && echo "$pre" "$@" | sed "s|$WORK_DIR|.|g"
     [ "$PRETEND_MODE" ] && return 0
     if [ "$BE_VERBOSE" ]; then
         "$@" 2>&1 | tee -a $LOG_FILE
