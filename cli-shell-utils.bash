@@ -387,24 +387,18 @@ _yes_no() {
 
     [ "$AUTO_MODE" ] && return $ret
 
-    if [ "$FIFO_MODE" ]; then
-        pipe_up "yes-no:$def_entry: $question"
-        pipe_dn answer
-        echo "answer: $answer"
-    else
-        local yes=$"yes"  no=$"no"  quit=$"quit"  default=$"default"
-        quit="$quit_co$quit"
+    local yes=$"yes"  no=$"no"  quit=$"quit"  default=$"default"
+    quit="$quit_co$quit"
 
-        local menu def_entry
-        case $def_entry in
-            1) menu=$(printf "  1) $yes ($default)\n  2) $no\n") ;;
-            2) menu=$(printf "  1) $yes\n  2) $no ($default)\n") ;;
-            *) fatal "Internal error in _yes_no()"               ;;
-        esac
+    local menu def_entry
+    case $def_entry in
+        1) menu=$(printf "  1) $yes ($default)\n  2) $no\n") ;;
+        2) menu=$(printf "  1) $yes\n  2) $no ($default)\n") ;;
+        *) fatal "Internal error in _yes_no()"               ;;
+    esac
 
-        local data=$(printf "1:1\n2:2\n0:0")
-        my_select_2 answer "$quest_co$question$nc_co" $def_entry "$data" "$menu\n"
-    fi
+    local data=$(printf "1:1\n2:2\n0:0")
+    my_select_2 answer "$quest_co$question$nc_co" $def_entry "$data" "$menu\n"
 
     case $answer in
         1) return 0 ;;
@@ -1550,7 +1544,6 @@ msg_1() {
 Msg() {
     local fmt=$1 ; shift
     prog_log_echo "$m_co$fmt$nc_co" "$@"
-    pipe_up "info: $fmt" "$@"
 }
 
 #------------------------------------------------------------------------------
@@ -1610,7 +1603,6 @@ fatal() {
     fmt=$(echo "$fmt" | sed 's/\\n/ /g')
     printf "$code:$fmt\n" "$@" | strip_color >> $ERR_FILE
     [ -n "$FATAL_QUESTION" ] && echo "Q:$FATAL_QUESTION" >> $ERR_FILE
-    FIFO_MODE=
     my_exit ${EXIT_NUM:-100}
 }
 
@@ -1672,53 +1664,6 @@ prog_log()  {
     local fmt="$1\n" ;  shift;
     printf "$fmt" "$@" | strip_color >> $LOG_FILE
     printf "$fmt" "$@" | strip_color >> $PROG_FILE
-}
-
-#==============================================================================
-# Pipes
-# (needs work)
-#==============================================================================
-#------------------------------------------------------------------------------
-# Create the pipes (work in progress ATM)
-#------------------------------------------------------------------------------
-start_fifo() {
-    local fifo
-    my_mkdir $WORK_DIR
-    FIFO_UP="$WORK_DIR/to-gui"
-    FIFO_DN="$WORK_DIR/to-cli"
-    for fifo in $FIFO_UP $FIFO_DN; do
-        touch "$fifo"
-        #mkfifo "$fifo"  || fatal "Could not create fifo ''" "$fifo"
-    done
-}
-
-#------------------------------------------------------------------------------
-# send a message through one pipe
-#------------------------------------------------------------------------------
-pipe_up() {
-    [ "$FIFO_MODE" ] || return
-
-    local fmt=$1 ; shift
-    [ ${#FIFO_UP} -gt 0 ] && printf "$fmt\n" "$@" >> $FIFO_UP
-    return
-
-
-    if [ ${#FIFO_UP} -gt 0 ] && test -e "$FIFO_UP" ; then
-        echo pipe_up 2
-        printf "$fmt\n" "$@" | strip_color >> $FIFO_UP
-    else
-        exit 117
-    fi
-}
-
-#------------------------------------------------------------------------------
-# Read a message from the other pipe
-#------------------------------------------------------------------------------
-pipe_dn() {
-    name=$1
-    return
-    [ "$FIFO_MODE" ] || return
-    read $name < $FIFO_DN
 }
 
 #==============================================================================
