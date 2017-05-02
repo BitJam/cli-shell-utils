@@ -416,7 +416,13 @@ YES_no_pretend() {
     local question=$1 answer  orig_pretend=$PRETEND_MODE
     [ ${#question} -gt 0 ] || question=$"Shall we begin?"
     local yes=$"yes"  no=$"no"  pretend=$"pretend mode"
-    local menu="yes$P_IFS$yes\nno$P_IFS$no\npretend$P_IFS$pretend\n"
+
+    local menu
+    if [ "$PRETEND_MODE" ]; then
+        menu="pretend$P_IFS$pretend\nno$P_IFS$no\n"
+    else
+        menu="yes$P_IFS$yes\nno$P_IFS$no\npretend$P_IFS$pretend\n"
+    fi
 
     my_select answer "$question" "$menu"
 
