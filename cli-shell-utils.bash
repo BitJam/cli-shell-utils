@@ -2380,8 +2380,8 @@ copy_with_progress() {
     sysctl vm.dirty_bytes=$USB_DIRTY_BYTES >> $LOG_FILE
 
     (cp -a $from/$files $to/ || fatal "$err_msg") &
-    sleep 0.01
     COPY_PPID=$!
+    sleep 0.01
     COPY_PID=$(pgrep -P $COPY_PPID)
 
     echo "copy pids: $(echo $COPY_PPID $COPY_PID)" >> $LOG_FILE
