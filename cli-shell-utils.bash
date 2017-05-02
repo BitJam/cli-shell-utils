@@ -2401,6 +2401,8 @@ copy_with_progress() {
 
     done | "$@"
 
+    wait $COPY_PPID
+
     restore_cursor
     sync ; sync
 
