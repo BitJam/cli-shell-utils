@@ -2399,10 +2399,10 @@ restore_cursor() {
 # It expects integer percentages as input on stdin to move the bar.
 #------------------------------------------------------------------------------
 text_progress() {
-    local max_x=$((SCREEN_WIDTH * PROG_BAR_WIDTH / 100))
+    local abs_max_x=$((SCREEN_WIDTH * PROG_BAR_WIDTH / 100))
 
     # length of ">|100%" plus one = 7
-    max_x=$((max_x - 7))
+    max_x=$((abs_max_x - 7))
 
     # Create end-points and save our location on the screen
     printf "\e[s$green|$nc_co"
@@ -2418,12 +2418,14 @@ text_progress() {
         cur_x=$((max_x * input / 100))
         # Note we always draw entire bar to avoid problems when switching
         # virtual terminals while the bar is being drawn
+
+        [ $cur_x -le $last_x ] && continue
         progbar_draw $cur_x 0
 
         last_x=$cur_x
 
         printf "\e[$((max_x + 2))C%3s%%" "$input"
-        [ $input -ge 100 ] && exit
+        [ $input -ge 100 ] && break
     done
 }
 
