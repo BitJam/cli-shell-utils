@@ -2169,6 +2169,41 @@ show_distro_version()  {
     return 0
 }
 
+
+#------------------------------------------------------------------------------
+# Read "version" file and get leading letters from first line
+#------------------------------------------------------------------------------
+get_distro_name()  {
+    local file=$1  version
+
+    [ ${#file} -gt 0 ]                     || return 1
+    test -r $file                          || return 1
+    read version 2>/dev/null < $file
+
+    [ ${#version} -gt 0 ]                  || return 1
+    [ -z "${version%%[a-zA-Z]*}" ]         || return 1
+
+    echo "$version" | sed -r "s/^([A-Za-z]+).*/\1/"
+    return 0
+}
+
+#------------------------------------------------------------------------------
+# Make a partition label of length less than or equal to $max by combinining
+# the parts with $sep as glue.
+#------------------------------------------------------------------------------
+make_label() {
+    local max=$1  sep=$2  lab=$3 ; shift 3
+
+    local part len
+    for part; do
+        len=${#lab}
+        [ $len -ge $max ] && break
+        part="$sep$part"
+        [ $(($len + ${#part})) -le $max ] && lab="$lab$part"
+    done
+    echo ${lab:0:$max}
+}
+
 #------------------------------------------------------------------------------
 # Given a partition, echo the canonical name for the drive.
 #------------------------------------------------------------------------------
