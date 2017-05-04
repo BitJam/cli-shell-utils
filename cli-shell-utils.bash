@@ -437,7 +437,8 @@ YES_no_pretend() {
 #------------------------------------------------------------------------------
 # Announce to the world we are in pretend mode
 #------------------------------------------------------------------------------
-shout_pretend() { [ "$PRETEND_MODE" ] && Shout "PRETEND MODE ENABLED" ;}
+:
+shout_pretend() { [ "$PRETEND_MODE" ] && Shout $"PRETEND MODE ENABLED" ;}
 
 #------------------------------------------------------------------------------
 # Generate a simple selection menu based on a data:label data structure.
@@ -455,12 +456,12 @@ my_select() {
         fi
         dcnt=$cnt
 
-        if [ "$datum" = "quit" ]; then
+        if [ "$datum" = 'quit' ]; then
             dcnt=0
             label="$quit_co$label$nc_co"
         fi
 
-        [ $dcnt = "$default" ] && label=$(printf "%s (%s)" "$label" "$m_co$(cq "default")")
+        [ $dcnt = "$default" ] && label=$(printf "%s (%s)" "$label" "$m_co$(cq 'default')")
 
         data="${data}$dcnt:$datum\n"
         menu="${menu}$(printf "$quest_co%3d$hi_co)$m_co %${width}s" $dcnt "$label")\n"
@@ -547,7 +548,7 @@ my_select_2() {
              [0-9]) echo -ne "\b"
                     read -ei "$input_1" input
                     break  ;;
-                 *) quest " %s\n" "Opps.  Please try again" ;;
+                 *) quest " %s\n" $"Opps.  Please try again" ;;
             esac
 
         done
@@ -573,7 +574,7 @@ my_select_2() {
             continue
         fi
         # FIXME!  is this always right?
-        [ "$val" = "default" ] && val=
+        [ "$val" = 'default' ] && val=
         eval $var=\$val
         break
     done
@@ -589,7 +590,7 @@ final_quit() {
     echo -n " "
     read -n1 input
     echo
-    [ "$input" = "q" ] && exit 0
+    [ "$input" = 'q' ] && exit 0
 }
 
 #------------------------------------------------------------------------------
@@ -640,7 +641,7 @@ cli_text_menu() {
 #------------------------------------------------------------------------------
 find_live_boot_dir() {
     local var=$1  mp=$2  fname=$3  title=$4  min_size=${5:-$MIN_LINUXFS_SIZE}
-    [ ${#title} -eq 0 ] && title="Please select the live boot directory"
+    [ ${#title} -eq 0 ] && title=$"Please select the live boot directory"
 
     local find_opts="-maxdepth 2 -mindepth 2 -type f -name $fname -size +$MIN_LINUXFS_SIZE"
 
@@ -751,7 +752,7 @@ cli_search_file() {
         esac
 
         local depth=1 dir f found found_cnt
-        echo -n "depth:"
+        echo -n 'depth:'
         while [ $depth -le $max_depth ]; do
             echo -n " $depth"
             for dir in $dir_list; do
@@ -890,12 +891,12 @@ cli_get_filename() {
     local file
 
     while true; do
-        quest "$title$nc_co\n$quest_co%s\n" "(tab completion is enabled)"
+        quest "$title$nc_co\n$quest_co%s\n" $"(tab completion is enabled)"
         read -e -i "$preamb" file
         preamb=$file
         if ! test -f "$file"; then
-            warn "%s does not appear to be a file" "$file"
-            YES_no "Try again?" && continue
+            warn $"%s does not appear to be a file" "$file"
+            YES_no $"Try again?" && continue
         fi
         quest $"You entered: %s" "$(cq "$file")"
         YES_no $"Is this correct?" && break
@@ -1305,8 +1306,8 @@ usb_stats() {
         shift 4
     done
 
-    # Space in a drive or partition: Total = Allocated + Extra
-    # Japanese: please don't translate: Total, Allocated, Extra
+    # Space in a drive or partition: Total = Used + Extra
+    # Japanese: please don't translate: Total, Used, Extra
     local total=$"Total"  allocated=$"Used"  extra=$"Extra"
     local w1=5 w2=${#total} w3=${#allocated} w4=${#extra}
     # Get field widths
@@ -1400,7 +1401,7 @@ set_colors() {
 
     local e=$(printf "\e")
 
-    if [ "$color" = "off" ]; then
+    if [ "$color" = 'off' ]; then
 
          black=  ;    blue=  ;    green=  ;    cyan=  ;
            red=  ;  purple=  ;    brown=  ; lt_gray=  ;
