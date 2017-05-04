@@ -2365,13 +2365,17 @@ copy_with_progress() {
 
     printf "Using progress %s: $*\n" "$(my_type $1)" >> $LOG_FILE
 
+    local pre=" >"
+    [ "$PRETEND_MODE" ] && pre="p>"
+    echo $pre cp -a $from/* $to/                     >> $LOG_FILE
+
     if [ "$PRETEND_MODE" ]; then
         pretend_progress "$@" 2>/dev/null
         restore_cursor
         return 0
     fi
 
-    local final_size=$(du_size $from/$files)
+    local final_size=$(du_size $from/*)
     local base_size=$(du_size $to)
 
     local cur_size=$base_size  cur_pct=0  last_pct=0
@@ -2380,7 +2384,7 @@ copy_with_progress() {
     ORIG_DIRTY_BYTES=$(sysctl -n vm.dirty_bytes)
     sysctl vm.dirty_bytes=$USB_DIRTY_BYTES >> $LOG_FILE
 
-    (cp -a $from/$files $to/ || fatal "$err_msg") &
+    (cp -a $from/* $to/ || fatal "$err_msg") &
     COPY_PPID=$!
     sleep 0.01
     COPY_PID=$(pgrep -P $COPY_PPID)
