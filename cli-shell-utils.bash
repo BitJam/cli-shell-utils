@@ -2441,7 +2441,7 @@ restore_cursor() {
 # This acts like an external program to draw a progress bar on the screen.
 # It expects integer percentages as input on stdin to move the bar.
 #------------------------------------------------------------------------------
-text_progress() {
+text_progress_bar() {
     local abs_max_x=$((SCREEN_WIDTH * PROG_BAR_WIDTH / 100))
 
     # length of ">|100%" plus one = 7
@@ -2451,7 +2451,7 @@ text_progress() {
     printf "\e[s$green|$nc_co"
     #printf "\e[u\e[$((max_x + 1))C$green|$nc_co\e[u"
 
-    local cur_x last_x=0
+    local input cur_x last_x=0
     while read input; do
         case $input in
             [0-9]|[0-9][0-9]|[0-9][0-9][0-9]) ;;
@@ -2483,7 +2483,22 @@ progbar_draw() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Just show the percentage completed
+#------------------------------------------------------------------------------
+percent_progress() {
+    local input
+    while read input; do
+        case $input in
+            [0-9]|[0-9][0-9]|[0-9][0-9][0-9]) ;;
+            *) break ;;
+        esac
+        printf "\e[10D\e[K%3s%%" "$input"
+        [ $input -ge 100 ] && break
+    done
+}
+
+#------------------------------------------------------------------------------
+# Replace "file" with "command".
 #------------------------------------------------------------------------------
 my_type() {
     local prog=$1
