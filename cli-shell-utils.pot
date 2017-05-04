@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: antiX Development\n"
 "Report-Msgid-Bugs-To: translation@antixlinux.org\n"
-"POT-Creation-Date: 2016-11-22 11:16-0700\n"
+"POT-Creation-Date: 2017-05-03 20:44-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,10 +17,197 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-msgid "Could not find a syslinux or isolinux directory"
+#. starting <program name>
+msgid "Starting %s"
+msgstr ""
+
+msgid "The live media is not mounted"
+msgstr ""
+
+msgid "Will use target device %s"
+msgstr ""
+
+msgid "Create an encrypted live-usb?"
+msgstr ""
+
+msgid "copying"
+msgstr ""
+
+msgid "Please enter the filename"
+msgstr ""
+
+#. What thing we are copying or cloning from: file, device or directory
+msgid "file"
+msgstr ""
+
+#. What thing we are copying or cloning from: file, device or directory
+msgid "device"
+msgstr ""
+
+#. Cloning only copies certain files to make a brand-new live-usb
+msgid "cloning"
+msgstr ""
+
+#. What thing we are copying or cloning from: file, device or directory
+msgid "directory"
+msgstr ""
+
+#. Will use source <file XYZ>
+msgid "Will use source %s"
 msgstr ""
 
 msgid "Could not find device %s"
+msgstr ""
+
+msgid "Customize language and timezone?"
+msgstr ""
+
+msgid "Encryption enabled"
+msgstr ""
+
+msgid "encrypted"
+msgstr ""
+
+#. Ready to make live-usb on device X by <cloning|copying directory Y>
+msgid "Ready to make %s on device %s by %s"
+msgstr ""
+
+msgid "Shall we begin?"
+msgstr ""
+
+msgid "Will use initial passphrase %s"
+msgstr ""
+
+msgid "install"
+msgstr ""
+
+msgid "done"
+msgstr ""
+
+msgid "You will be asked to create your own passphrase on the first boot"
+msgstr ""
+
+msgid "The --from parameter '%s' was not recognized"
+msgstr ""
+
+msgid "Make a full-featured live-usb"
+msgstr ""
+
+msgid "Make an encrypted full-featured live-usb"
+msgstr ""
+
+msgid "Make a customized live-usb"
+msgstr ""
+
+msgid "Update UUIDS on existing live-usb"
+msgstr ""
+
+msgid "Update boot parameters on existing live-usb"
+msgstr ""
+
+msgid "Reinstall legacy bootloader on existing live-usb"
+msgstr ""
+
+msgid "Please select what action to perform"
+msgstr ""
+
+msgid "Please select the source for the new live-usb"
+msgstr ""
+
+msgid "No available target usb devices were found"
+msgstr ""
+
+msgid "Only one target usb device was found: %s"
+msgstr ""
+
+msgid "Please select the target usb device"
+msgstr ""
+
+msgid "entire drive"
+msgstr ""
+
+msgid "main partition"
+msgstr ""
+
+msgid "bios partition"
+msgstr ""
+
+msgid "uefi partition"
+msgstr ""
+
+msgid "Already using over 90% of the device"
+msgstr ""
+
+msgid "Do you want to change how much of the device is used?"
+msgstr ""
+
+#. Have set the size to <13%> (1,200 MiB)
+msgid "Have set size to %s (%s MiB)"
+msgstr ""
+
+msgid "Please select how much space to use for the live-usb partitions"
+msgstr ""
+
+msgid "Assuming this is an encrypted live-usb"
+msgstr ""
+
+msgid "About to encrypt device %s"
+msgstr ""
+
+msgid "Encryption successful"
+msgstr ""
+
+msgid "Please wait while we mount optical disc at %s"
+msgstr ""
+
+msgid "No '%s' file found in any directory on clone device at '%s'"
+msgstr ""
+
+msgid "No live-boot directory found on clone device at '%s'"
+msgstr ""
+
+msgid "Multiple live-boot directories found on clone device at '%s'"
+msgstr ""
+
+#. Using <gpt|msdos> partitioning
+msgid "Using %s partitioning"
+msgstr ""
+
+msgid "Partitioning failed at %s"
+msgstr ""
+
+msgid "copy from %s to %s partition"
+msgstr ""
+
+msgid "files: %s"
+msgstr ""
+
+msgid "Error while copying files to main partition of live usb"
+msgstr ""
+
+msgid "Error while copying %s files"
+msgstr ""
+
+msgid "Add program %s to %s"
+msgstr ""
+
+#. Could not find '<grub.cfg>' file to update
+msgid "Could not find '%s' file to update"
+msgstr ""
+
+#. Could not find <grub.cfg> file
+msgid "Could not find %s file"
+msgstr ""
+
+msgid "Could not find file %s"
+msgstr ""
+
+#. Create syslinux directory from <boot/isolinux>
+msgid "Create syslinux directory from %s"
+msgstr ""
+
+#. [don't translate syslinux or isolinux]
+msgid "Could not find a syslinux or isolinux directory"
 msgstr ""
 
 msgid "Not enough space on %s partition"
@@ -31,13 +218,6 @@ msgstr ""
 
 #. Pause at '<Exit>'
 msgid "Exit"
-msgstr ""
-
-#. starting <program name>
-msgid "Starting %s"
-msgstr ""
-
-msgid "The live media is not mounted"
 msgstr ""
 
 msgid "Current running kernel is %s"
@@ -259,9 +439,6 @@ msgstr ""
 msgid "in pretend mode"
 msgstr ""
 
-msgid "done"
-msgstr ""
-
 msgid "Expected a parameter after: %s"
 msgstr ""
 
@@ -289,10 +466,10 @@ msgstr ""
 msgid "default"
 msgstr ""
 
-msgid "Shall we begin?"
+msgid "pretend mode"
 msgstr ""
 
-msgid "pretend mode"
+msgid "PRETEND MODE ENABLED"
 msgstr ""
 
 msgid "selection"
@@ -312,6 +489,9 @@ msgstr ""
 msgid "Use '%s' to quit"
 msgstr ""
 
+msgid "Opps.  Please try again"
+msgstr ""
+
 msgid "You must enter a number"
 msgstr ""
 
@@ -327,10 +507,22 @@ msgstr ""
 msgid "You chose %s"
 msgstr ""
 
+msgid "Please select the live boot directory"
+msgstr ""
+
 msgid "You entered: %s"
 msgstr ""
 
 msgid "Is this correct?"
+msgstr ""
+
+msgid "(tab completion is enabled)"
+msgstr ""
+
+msgid "%s does not appear to be a file"
+msgstr ""
+
+msgid "Try again?"
 msgstr ""
 
 #. Japanese: Please don't translate these: Device, Size, Filesystem, Label, Model
@@ -386,12 +578,12 @@ msgstr ""
 msgid "To"
 msgstr ""
 
-#. Space in a drive or partition: Total = Allocated + Extra
-#. Japanese: please don't translate: Total, Allocated, Extra
+#. Space in a drive or partition: Total = Used + Extra
+#. Japanese: please don't translate: Total, Used, Extra
 msgid "Total"
 msgstr ""
 
-msgid "Allocated"
+msgid "Used"
 msgstr ""
 
 msgid "Extra"
