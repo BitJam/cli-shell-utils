@@ -544,7 +544,7 @@ my_select_2() {
                  h) [ -n "$have_men" ] && continue
                     man "$man_page"
                     echo
-                    break ;;
+                    continue ;;
              [0-9]) echo -ne "\b"
                     read -ei "$input_1" input
                     break  ;;
@@ -552,10 +552,11 @@ my_select_2() {
             esac
 
         done
+
         # Evaluate again in case of backspacing
         case $input in
             q*) final_quit ; continue ;;
-            h*) [ "$have_man" ] && man "$man_page" ; continue ;;
+            h*) [ "$have_man" ]  && man "$man_page" ; continue ;;
         esac
 
         [ -z "$input" -a -n "$default" ] && input=$default
