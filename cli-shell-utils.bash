@@ -23,7 +23,8 @@
 : ${MY_LIB_DIR:=$(readlink -f "$MY_DIR/../cli-shell-utils")}
 : ${LIB_DIR:=/usr/local/lib/cli-shell-utils}
 : ${LOCK_FILE:=/run/lock/$ME}
-
+: ${ERR_FILE:=/dev/null}
+: ${LOG_FILE:=/dev/null}
 : ${DATE_FMT:=%Y-%m-%d %H:%M}
 : ${DEFAULT_USER:=1000}
 : ${K_IFS:=|}
@@ -1612,7 +1613,8 @@ fatal() {
     fmt=$(echo "$fmt" | sed 's/\\n/ /g')
     printf "$code:$fmt\n" "$@" | strip_color >> $ERR_FILE
     [ -n "$FATAL_QUESTION" ] && echo "Q:$FATAL_QUESTION" >> $ERR_FILE
-    my_exit ${EXIT_NUM:-100}
+    type my_exit 2>/dev/null && my_exit ${EXIT_NUM:-100}
+    exit ${EXIT_NUM:-100}
 }
 
 #------------------------------------------------------------------------------
