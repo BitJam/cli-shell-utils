@@ -1,0 +1,201 @@
+#!/bin/bash
+
+#==============================================================================
+# console-width-select
+# Select console font based on resulting width of screen in characters
+#
+# (C) 2017 Paul Banham <antiX@operamail.com>
+# License: GPLv3 or later
+#==============================================================================
+
+        ME=${0##*/}
+    MY_DIR=$(dirname "$(readlink -f $0)")
+MY_LIB_DIR=$(readlink -f "$MY_DIR/../cli-shell-utils")
+   LIB_DIR="/usr/local/lib/cli-shell-utils"
+
+  LIB_PATH="$MY_LIB_DIR:$LIB_DIR"
+     PATH="$MY_LIB_DIR/bin:$LIB_DIR/bin:$PATH"
+SHELL_LIB="cli-shell-utils.bash"
+
+    FONT_DIR="/usr/share/consolefonts"
+   FONT_EXTS=".psf.gz"
+  FONT_SIZES="16 14 12 11 10 8 6"
+   DUMMY_TTY="tty2"
+
+main() {
+    need_root
+
+    local tty_arg in_vt
+    # Fake things if we are not in a virtual console
+    case $(tty) in
+    */pts/*) tty_arg=-tty=${DUMMY_TTY#tty} ;;
+          *) in_vt=true                    ;;
+    esac
+
+    local pixel_width=$(get_fbcondecor_width tty_arg)
+
+    fatal_z "$pixel_width" "Could not get console width. Is the framebuffer enabled?"
+
+    local cur_width=$(get_current_width $in_vt)
+    msg "Current width: %s" "$cur_width"
+ 
+    while true; do
+       local new_width
+        select_width new_width $pixel_width
+        msg "Setting font width to %s" "$(pq $new_width)"
+        set_console_font $new_width  "$in_vt"
+        cur_width=$(get_current_width $in_vt)
+        msg "Current width: %s" "$cur_width"
+        yes_NO "Try again?" || break
+    done
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+get_current_width() {
+    local in_vt=$1
+    if [ "$in_vt" ]; then
+        stty size            | cut -d" " -f2
+    else
+        stty size </dev/$DUMMY_TTY | cut -d" " -f2
+    fi
+}
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+select_width() {
+    local width_var=$1  pixel_width=$2  width_val  ans
+    local title=$"Please select the number of columns in the console screen"
+    local menu=$(width_menu $pixel_width)
+    my_select 'ans' "$title" "$menu" "" 0
+
+    [ "$ans" = 'quit' ] && exit
+    eval $width_var=\$ans
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+width_menu() {
+    local pixel_width=$1  font_width  num_cols
+
+    local fmt="%s$P_IFS$num_co%3s$quest_co   (font width %2s)\n" 
+    for font_width in $FONT_SIZES; do
+        num_cols=$((pixel_width / font_width + 1))
+        [ $num_cols -lt 80 ] && continue
+        printf "$fmt" "$font_width" "$num_cols" "$font_width"
+    done
+    printf "quit${P_IFS}%s\n" $"Quit"
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+set_console_font() {
+    local cmd_size=$1  in_vt=$2
+    local lang=${3:-$LANG}  fdir=${4:-$FONT_DIR}
+    local font_exts=${5:-$FONT_EXTS}
+    local name="Terminus"
+
+    local size
+    case $cmd_size in
+              [1-7]) size=12x6                ;;
+               [89]) size=16                  ;;
+                 10) size=20x10               ;;
+                 11) size=22x11               ;;
+              1[23]) size=24x12               ;;
+              1[45]) size=28x14               ;;
+            1[6789]) size=32x16               ;;
+       [23456][0-9]) size=32x16               ;;
+    esac
+
+    local code
+    case ${lang%%_*} in
+                     kk|ky|tj) code='CyrAsia'  ;;
+                        ru|uk) code='CyrKoi'   ;;
+                  bg|mk|ru|sr) code='CyrSlav'  ;;
+      bs|hr|cs|hu|pl|ro|sk|sl) code='Lat2'     ;;
+        af|sq|ast|da|nl|et|fr) code='Lat15'    ;;
+    'fi'|de|is|id|pt|es|sv|tr) code='Lat15'    ;;
+                        lt|lv) code='Lat7'     ;;
+                           el) code='Greek'    ;;
+                            *) code='Uni2'     ;;
+    esac
+
+    # Now try to find an existing font file that matches what we want
+
+    local try font face font_file ext
+    for face in ${name}Bold VGA $name; do
+        try=$code-$face$size
+        #echo $try
+        for ext in $font_exts; do
+            font_file=$fdir/$try$ext
+            #echo $font_file
+            test -e $font_file || continue
+            font=$try
+            break
+        done
+        [ -n "$font" ] && break
+    done
+
+    if [ -z "$font" ]; then
+        warn "No font matching size %s was found" $cmd_size
+    elif [ -z "$in_vt" ]; then
+        msg "Would have set font to %s" "$font"
+    else
+        setfont $font
+    fi
+
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+get_fbcondecor_width() {
+    local tty_arg=$1  res
+    local fbsize_file=/sys/class/graphics/fb0/virtual_size
+    read res 2>/dev/null <$fbsize_file
+    [ -z "$res" ] && return
+    local width
+    if test -e /dev/fbcondecor; then
+        local tty_arg=
+        width=$(fbcondecor_ctl $tty_arg -c getcfg 2>/dev/null| sed -nr "s/^twidth:\s+//p")
+    fi
+    : ${width:=$(cut -d, -f1 $fbsize_file)}
+    echo $width
+}
+
+
+#------------------------------------------------------------------------------
+# Load the lib either from a neighboring repo or from the standard location.
+#------------------------------------------------------------------------------
+load_lib() {
+    local file=$1  path=$2
+    unset FOUND_LIB
+
+    local dir lib found IFS=:
+    for dir in $path; do
+        lib=$dir/$file
+        test -r $lib || continue
+        if ! . $lib; then
+            printf "Error when loading library %s\n" "$lib" >&2
+            printf "This is a fatal error\n" >&2
+            exit 15
+        fi
+        FOUND_LIB=$lib
+        return 0
+    done
+
+    printf "Could not find library '%s' on path '%s'\n" "$file" "$path" >&2
+    printf "This is a fatal error\n" >&2
+    exit 17
+}
+
+#===== Start Here =============================================================
+
+load_lib "$SHELL_LIB" "$LIB_PATH"
+
+set_colors
+
+main "$@"
