@@ -4,6 +4,8 @@ ROOT        := .
 SHELL       := /bin/bash
 
 ME          := cli-shell-utils
+
+MY_SCRIPTS  := choose-console-width
 SCRIPTS     := live-usb-maker live-kernel-updater
 LIB_DIR     := $(ROOT)/usr/local/lib/$(ME)
 BIN_DIR     := $(ROOT)/usr/local/bin
@@ -14,7 +16,7 @@ SCRIPTS_ALL := $(addsuffix -all, $(SCRIPTS))
 
 ALL_DIRS   := $(LIB_DIR) $(BIN_DIR) $(LOCALE_DIR) $(DESK_DIR) $(MAN_DIR)
 
-.PHONY: $(SCRIPTS) help all lib $(SCRIPTS_ALL)
+.PHONY: $(SCRIPTS) help all lib $(SCRIPTS_ALL) local-scripts
 
 help:
 	@echo "make help                show this help"
@@ -27,7 +29,10 @@ help:
 	@#echo ""
 	@#echo ""
 
-all: $(SCRIPTS) lib live-usb-maker-gui
+all: $(SCRIPTS) lib local-scripts
+
+local-scripts: | $(BIN_DIR)
+	cp $(MY_SCRIPTS) $(BIN_DIR)
 
 lib: | $(LIB_DIR) $(LOCALE_DIR)
 	cp -r $(ME).bash bin text-menus $(LIB_DIR)
