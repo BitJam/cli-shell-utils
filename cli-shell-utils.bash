@@ -314,7 +314,7 @@ cmd() {
     fi
     # Warning: Bashism
     local ret=${PIPESTATUS[0]}
-    test -e $ERR_FILE && exit 3
+    test -e "$ERR_FILE" && exit 3
     return $ret
 }
 
