@@ -23,7 +23,6 @@
 : ${MY_LIB_DIR:=$(readlink -f "$MY_DIR/../cli-shell-utils")}
 : ${LIB_DIR:=/usr/local/lib/cli-shell-utils}
 : ${LOCK_FILE:=/run/lock/$ME}
-: ${ERR_FILE:=/dev/null}
 : ${LOG_FILE:=/dev/null}
 : ${DATE_FMT:=%Y-%m-%d %H:%M}
 : ${DEFAULT_USER:=1000}
