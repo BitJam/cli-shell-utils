@@ -512,10 +512,15 @@ my_select_2() {
     # Press <Enter> for the default selection
     local p2 def_prompt=$(printf $"Press <%s> for the default %s" "$(pqq "$enter")" "$def_str")
 
+    local quit=$"quit"
+    [ -n "$BACK_TO_MAIN" ] && quit=$BACK_TO_MAIN
+    local quit_str=$(printf $"Use '%s' to %s" "$(pqq q)" "$quit")
+
     if [ "$have_man" ]; then
-        p2=$(printf $"Use '%s' for help.  Use '%s' to quit." "$(pqq h)" "$(pqq q)")
+        local man_str=$(printf $"Use '%s' for help" "$(pqq h)")
+        p2=$(printf "%s, %s" "$man_str" "$quit_str")
     else
-        p2=$(printf $"Use '%s' to quit" "$(pqq q)")
+        p2=$quit_str
     fi
 
     echo
@@ -555,7 +560,12 @@ my_select_2() {
 
         # Evaluate again in case of backspacing
         case $input in
-            q*) final_quit ; continue ;;
+            q*) if [ -n "$BACK_TO_MAIN" ]; then
+                    eval $var=quit
+                    return
+                else
+                    final_quit ; continue
+                fi ;;
             h*) [ "$have_man" ]  && man "$man_page" ; continue ;;
         esac
 
