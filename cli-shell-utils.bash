@@ -1610,8 +1610,10 @@ fatal() {
 
     prog_log_echo "${err_co}%s:$hi_co $fmt$nc_co"   $"Error" "$@" >&2
     fmt=$(echo "$fmt" | sed 's/\\n/ /g')
-    printf "$code:$fmt\n" "$@" | strip_color >> $ERR_FILE
-    [ -n "$FATAL_QUESTION" ] && echo "Q:$FATAL_QUESTION" >> $ERR_FILE
+    if [ -n "$ERR_FILE" ]; then
+        printf "$code:$fmt\n" "$@" | strip_color >> $ERR_FILE
+        [ -n "$FATAL_QUESTION" ] && echo "Q:$FATAL_QUESTION" >> $ERR_FILE
+    fi
     type my_exit 2>/dev/null && my_exit ${EXIT_NUM:-100}
     exit ${EXIT_NUM:-100}
 }
@@ -2419,7 +2421,7 @@ copy_with_progress() {
     unset ORIG_DIRTY_BYTES ORIG_DIRTY_RATIO
 
     # Use ERR_FILE as a semaphore from (...)& process
-    test -e $ERR_FILE && exit 2
+    test -e "$ERR_FILE" && exit 2
 
     test -d /proc/$COPY_PPID && wait $COPY_PPID
     unset COPY_PPID COPY_PID
