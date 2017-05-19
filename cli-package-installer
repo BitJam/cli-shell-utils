@@ -566,13 +566,14 @@ check_for_upgrades() {
         return
     fi
     msg "There are %s packages that can be upgraded" "$(nq $UPGRADE_CNT)"
-    do_upgrade_menu
+    do_upgrade_menu 3
 }
 
 #------------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------------
 do_upgrade_menu() {
+    local default_entry=$1
 
     : ${UPGRADE_CNT:=$(count_upgrades)}
     if [ $UPGRADE_CNT -eq 0 ]; then
@@ -583,7 +584,7 @@ do_upgrade_menu() {
     while true; do
         shout "Package Upgrade Menu"
         local ans
-        my_select ans "Please select an action" "$(upgrade_menu $UPGRADE_CNT)"
+        my_select ans "Please select an action" "$(upgrade_menu $UPGRADE_CNT)" "" $default_entry
         case $ans in
              ignore) return              ;;
                quit) return              ;;
@@ -602,9 +603,9 @@ upgrade_menu() {
     local fmt="%s$P_IFS%s\n"
 
     local lab=$(printf "Upgrade %s packages now" "$(pnq $cnt)")
-    printf "$fmt" ignore  "Ignore these upgrades for now"
-    printf "$fmt" view    "View list of packages to be upgraded"
     printf "$fmt" upgrade "$lab"
+    printf "$fmt" view    "View list of packages to be upgraded"
+    printf "$fmt" ignore  "Ignore these upgrades for now"
 }
 
 #------------------------------------------------------------------------------
