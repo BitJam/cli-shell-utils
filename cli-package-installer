@@ -95,7 +95,7 @@ do_main_menu() {
 
     shout "antiX CLI Package Installer"
     local title=$"Main Menu"
-    local ans xxx
+    local ans
 
     BACK_TO_MAIN= my_select 'ans' "$title" "$(main_menu)"
     case $ans in
@@ -106,7 +106,7 @@ do_main_menu() {
           quit) exit            ;;
           *) warn "The '%s' feature isn't implemented yet" "$(pqw $ans)"
              msg "Press <Enter> to continue"
-             read xxx ;;
+             read ans ;;
     esac
 
 }
@@ -114,6 +114,7 @@ do_main_menu() {
 main_menu() {
     local upgrade_lab  fmt="%s$P_IFS%s\n"
     : ${UPGRADE_CNT:=$(count_upgrades)}
+    #[ "$TEST" ] && UPGRADE_CNT=10
 
     [ ${UPGRADE_CNT:-0} -gt 0 ] \
         && upgrade_lab=$(printf "Do a system upgrade (%s packages)" "$UPGRADE_CNT")
