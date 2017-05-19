@@ -5,7 +5,7 @@ SHELL       := /bin/bash
 
 ME          := cli-shell-utils
 
-MY_SCRIPTS  := choose-console-width
+MY_SCRIPTS  := choose-console-width cli-package-installer
 SCRIPTS     := live-usb-maker live-kernel-updater
 LIB_DIR     := $(ROOT)/usr/local/lib/$(ME)
 BIN_DIR     := $(ROOT)/usr/local/bin
