@@ -405,6 +405,7 @@ _yes_no() {
         1) return 0 ;;
         2) return 1 ;;
         0) exit 0   ;;
+     quit) exit 0   ;;
         *) fatal "Should never get here 111" ;;
     esac
 }
