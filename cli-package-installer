@@ -416,11 +416,13 @@ bottom_search_menu() {
 do_install() {
     local full=$1  pack=$(package_name "$1")
 
+    show_package "$full"
+
     if ! testing && ! apt-cache search "^$pack$" &>/dev/null; then
         warn "Cannot find package %s to install!" "$(pqw $pack)"
         return
 
-    elif dpkg-query -l $pack &>/dev/null; then
+    elif grep -q "^$pack$" $INSTALLED_FILE; then
         # FIXME: offer to uninstall
         warn "Package %s is already installed" "$(pqw $pack)"
         yes_NO "Do you want to re-install it?" || return
@@ -432,7 +434,7 @@ do_install() {
 
     msg "Installing %s" "$(pq $pack)"
     if apt-get install "$pack"; then
-        unmark_installed $pack
+        mark_installed $pack
     else
         warn "The install failed"
     fi
@@ -642,13 +644,15 @@ update_db_file() {
 }
 
 unmark_installed() {
-    local pack=$1  db=${2:-$DB_FILE}
-    sed -ir "s/^I ($pack$)\1/" $db
+    local pack=$1  db=${2:-$DB_FILE} installed=${3:-$INSTALLED_FILE}
+    sed -ir "s/^I ($pack$)\1//" $db
+    sed -i "/^$pack$/d" $installed
 }
 
 mark_installed() {
-    local pack=$1  db=${2:-$DB_FILE}
+    local pack=$1  db=${2:-$DB_FILE} installed=${2:-$INSTALLED_FILE}
     sed -i "/^$pack$/ s/^/I /" $db
+    echo "$pack" >> $installed
 }
 
 list_all() {
