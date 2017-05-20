@@ -563,6 +563,7 @@ my_select_2() {
         case $input in
             q*) if [ -n "$BACK_TO_MAIN" ]; then
                     eval $var=quit
+                    echo
                     return
                 else
                     final_quit ; continue
