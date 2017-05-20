@@ -82,6 +82,7 @@ main() {
     shout $"Starting %s" "$ME"
     start_log "$*"
 
+    find_man_page
     mkdir -p $WORK_DIR || fatal "Could not create directory %s" "$WORK_DIR"
 
     msg "Checking to see if an %s is needed ..." "$(pq apt-get update)"
