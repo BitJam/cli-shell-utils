@@ -124,11 +124,8 @@ do_main_menu() {
 }
 
 #------------------------------------------------------------------------------
-# Set BACK_TO_MAIN as an empty local variable.  This affects how we deal with
-# the user pressing 'q' when we are waiting for input.
+#
 #------------------------------------------------------------------------------
-run_outer() { local BACK_TO_MAIN= ; "$@" ; }
-
 main_menu() {
     local upgrade_lab  fmt="%s$P_IFS%s\n"
     : ${UPGRADE_CNT:=$(count_upgrades)}
@@ -434,6 +431,9 @@ do_install() {
     apt_get_cmd install "$pack" && mark_installed $pack
 }
 
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
 do_remove_purge_reinstall() {
     local ans  full=$1  pack=$(package_name "$1")
     warn "Package %s is already installed" "$(pqw $pack)"
@@ -449,6 +449,9 @@ do_remove_purge_reinstall() {
     esac
 }
 
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
 apt_get_cmd() {
     local cmd="$*"
     msg "=> %s" "$cmd"
@@ -457,6 +460,9 @@ apt_get_cmd() {
     return 1
 }
 
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
 remove_menu() {
     local fmt="%s$P_IFS%s\n"
     printf "$fmt" remove    "Uninstall package (remove package but not its config files)"
@@ -464,6 +470,7 @@ remove_menu() {
     printf "$fmt" reinstall "Reinstall package (even if it is up to date)"
     printf "$fmt" install   "Instal package (only if it is not up to date)"
 }
+
 #------------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------------
@@ -522,7 +529,7 @@ package_name() { echo ${1%% - *}; }
 
 
 #==============================================================================
-# Check to see if all (most) list files are as they should be
+# Check to see if all (most) list files exist as expected
 #==============================================================================
 
 #------------------------------------------------------------------------------
@@ -770,6 +777,12 @@ view_upgrades() {
 do_upgrade() {
     apt_get_cmd upgrade && NO_DB_UPDATE= update_db_file
 }
+
+#------------------------------------------------------------------------------
+# Set BACK_TO_MAIN as an empty local variable.  This affects how we deal with
+# the user pressing 'q' when we are waiting for input.
+#------------------------------------------------------------------------------
+run_outer() { local BACK_TO_MAIN= ; "$@" ; }
 
 #------------------------------------------------------------------------------
 # Start logging by appending a simple header
