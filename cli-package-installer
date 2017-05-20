@@ -86,9 +86,11 @@ main() {
 
     msg "Checking to see if an %s is needed ..." "$(pq apt-get update)"
 
-    check_list_files
+    NO_DB_UPDATE=true
+    run_outer check_list_files
+    NO_DB_UPDATE=
 
-    #do_search
+    update_db_file
 
     while true; do
         do_main_menu
@@ -104,7 +106,8 @@ do_main_menu() {
     local title=$"Main Menu"
     local ans
 
-    BACK_TO_MAIN= my_select 'ans' "$title" "$(main_menu)"
+    run_outer my_select 'ans' "$title" "$(main_menu)"
+
     case $ans in
         search) do_search       ;;
         update) do_update       ;;
@@ -432,7 +435,7 @@ get_glob_string() {
     local var_nam=$1
     local title="Please enter the term you want to search for."
     title=$(printf "$title\n%s" "Standard globbing wildcards '*' and '?' work.")
-    title=$(printf "$title\n%s" "Use an empty string to go to main menu.")
+    title=$(printf "$title\n%s" "Use an empty string or 'q' to return to main menu.")
 
     local input prompt=$(quest "> ")
     quest "$title"
@@ -553,6 +556,7 @@ Read_Sources
     if [ $LIST_FOUND_CNT -eq 0 ]; then
         Msg "No list files were found"
         Msg "An %s is required in order to continue" "$apt_get"
+        # FIXME BACK_TO_MAIN
         YES_no "$run_now" || exit
 
     elif [ $LIST_ERR_CNT -gt 0 ]; then
