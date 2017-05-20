@@ -248,7 +248,7 @@ do_search() {
         [ -z "$all_str" ] && return
         local desc_str=${all_str#^}
         desc_str=${desc_str%$}
-        local name_str="${desc_str}.* - "
+        local name_str="${all_str}.* - "
         local lead_str="^(I )?${desc_str#^}"
         local exact_str="${lead_str%$} - "
 
