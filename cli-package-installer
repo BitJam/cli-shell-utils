@@ -66,18 +66,18 @@ start_testing_mode() {
 #
 #------------------------------------------------------------------------------
 main() {
-     [ "$TEST" ] || need_root
-
-    local UPGRADE_CNT
+    testing || need_root
 
     BACK_TO_MAIN="go back to main menu"
+
+    local UPGRADE_CNT
 
     case $(uname -m) in
           i686) ARCH="i386"  ;;
         x86_64) ARCH="amd64" ;;
     esac
 
-    [ -n "$TEST" ] && start_testing_mode
+    testing && start_testing_mode
 
     shout $"Starting %s" "$ME"
     start_log "$*"
@@ -118,10 +118,18 @@ do_main_menu() {
 
 }
 
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+run_outer() {
+    local BACK_TO_MAIN=
+    "$@"
+}
+
 main_menu() {
     local upgrade_lab  fmt="%s$P_IFS%s\n"
     : ${UPGRADE_CNT:=$(count_upgrades)}
-    #[ "$TEST" ] && UPGRADE_CNT=10
+    #testing && UPGRADE_CNT=10
 
     [ ${UPGRADE_CNT:-0} -gt 0 ] \
         && upgrade_lab=$(printf "Do a system upgrade (%s packages)" "$UPGRADE_CNT")
@@ -740,6 +748,8 @@ Start_Log
 
 screen_height() { stty size | cut -d" " -f1; }
 screen_width()  { stty size | cut -d" " -f2; }
+
+testing() { [ -n "$TEST" ]; return $?; }
 
 #------------------------------------------------------------------------------
 # Load the lib either from a neighboring repo or from the standard location.
