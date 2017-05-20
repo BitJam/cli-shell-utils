@@ -424,9 +424,8 @@ do_install() {
         return
 
     elif grep -q "^$pack$" $INSTALLED_FILE; then
-        # FIXME: offer to uninstall
-        warn "Package %s is already installed" "$(pqw $pack)"
-        yes_NO "Do you want to re-install it?" || return
+        do_remove_purge_reinstall "$full"
+        return
 
     else
         local label=$(printf "Install package %s" "$(pqq $pack)")
@@ -434,13 +433,39 @@ do_install() {
     fi
 
     msg "Installing %s" "$(pq $pack)"
-    if apt-get install "$pack"; then
-        mark_installed $pack
-    else
-        warn "The install failed"
-    fi
+    apt_get_cmd install "$pack" && mark_installed $pack
 }
 
+do_remove_purge_reinstall() {
+    local ans  full=$1  pack=$(package_name "$1")
+    warn "Package %s is already installed" "$(pqw $pack)"
+    msg
+    warn "Remove / Purge Menu"
+    my_select "Please choose an action for this package" "$(remove_menu)"
+    case $ans in
+            remove) apt_get_cmd remove $pack ;;
+             purge) apt_get_cmd purge  $pack ;;
+           install) apt_get_cmd install $pack ;;
+         reinstall) apt_get_cmd --reinstall install $pack ;;
+                 *) fatal "internal remove_menu error %s" "$ans"
+    esac
+}
+
+apt_get_cmd() {
+    local cmd="$*"
+    msg "=> %s" "$cmd"
+    $cmd && return 0
+    warn "The command %s failed" "$(pqw $cmd)"
+    return 1
+}
+
+remove_menu() {
+    local fmt="%s$P_IFS%s\n"
+    printf "$fmt" remove    "Uninstall package (remove package but not its config files)"
+    printf "$fmt" purge     "Purge package (remove package AND its confi files)"
+    printf "$fmt" reinstall "Reinstall package (even if it is up to date)"
+    printf "$fmt" install   "Instal package (only if it is not up to date)"
+}
 #------------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------------
