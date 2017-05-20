@@ -511,12 +511,6 @@ add_to_result_menu() {
 #------------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------------
-#- search_for() {
-#-     local str=$1
-#-     #echo "apt-cache $SEARCH_ARGS $search $str" >&2
-#-     apt-cache $SEARCH_ARGS search "$str"
-#- }
-
 search_for() {
         local str=$1
         grep -Eh "$str" $DB_FILE
