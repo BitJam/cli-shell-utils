@@ -28,30 +28,37 @@ AUTO_UPDATE_INTERVAL="5"  # Days
 
     WORK_DIR=/tmp/$ME
 
-    SEARCH_FILE=$WORK_DIR/SEARCH-RESULTS
+       SEARCH_FILE=$WORK_DIR/SEARCH-RESULTS
+           DB_FILE=$WORK_DIR/all.list
+    INSTALLED_FILE=$WORK_DIR/installed.list
 
 : ${EDITOR:=name}
 
 
 start_testing_mode() {
 
-    SOURCE_DIR=Private/sources.d
-    LIST_DIR=Private/apt-lists
-    WORK_DIR=Private/
-    SEARCH_FILE=$WORK_DIR/SEARCH-RESULTS
-    THE_LOG_FILE=./$ME.log
-    LOG_FILE=./$ME.log
+    TEST_DIR=Private/apt
+    SOURCE_DIR=$TEST_DIR/sources.d
+    LIST_DIR=$TEST_DIR/lists
+
+    THE_LOG_FILE=$ME.log
+    LOG_FILE=$ME.log
     #PRETEND_MODE=true
 
     ARCH="i386"
 
-    search_for() {
-        local str=$1
-        if [ "$SEARCH_ARGS" = "--names-only" ]; then
-            grep -h "$str" Private/all-names
-        else
-            grep -h "$str" Private/search-all
-        fi
+    #- search_for() {
+    #-     local str=$1
+
+    #-     grep -Eh "$str" $TEST_DIR/full.list
+    #- }
+
+    list_installed() {
+        cat $TEST_DIR/installed.list
+    }
+
+    list_all() {
+        cat $TEST_DIR/full.list
     }
 }
 
@@ -185,6 +192,7 @@ count_matches() {
     TOTAL_MATCHES=$((TOTAL_MATCHES + $cnt))
     if [ $cnt -eq 1 ]; then
         local match=$(search_for "$str")
+        match=${match#I }
         eval ${prefix}_match=\$match
 
         msg "$fmt"            "$found"  "$cnt" "$lab1"
@@ -212,30 +220,31 @@ do_search() {
         esac
 
         [ -z "$all_str" ] && return
-        local  desc_str=$all_str
-        local  lead_str="^${all_str#^}"
-        local exact_str="${lead_str%$}$"
+        local desc_str=${all_str#^}
+        desc_str=${desc_str%$}
+        local name_str="${desc_str}.* - "
+        local lead_str="^(I )?${desc_str#^}"
+        local exact_str="${lead_str%$} - "
 
-        local exact_cnt=   lead_cnt=    all_cnt=    desc_cnt=
-        local exact_match= lead_match=  all_match=  desc_match=
+        local exact_cnt=   lead_cnt=    name_cnt=    desc_cnt=
+        local exact_match= lead_match=  name_match=  desc_match=
 
-        local TOTAL_MATCHES=0  SEARCH_ARGS=--names-only
-        count_matches  exact "exact name match"   "exact name matches"
-        count_matches  lead  "leading name match" "leading name matches"
-        count_matches  all   "total name match"   "total name matches"
-        SEARCH_ARGS=
-        count_matches  desc  "total description match"   "total description matches"
+        local TOTAL_MATCHES=0
+        count_matches  desc  "total description match"  "total description matches"
+        count_matches  name  "total name match"         "total name matches"
+        count_matches  lead  "leading name match"       "leading name matches"
+        count_matches  exact "exact name match"         "exact name matches"
 
         if [ $TOTAL_MATCHES -eq 0 ]; then
             warn "No matches were found"
-            YES_no "Do you want to try again?" && continue
+            YES_no "Do you want to try a different search?" && continue
             return
         fi
 
         local result_menu=$(
             add_to_result_menu exact "exact"
             add_to_result_menu lead  "leading"
-            add_to_result_menu all   "total name"
+            add_to_result_menu name  "total name"
             add_to_result_menu desc  "description"
         )
 
@@ -271,11 +280,11 @@ do_search() {
 
             local height=$(screen_height)
             if [ $cnt -lt $((height - 5)) ]; then
-                nl $SEARCH_FILE | sed -r "s/^(\s*[0-9]+)\s/$cyan\1$green)$nc_co /"
+                cat $SEARCH_FILE | number_results
             else
                 local blanks=$((height - 5))
-                (local i; for i in $(seq 1 $blanks); do echo; done)                >  $SEARCH_FILE.nl
-                nl $SEARCH_FILE | sed -r "s/^(\s*[0-9]+)\s/$cyan\1$green)$nc_co /" >> $SEARCH_FILE.nl
+                (local i; for i in $(seq 1 $blanks); do echo; done)  >  $SEARCH_FILE.nl
+                cat $SEARCH_FILE | number_results                   >> $SEARCH_FILE.nl
 
                 msg "%s packages were found." $cnt
                 msg
@@ -335,7 +344,7 @@ do_search() {
                 search) break    ;;
             esac
 
-            local full_package=$(nl $SEARCH_FILE | sed -n "s/^\s*$number\s*//p")
+            local full_package=$(nl $SEARCH_FILE | sed -nr "s/^\s*$number\s*(I\s*)?//p")
             if [ -z "$full_package" ]; then
                 warn "Could not find package number %s" "$number"
                 break
@@ -364,6 +373,15 @@ do_search() {
 #------------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------------
+number_results() {
+    sed -r "s/^(I)(.*)/$cyan(\1)\2$nc_co/" \
+        | nl \
+        | sed -r "s/^(\s*[0-9]+)\s/$cyan\1$green)$nc_co /"
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
 bottom_search_menu() {
     local fmt="%s$P_IFS%s\n"
     printf "$fmt" search  "Do a new search"
@@ -377,11 +395,12 @@ bottom_search_menu() {
 do_install() {
     local full=$1  pack=$(package_name "$1")
 
-    if ! apt-cache search "^$pack$" &>/dev/null; then
+    if ! testing && ! apt-cache search "^$pack$" &>/dev/null; then
         warn "Cannot find package %s to install!" "$(pqw $pack)"
         return
 
-    elif dpkg-query $pack &>/dev/null; then
+    elif dpkg-query -l $pack &>/dev/null; then
+        # FIXME: offer to uninstall
         warn "Package %s is already installed" "$(pqw $pack)"
         yes_NO "Do you want to re-install it?" || return
 
@@ -391,7 +410,11 @@ do_install() {
     fi
 
     msg "Installing %s" "$(pq $pack)"
-    apt-get install "$pack"
+    if apt-get install "$pack"; then
+        unmark_installed $pack
+    else
+        warn "The install failed"
+    fi
 }
 
 #------------------------------------------------------------------------------
@@ -434,11 +457,16 @@ add_to_result_menu() {
 #------------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------------
+#- search_for() {
+#-     local str=$1
+#-     #echo "apt-cache $SEARCH_ARGS $search $str" >&2
+#-     apt-cache $SEARCH_ARGS search "$str"
+#- }
+
 search_for() {
-    local str=$1
-    #echo "apt-cache $SEARCH_ARGS $search $str" >&2
-    apt-cache $SEARCH_ARGS search "$str"
- }
+        local str=$1
+        grep -Eh "$str" $DB_FILE
+}
 
 #------------------------------------------------------------------------------
 #
@@ -538,15 +566,75 @@ Read_Sources
 #------------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------------
+find_list_file() {
+    local file=$1
+
+    test -e $file || return 1
+    local modded=$(stat -c %Y $file)
+    LIST_FOUND_CNT=$((LIST_FOUND_CNT + 1))
+    [ $LIST_OLDEST_T -gt $modded ] && LIST_OLDEST_T=$modded
+    return 0
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+test_list_file() {
+    #echo "  $(basename $1)"
+    find_list_file $1 || list_error $(basename $1)
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+list_error() {
+    local name=$1
+    LIST_ERR_CNT=$((LIST_ERR_CNT + 1))
+    echo "Missing list file(s): $name" >> $LOG_FILE
+}
+
+#=== End of List File Stuff ===================================================
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
 do_update() {
     msg "Doing %s" "$(pq apt-get update)"
 
     if ! apt-get update; then
         warn "There was a problem running %s" "$(pqw apt-get update)"
-        yes_NO "Do you want to continue anyway" || exit
+        yes_NO "Do you want to continue anyway" || return
     fi
     UPGRADE_CNT=
     check_for_upgrades
+    update_db_file
+}
+
+update_db_file() {
+    [ "$NO_DB_UPDATE" ] && return
+    msg "Updating database file ..."
+
+    local db=${1:-$DB_FILE}   installed=${2:-$INSTALLED_FILE}
+    list_installed > $installed
+    list_all | mark-installed-debs $installed > $db
+}
+
+unmark_installed() {
+    local pack=$1  db=${2:-$DB_FILE}
+    sed -ir "s/^I ($pack$)\1/" $db
+}
+
+mark_installed() {
+    local pack=$1  db=${2:-$DB_FILE}
+    sed -i "/^$pack$/ s/^/I /" $db
+}
+
+list_all() {
+    apt-cache search . | sort
+}
+
+list_installed() {
+    dpkg-query --show | sort | cut -f1
 }
 
 #------------------------------------------------------------------------------
@@ -623,40 +711,8 @@ view_upgrades() {
 do_upgrade() {
     msg "Doing an %s" "$(pq apt-get upgrade)"
     apt-get upgrade
+    NO_DB_UPDATE= update_db_file
 }
-
-#------------------------------------------------------------------------------
-#
-#------------------------------------------------------------------------------
-find_list_file() {
-    local file=$1
-
-    test -e $file || return 1
-    local modded=$(stat -c %Y $file)
-    LIST_FOUND_CNT=$((LIST_FOUND_CNT + 1))
-    [ $LIST_OLDEST_T -gt $modded ] && LIST_OLDEST_T=$modded
-    return 0
-}
-
-#------------------------------------------------------------------------------
-#
-#------------------------------------------------------------------------------
-test_list_file() {
-    #echo "  $(basename $1)"
-    find_list_file $1 || list_error $(basename $1)
-}
-
-#------------------------------------------------------------------------------
-#
-#------------------------------------------------------------------------------
-list_error() {
-    local name=$1
-    LIST_ERR_CNT=$((LIST_ERR_CNT + 1))
-    echo "Missing list file(s): $name" >> $LOG_FILE
-}
-
-#=== End of List File Stuff ===================================================
-
 
 #------------------------------------------------------------------------------
 # Start logging by appending a simple header
