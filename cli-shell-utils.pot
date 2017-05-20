@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: antiX Development\n"
 "Report-Msgid-Bugs-To: translation@antixlinux.org\n"
-"POT-Creation-Date: 2017-05-03 20:44-0600\n"
+"POT-Creation-Date: 2017-05-04 03:31-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -87,25 +87,22 @@ msgstr ""
 msgid "You will be asked to create your own passphrase on the first boot"
 msgstr ""
 
-msgid "The --from parameter '%s' was not recognized"
-msgstr ""
-
 msgid "Make a full-featured live-usb"
 msgstr ""
 
 msgid "Make an encrypted full-featured live-usb"
 msgstr ""
 
-msgid "Make a customized live-usb"
+msgid "Make a customized live-usb (includes encryption option)"
 msgstr ""
 
-msgid "Update UUIDS on existing live-usb"
+msgid "Update UUIDS on an existing live-usb"
 msgstr ""
 
-msgid "Update boot parameters on existing live-usb"
+msgid "Update boot parameters on an existing live-usb"
 msgstr ""
 
-msgid "Reinstall legacy bootloader on existing live-usb"
+msgid "Reinstall legacy bootloader on an existing live-usb"
 msgstr ""
 
 msgid "Please select what action to perform"
@@ -160,20 +157,8 @@ msgstr ""
 msgid "Please wait while we mount optical disc at %s"
 msgstr ""
 
-msgid "No '%s' file found in any directory on clone device at '%s'"
-msgstr ""
-
-msgid "No live-boot directory found on clone device at '%s'"
-msgstr ""
-
-msgid "Multiple live-boot directories found on clone device at '%s'"
-msgstr ""
-
 #. Using <gpt|msdos> partitioning
 msgid "Using %s partitioning"
-msgstr ""
-
-msgid "Partitioning failed at %s"
 msgstr ""
 
 msgid "copy from %s to %s partition"
@@ -191,23 +176,8 @@ msgstr ""
 msgid "Add program %s to %s"
 msgstr ""
 
-#. Could not find '<grub.cfg>' file to update
-msgid "Could not find '%s' file to update"
-msgstr ""
-
-#. Could not find <grub.cfg> file
-msgid "Could not find %s file"
-msgstr ""
-
-msgid "Could not find file %s"
-msgstr ""
-
 #. Create syslinux directory from <boot/isolinux>
 msgid "Create syslinux directory from %s"
-msgstr ""
-
-#. [don't translate syslinux or isolinux]
-msgid "Could not find a syslinux or isolinux directory"
 msgstr ""
 
 msgid "Not enough space on %s partition"
