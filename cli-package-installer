@@ -124,12 +124,10 @@ do_main_menu() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Set BACK_TO_MAIN as an empty local variable.  This affects how we deal with
+# the user pressing 'q' when we are waiting for input.
 #------------------------------------------------------------------------------
-run_outer() {
-    local BACK_TO_MAIN=
-    "$@"
-}
+run_outer() { local BACK_TO_MAIN= ; "$@" ; }
 
 main_menu() {
     local upgrade_lab  fmt="%s$P_IFS%s\n"
@@ -660,6 +658,9 @@ do_update() {
     update_db_file
 }
 
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
 update_db_file() {
     [ "$NO_DB_UPDATE" ] && return
     msg "Updating database file ..."
@@ -669,32 +670,38 @@ update_db_file() {
     list_all | mark-installed-debs $installed > $db
 }
 
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
 unmark_installed() {
     local pack=$1  db=${2:-$DB_FILE} installed=${3:-$INSTALLED_FILE}
     sed -ir "s/^I ($pack$)\1//" $db
     sed -i "/^$pack$/d" $installed
 }
 
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
 mark_installed() {
     local pack=$1  db=${2:-$DB_FILE} installed=${2:-$INSTALLED_FILE}
     sed -i "/^$pack$/ s/^/I /" $db
     echo "$pack" >> $installed
 }
 
-list_all() {
-    apt-cache search . | sort
-}
-
-list_installed() {
-    dpkg-query --show | sort | cut -f1
-}
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+list_all() {  apt-cache search . | sort; }
 
 #------------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------------
-count_upgrades() {
-    apt list --upgradable 2>/dev/null | grep -v "^Listing" | wc -l
-}
+list_installed() { dpkg-query --show | sort | cut -f1; }
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+count_upgrades() { apt list --upgradable 2>/dev/null | grep -v "^Listing" | wc -l;  }
 
 #------------------------------------------------------------------------------
 #
@@ -761,9 +768,7 @@ view_upgrades() {
 #
 #------------------------------------------------------------------------------
 do_upgrade() {
-    msg "Doing an %s" "$(pq apt-get upgrade)"
-    apt-get upgrade
-    NO_DB_UPDATE= update_db_file
+    apt_get_cmd upgrade && NO_DB_UPDATE= update_db_file
 }
 
 #------------------------------------------------------------------------------
