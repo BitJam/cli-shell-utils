@@ -494,14 +494,6 @@ My_Select
 my_select_2() {
     local var=$1  title=$2  default=$3  data=$4  menu=$5  def_str=$6
 
-    # Find man page (FIXME: should only do this once)
-    local man_page have_man
-    for man_page in "$ME" "$MY_DIR/$(basename "$0" .sh).1"; do
-        man -w "$man_page" &>/dev//null || continue
-        have_man=true
-        break
-    done
-
     if [ -n "$def_str" ]; then
         def_str="($(pqq $def_str))"
     else
@@ -517,7 +509,7 @@ my_select_2() {
     [ -n "$BACK_TO_MAIN" ] && quit=$BACK_TO_MAIN
     local quit_str=$(printf $"Use '%s' to %s" "$(pqq q)" "$quit")
 
-    if [ "$have_man" ]; then
+    if [ "$HAVE_MAN" ]; then
         local man_str=$(printf $"Use '%s' for help" "$(pqq h)")
         p2=$(printf "%s, %s" "$man_str" "$quit_str")
     else
@@ -547,10 +539,7 @@ my_select_2() {
             case $input_1 in
                 "") input=         ; break  ;;
                  q) input=$input_1 ; break  ;;
-                 h) [ -n "$have_men" ] && continue
-                    man "$man_page"
-                    echo
-                    continue ;;
+                 h) input=$input_1 ; break  ;;
              [0-9]) echo -ne "\b"
                     read -ei "$input_1" input
                     break  ;;
@@ -568,7 +557,9 @@ my_select_2() {
                 else
                     final_quit ; continue
                 fi ;;
-            h*) [ "$have_man" ]  && man "$man_page" ; continue ;;
+            h*) if [ "$HAVE_MAN" ]; then
+                    man "$MAN_PAGE" ; echo ; continue
+                fi;;
         esac
 
         [ -z "$input" -a -n "$default" ] && input=$default
@@ -591,6 +582,38 @@ my_select_2() {
         eval $var=\$val
         break
     done
+}
+
+
+#------------------------------------------------------------------------------
+#  See if a man page exists.  Search locally first then try the man commmand.
+#------------------------------------------------------------------------------
+find_man_page() {
+
+    local man_page  dir  me  me2=$(basename $0 .sh)
+    [ "$me2" = "$ME" ] && me2=""
+
+    HAVE_MAN=
+    for me in $ME $me2; do
+        for dir in "$MY_DIR/" "$MY_DIR/man/" ""; do
+            man_page=$dir$me$ext.1
+            test -r "$man_page" || continue
+            HAVE_MAN=true
+            break
+        done
+
+        [ "$HAVE_MAN" ] && break
+        man -w $me &>/dev/null || continue
+        HAVE_MAN=true
+        break
+    done
+
+    if [ "$HAVE_MAN" ]; then
+        MAN_PAGE=$man_page
+        echo "Found man page: $man_page" >> $LOG_FILE
+    else
+        echo "No man page found" >> $LOG_FILE
+    fi
 }
 
 #------------------------------------------------------------------------------
