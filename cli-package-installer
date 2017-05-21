@@ -208,7 +208,10 @@ count_matches() {
         # FIXME: count lines and warn/error on -ne 1
         # Also make sure length is not zero
         local installed=
-        [ -z "${match##I *}" ] && installed="$red(installed)$nc_co\n"
+        if [ -z "${match##I *}" -a -z "$FOUND_MATCH" ]; then
+            installed="$green(installed)$nc_co\n"
+            FOUND_MATCH=true
+        fi
         match=${match#I }
         eval ${prefix}_match=\$match
 
@@ -256,7 +259,7 @@ do_search() {
         local exact_cnt=   lead_cnt=    name_cnt=    desc_cnt=
         local exact_match= lead_match=  name_match=  desc_match=
 
-        local TOTAL_MATCHES=0
+        local TOTAL_MATCHES=0  FOUND_MATCH=
         count_matches  exact "exact name match"           "exact name matches"
         count_matches  lead  "leading name match"         "leading name matches"
         count_matches  name  "any name match"             "any name matches"
