@@ -97,6 +97,7 @@ main() {
 
     update_db_file
 
+    do_search
     while true; do
         do_main_menu
     done
