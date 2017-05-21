@@ -19,8 +19,9 @@ MY_LIB_DIR=$(readlink -f "$MY_DIR/../cli-shell-utils")
      PATH="$MY_LIB_DIR/bin:$LIB_DIR/bin:$PATH"
 SHELL_LIB="cli-shell-utils.bash"
 
- LIST_DIR=/var/lib/apt/lists
+    LIST_DIR=/var/lib/apt/lists
   SOURCE_DIR=/etc/apt/sources.list.d
+   LOCK_FILE=$LIST_DIR/lock
 
   THE_LOG_FILE=/var/log/$ME.log
 
@@ -79,6 +80,9 @@ main() {
 
     testing && start_testing_mode
 
+    trap on_exit EXIT
+
+    testing || do_flock
     shout $"Starting %s" "$ME"
     start_log "$*"
 
@@ -830,6 +834,10 @@ load_lib() {
     printf "Could not find library '%s' on path '%s'\n" "$file" "$path" >&2
     printf "This is a fatal error\n" >&2
     exit 17
+}
+
+on_exit() {
+    testing || unflock
 }
 
 #===== Start Here =============================================================
