@@ -210,14 +210,16 @@ count_matches() {
         local installed=
         if [ -z "${match##I *}" -a -z "$FOUND_MATCH" ]; then
             installed="$green(installed)$nc_co\n"
-            FOUND_MATCH=true
         fi
         match=${match#I }
         eval ${prefix}_match=\$match
 
         msg "$fmt"            "$found"  "$cnt" "$lab1"
-        show_package "$match"
-        printf "$installed"
+        if [ -z "$FOUND_MATCH" ]; then
+            FOUND_MATCH=true
+            show_package "$match"
+            printf "$installed"
+        fi
     else
         msg "$fmt"            "$found" "$cnt" "$lab2"
     fi
@@ -271,6 +273,7 @@ do_search() {
             return
         fi
 
+        FOUND_MATCH=
         local result_menu=$(
             add_to_result_menu exact "exact"
             add_to_result_menu lead  "leading"
@@ -515,7 +518,9 @@ add_to_result_menu() {
     local package=$(package_name "$match")
     case $cnt in
         0) return ;;
-        1) printf "%s${P_IFS}Install package %s\n" "$prefix" "$(pq "$package")"         ;;
+        1) [ "$FOUND_MATCH" ] && return
+           FOUND_MATCH=true
+           printf "%s${P_IFS}Install package %s\n" "$prefix" "$(pq "$package")"         ;;
         *) printf "%s${P_IFS}View %s %s results\n" "$prefix" "$(nq $cnt)"       "$lab"  ;;
     esac
 }
