@@ -479,7 +479,7 @@ remove_menu() {
     printf "$fmt" remove    "Uninstall package (remove package but not its config files)"
     printf "$fmt" purge     "Purge package (remove package AND its confi files)"
     printf "$fmt" reinstall "Reinstall package (even if it is up to date)"
-    printf "$fmt" install   "Instal package (only if it is not up to date)"
+    printf "$fmt" install   "Install package (only if it is not up to date)"
 }
 
 #------------------------------------------------------------------------------
