@@ -429,7 +429,7 @@ do_install() {
         warn "Cannot find package %s to install!" "$(pqw $pack)"
         return
 
-    elif grep -q "^$pack$" $INSTALLED_FILE; then
+    elif is_installed $pack; then
         do_remove_purge_reinstall "$full"
         return
 
