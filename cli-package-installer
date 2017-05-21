@@ -374,7 +374,7 @@ do_search() {
                 search) break    ;;
             esac
 
-            local full_package=$(nl $SEARCH_FILE | sed -nr "s/^\s*$number\s*(I\s*)?//p")
+            local full_package=$(nl $SEARCH_FILE | sed -n -r "s/^\s*$number\s*(I\s*)?//p")
             if [ -z "$full_package" ]; then
                 warn "Could not find package number %s" "$number"
                 break
@@ -684,7 +684,7 @@ update_db_file() {
 #------------------------------------------------------------------------------
 unmark_installed() {
     local pack=$1  db=${2:-$DB_FILE} installed=${3:-$INSTALLED_FILE}
-    sed -ir "s/^I ($pack$)\1//" $db
+    sed -i -r "s/^I ($pack - )/\1/" $db
     sed -i "/^$pack$/d" $installed
 }
 
