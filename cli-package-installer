@@ -91,11 +91,11 @@ main() {
 
     msg "Checking to see if an %s is needed ..." "$(pq apt-get update)"
 
-    NO_DB_UPDATE=true
+    local NO_DB_GENERATE=true
     run_outer check_list_files
-    NO_DB_UPDATE=
+    NO_DB_GENERATE=
 
-    update_db_file
+    generate_db_file
 
     do_search
     while true; do
@@ -436,7 +436,8 @@ do_install() {
     fi
 
     msg "Installing %s" "$(pq $pack)"
-    apt_get_cmd install "$pack" && mark_installed $pack
+    apt_get_cmd install "$pack"
+    update_db_package $pack
 }
 
 #------------------------------------------------------------------------------
@@ -457,7 +458,7 @@ do_remove_purge_reinstall() {
               quit) return  ;;
                  *) fatal "internal remove_menu error %s" "$ans" ;;
     esac
-    # FIXME: check if it is installed here then mark or unmark
+    update_db_package
 }
 
 #------------------------------------------------------------------------------
@@ -667,19 +668,42 @@ do_update() {
     fi
     UPGRADE_CNT=
     check_for_upgrades
-    update_db_file
+    generate_db_file
 }
 
 #------------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------------
-update_db_file() {
-    [ "$NO_DB_UPDATE" ] && return
+generate_db_file() {
+    [ "$NO_DB_GENERATE" ] && return
     msg "Updating database file ..."
 
     local db=${1:-$DB_FILE}   installed=${2:-$INSTALLED_FILE}
     list_installed > $installed
     list_all | mark-installed-debs $installed > $db
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+update_db_package() {
+    local pack=$1
+    if is_installed $pack; then
+        mark_installed $pack
+    else
+        unmark_installed $pack
+    fi
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+is_installed() {
+    local status  pack=$1
+    status=$(dpkg-query -f '${db:Status-Status}' --show "$pack" 2>/dev/null) \
+        || return 1
+    [ "$status" = 'installed' ]
+    return $?
 }
 
 #------------------------------------------------------------------------------
@@ -778,7 +802,8 @@ view_upgrades() {
 #
 #------------------------------------------------------------------------------
 do_upgrade() {
-    apt_get_cmd upgrade && NO_DB_UPDATE= update_db_file
+    apt_get_cmd upgrade || return
+    generate_db_file
 }
 
 #------------------------------------------------------------------------------
