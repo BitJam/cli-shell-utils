@@ -686,18 +686,16 @@ update_db_file() {
 #
 #------------------------------------------------------------------------------
 unmark_installed() {
-    local pack=$1  db=${2:-$DB_FILE} installed=${3:-$INSTALLED_FILE}
+    local pack=$1  db=${2:-$DB_FILE}
     sed -i -r "s/^I ($pack - )/\1/" $db
-    sed -i "/^$pack$/d" $installed
 }
 
 #------------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------------
 mark_installed() {
-    local pack=$1  db=${2:-$DB_FILE} installed=${2:-$INSTALLED_FILE}
+    local pack=$1  db=${2:-$DB_FILE}
     sed -i "/^$pack - / s/^/I /" $db
-    echo "$pack" >> $installed
 }
 
 #------------------------------------------------------------------------------
