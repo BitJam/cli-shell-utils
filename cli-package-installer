@@ -313,7 +313,7 @@ do_search() {
 
             local height=$(screen_height)
             if [ $cnt -lt $((height - 5)) ]; then
-                cat $SEARCH_FILE | number_results
+                cat $SEARCH_FILE | number_results | less -EXRS
             else
                 local blanks=$((height - 5))
                 (local i; for i in $(seq 1 $blanks); do echo; done)  >  $SEARCH_FILE.nl
