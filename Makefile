@@ -5,7 +5,9 @@ SHELL       := /bin/bash
 
 ME          := cli-shell-utils
 
-MY_SCRIPTS  := choose-console-width cli-package-installer
+APT_WRAPPER := cli-package-installer
+
+MY_SCRIPTS  := choose-console-width $(APT_WRAPPER)
 SCRIPTS     := live-usb-maker live-kernel-updater
 LIB_DIR     := $(ROOT)/usr/local/lib/$(ME)
 BIN_DIR     := $(ROOT)/usr/local/bin
@@ -16,7 +18,7 @@ SCRIPTS_ALL := $(addsuffix -all, $(SCRIPTS))
 
 ALL_DIRS   := $(LIB_DIR) $(BIN_DIR) $(LOCALE_DIR) $(DESK_DIR) $(MAN_DIR)
 
-.PHONY: $(SCRIPTS) help all lib $(SCRIPTS_ALL) local-scripts
+.PHONY: $(SCRIPTS) help all lib $(SCRIPTS_ALL) local-scripts man-pages
 
 help:
 	@echo "make help                show this help"
@@ -29,7 +31,7 @@ help:
 	@#echo ""
 	@#echo ""
 
-all: $(SCRIPTS) lib local-scripts
+all: $(SCRIPTS) lib local-scripts man-pages
 
 local-scripts: | $(BIN_DIR)
 	cp $(MY_SCRIPTS) $(BIN_DIR)
@@ -45,6 +47,9 @@ $(SCRIPTS): | $(BIN_DIR) $(DESK_DIR) $(MAN_DIR)
 
 live-usb-maker-gui: | $(BIN_DIR)
 	cp ../gui-live-usb-maker/live-usb-maker-gui $(BIN_DIR)
+
+man-pages: man/$(APT_WRAPPER).1 | $(MAN_DIR)
+	test -e $< && gzip -c $< > $(MAN_DIR)/$$(basename $<).gz || true
 
 $(ALL_DIRS):
 	test -d $(ROOT)/
