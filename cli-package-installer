@@ -389,7 +389,7 @@ do_search() {
                  search) break                          ;;
                  review) continue                       ;;
                    quit) return                         ;;
-                      *) fatal "Internal install menu error %s" "$ans"
+                      *) fatal "Internal install menu error %s" "$ans" ;;
             esac
         done
     done
@@ -455,7 +455,7 @@ do_remove_purge_reinstall() {
            install) apt_get_cmd install $pack ;;
          reinstall) apt_get_cmd --reinstall install $pack ;;
               quit) return  ;;
-                 *) fatal "internal remove_menu error %s" "$ans"
+                 *) fatal "internal remove_menu error %s" "$ans" ;;
     esac
     # FIXME: check if it is installed here then mark or unmark
 }
@@ -750,7 +750,7 @@ do_upgrade_menu() {
                quit) return              ;;
             upgrade) do_upgrade ; return ;;
                view) view_upgrades       ;;
-                  *) fatal "Internal error: upgrade_menu: %s" $ans
+                  *) fatal "Internal error: upgrade_menu: %s" $ans ;;
         esac
     done
 }
