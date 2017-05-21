@@ -444,24 +444,27 @@ do_install() {
 #------------------------------------------------------------------------------
 do_remove_purge_reinstall() {
     local ans  full=$1  pack=$(package_name "$1")
-    warn "Package %s is already installed" "$(pqw $pack)"
+    shout "Package %s is already installed" "$(pqw $pack)"
     msg
-    warn "Remove / Purge Menu"
-    my_select "Please choose an action for this package" "$(remove_menu)"
+    shout "Remove / Purge Menu"
+    local ans
+    my_select ans "Please choose an action for this package" "$(remove_menu)"
     case $ans in
-            remove) apt_get_cmd remove $pack ;;
-             purge) apt_get_cmd purge  $pack ;;
+            remove) apt_get_cmd remove  $pack ;;
+             purge) apt_get_cmd purge   $pack ;;
            install) apt_get_cmd install $pack ;;
          reinstall) apt_get_cmd --reinstall install $pack ;;
+              quit) return  ;;
                  *) fatal "internal remove_menu error %s" "$ans"
     esac
+    # FIXME: check if it is installed here then mark or unmark
 }
 
 #------------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------------
 apt_get_cmd() {
-    local cmd="$*"
+    local cmd="apt-get $*"
     msg "=> %s" "$cmd"
     $cmd && return 0
     warn "The command %s failed" "$(pqw $cmd)"
