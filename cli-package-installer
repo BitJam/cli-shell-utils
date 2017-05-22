@@ -687,10 +687,11 @@ do_update() {
 generate_db_file() {
     [ "$NO_DB_GENERATE" ] && return
     msg "Updating database file ..."
-
+    local start_t=$(get_time)
     local db=${1:-$DB_FILE}   installed=${2:-$INSTALLED_FILE}
     list_installed > $installed
     list_all | mark-installed-debs $installed > $db
+    msg "%s took %s second(s)" "$(pq generate db file)" "$(pnq $(show_delta_t $start_t))"
 }
 
 #------------------------------------------------------------------------------
