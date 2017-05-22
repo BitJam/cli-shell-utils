@@ -255,7 +255,6 @@ do_search() {
         esac
 
         [ -z "$all_str" ] && return
-        all_str=${all_str//./\\.}
         local desc_str=${all_str#^}
         desc_str=${desc_str%$}
         local name_str="${all_str}.* - "
@@ -505,6 +504,8 @@ get_glob_string() {
     read -r input
 
     # Convert '*' and '?' to their regular expression equivalents
+    # First protect "." in the original string
+    input=${input//./\\.}
     input=${input//\?/.}
     input=${input//\*/.*}
 
