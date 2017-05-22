@@ -69,6 +69,8 @@ start_testing_mode() {
 main() {
     testing || need_root
 
+    TITLE="antiX CLI Package Installer"
+
     BACK_TO_MAIN="go back to main menu"
 
     local UPGRADE_CNT
@@ -97,6 +99,7 @@ main() {
 
     generate_db_file
 
+    shout "$TITLE"
     do_search
     while true; do
         do_main_menu
@@ -109,7 +112,7 @@ main() {
 do_main_menu() {
 
     msg
-    shout "antiX CLI Package Installer"
+    shout "$TITLE"
     local title=$"Main Menu"
     local ans
 
