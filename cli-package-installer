@@ -536,8 +536,11 @@ add_to_result_menu() {
 #
 #------------------------------------------------------------------------------
 search_for() {
-        local str=$1
-        grep -Eh "$str" $DB_FILE
+        local str=$1 iflag=i
+
+        # Any uppercase letter ==> case sensitive search
+        [ -z "${str##*[A-Z]*}" ] && iflag=
+        grep -Eh$iflag "$str" $DB_FILE
 }
 
 #------------------------------------------------------------------------------
