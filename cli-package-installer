@@ -494,9 +494,11 @@ remove_menu() {
 #------------------------------------------------------------------------------
 get_glob_string() {
     local var_nam=$1
-    local title="Please enter the term you want to search for."
-    title=$(printf "$title\n%s" "Standard globbing wildcards '*' and '?' work.")
-    title=$(printf "$title\n%s" "Use an empty string or 'q' to return to main menu.")
+    local line1="Please enter the term you want to search for."
+    local line2=$(printf "Standard globbing wildcards '%s' and '%s' work." "$(bqq '*')" "$(bqq '?')")
+    local line3=$(printf "Use an empty string or '%s' to return to main menu." "$(bqq 'q')")
+
+    title=$(printf "%s\n%s\n%s\n" "$line1" "$line2" "$line3")
 
     local input prompt=$(quest "> ")
     quest "$title"
