@@ -255,6 +255,7 @@ do_search() {
         esac
 
         [ -z "$all_str" ] && return
+        all_str=${all_str//./\\.}
         local desc_str=${all_str#^}
         desc_str=${desc_str%$}
         local name_str="${all_str}.* - "
