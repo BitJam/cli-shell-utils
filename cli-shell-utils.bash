@@ -1649,14 +1649,13 @@ fatal() {
         printf "$code:$fmt\n" "$@" | strip_color >> $ERR_FILE
         [ -n "$FATAL_QUESTION" ] && echo "Q:$FATAL_QUESTION" >> $ERR_FILE
     fi
-    my_exit ${EXIT_NUM:-100}
+
+    case $(type -t my_exit) in
+        function) my_exit ${EXIT_NUM:-100} ;;
+    esac
+
     exit ${EXIT_NUM:-100}
 }
-
-#------------------------------------------------------------------------------
-# Default my_exit() routine.
-#------------------------------------------------------------------------------
-my_exit() { exit ${1:-0} ; }
 
 #------------------------------------------------------------------------------
 # Convenience routines to throw a fatal error or warning if a variable is
