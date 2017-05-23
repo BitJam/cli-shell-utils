@@ -1057,7 +1057,7 @@ check_md5() {
     yes_NO $"Check md5 of the file %s?" "$(basename "$file")" || return
     Msg $"Checking md5 ..."
     (cd "$(dirname "$md5_file")" && md5sum -c "$(basename "$md5_file")") && return
-    yes_NO $"Keep going anyway?" || my_exit
+    yes_NO $"Keep going anyway?" || my_exit 0
 }
 
 #------------------------------------------------------------------------------
@@ -1649,9 +1649,14 @@ fatal() {
         printf "$code:$fmt\n" "$@" | strip_color >> $ERR_FILE
         [ -n "$FATAL_QUESTION" ] && echo "Q:$FATAL_QUESTION" >> $ERR_FILE
     fi
-    type my_exit 2>/dev/null && my_exit ${EXIT_NUM:-100}
+    my_exit ${EXIT_NUM:-100}
     exit ${EXIT_NUM:-100}
 }
+
+#------------------------------------------------------------------------------
+# Default my_exit() routine.
+#------------------------------------------------------------------------------
+my_exit() { exit ${1:-0} ; }
 
 #------------------------------------------------------------------------------
 # Convenience routines to throw a fatal error or warning if a variable is
