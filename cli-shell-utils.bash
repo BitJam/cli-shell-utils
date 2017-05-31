@@ -2618,7 +2618,7 @@ lib_clean_up() {
 #
 #------------------------------------------------------------------------------
 mp_cleanup() {
-    local dir  i busy
+    local dir  i  busy
 
     for i in $(seq 1 10); do
         busy=
@@ -2644,6 +2644,15 @@ luks_close() {
     [ -z "$name" ] && return
     test -e /dev/mapper/$name || return
     cryptsetup close $name
+}
+
+#------------------------------------------------------------------------------
+# If this says we are up, there still not be a valid connection but this is
+# fast and catches common situations where there is no connection.
+#------------------------------------------------------------------------------
+have_net() {
+    cat /sys/class/net/*/operstate 2>/dev/null | grep -q ^up$
+    return $?
 }
 
 #==============================================================================
