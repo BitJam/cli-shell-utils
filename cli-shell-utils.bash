@@ -442,6 +442,14 @@ YES_no_pretend() {
 shout_pretend() { [ "$PRETEND_MODE" ] && Shout $"PRETEND MODE ENABLED" ;}
 
 #------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+menu_printf() {
+    local payload=$1  fmt=$2  ; shift 2
+    printf "%s$P_IFS$fmt\n" "$payload" "$@"
+}
+
+#------------------------------------------------------------------------------
 # Generate a simple selection menu based on a data:label data structure.
 # The "1)" and so on get added automatically.
 #------------------------------------------------------------------------------
