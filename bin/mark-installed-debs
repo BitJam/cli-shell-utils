@@ -20,7 +20,11 @@ close $fh;
 
 my $name;
 for (<>) {
-    m/^([^ ]+) - / or next;
+    m/^([^ ]+) / or do {
+        print;
+        next;
+    };
+
     $name = $1;
     $installed{$name} and print "I ";
     print;
