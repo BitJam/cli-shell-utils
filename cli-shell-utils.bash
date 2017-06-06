@@ -450,6 +450,18 @@ menu_printf() {
 }
 
 #------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+menu_printf_plural() {
+    local payload=$1  cnt=$2  lab1=$3  lab2=$4
+
+    case $cnt in
+        1) printf "%s$P_IFS$lab1\n" "$payload" "$(nq $cnt)" ;;
+        *) printf "%s$P_IFS$lab2\n" "$payload" "$(nq $cnt)" ;;
+    esac
+}
+
+#------------------------------------------------------------------------------
 # Generate a simple selection menu based on a data:label data structure.
 # The "1)" and so on get added automatically.
 #------------------------------------------------------------------------------
