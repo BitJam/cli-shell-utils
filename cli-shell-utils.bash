@@ -1720,6 +1720,15 @@ quest() {
     printf "$quest_co$fmt$nc_co" "$@"
 }
 
+
+#------------------------------------------------------------------------------
+# Same as quest() but with trailing \n
+#------------------------------------------------------------------------------
+questn() {
+    local fmt=$1 ; shift
+    printf "$quest_co$fmt$nc_co\n" "$@"
+}
+
 #------------------------------------------------------------------------------
 # Progress, log, and echo.
 # printf a string then send it on to be output to the log file and to the
