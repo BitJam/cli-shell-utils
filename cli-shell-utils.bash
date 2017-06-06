@@ -1463,7 +1463,7 @@ set_colors() {
            red=  ;  purple=  ;    brown=  ; lt_gray=  ;
        dk_gray=  ; lt_blue=  ; lt_green=  ; lt_cyan=  ;
         lt_red=  ; magenta=  ;   yellow=  ;   white=  ;
-         nc_co=  ;   brown=  ;
+         nc_co=  ;   brown=  ;   rev_co=
 
          bold_co=            ;    fs_co=           ;      num_co=            ;
          date_co=            ;  head_co=           ;    quest_co=            ;
@@ -1477,10 +1477,11 @@ set_colors() {
            red="$e[0;31m" ;  purple="$e[0;35m" ;    brown="$e[0;33m" ; lt_gray="$e[0;37m" ;
        dk_gray="$e[1;30m" ; lt_blue="$e[1;34m" ; lt_green="$e[1;32m" ; lt_cyan="$e[1;36m" ;
         lt_red="$e[1;31m" ; magenta="$e[1;35m" ;   yellow="$e[1;33m" ;   white="$e[1;37m" ;
-         nc_co="$e[0m"    ;   brown="$e[0;33m" ;
+         nc_co="$e[0m"    ;   brown="$e[0;33m" ;   rev_co="$e[7m"
 
     case $color in
         high)
+         inst_co=$lt_cyan    ;  mark_co=$rev_co    ;     grep_co="1;35"
          bold_co=$yellow     ;    fs_co=$lt_blue   ;      num_co=$magenta    ;
          date_co=$lt_cyan    ;  head_co=$white     ;    quest_co=$lt_green   ;
           dev_co=$white      ;    hi_co=$white     ;     quit_co=$yellow     ;
@@ -1488,6 +1489,7 @@ set_colors() {
         fname_co=$white      ;     m_co=$lt_cyan   ;     warn_co=$yellow     ; ;;
 
         dark)
+         inst_co=$cyan    ;  mark_co=$rev_co       ;     grep_co="1;34"
          bold_co=$brown      ;    fs_co=$lt_blue   ;      num_co=$brown   ;
          date_co=$cyan       ;  head_co=$nc_co     ;    quest_co=$green   ;
           dev_co=$nc_co      ;    hi_co=$nc_co     ;     quit_co=$brown   ;
@@ -1495,6 +1497,7 @@ set_colors() {
         fname_co=$nc_co      ;     m_co=$cyan      ;     warn_co=$brown   ; ;;
 
         low)
+         inst_co=$cyan    ;  mark_co=$rev_co       ;     grep_co="1;34"
          bold_co=$white      ;    fs_co=$nc_co     ;      num_co=$white      ;
          date_co=$nc_co      ;  head_co=$white     ;    quest_co=$lt_green   ;
           dev_co=$white      ;    hi_co=$white     ;     quit_co=$lt_green   ;
@@ -1502,6 +1505,7 @@ set_colors() {
         fname_co=$white      ;     m_co=$nc_co     ;     warn_co=$yellow     ; ;;
 
         low2)
+         inst_co=$cyan       ;  mark_co=$rev_co    ;     grep_co="1"
          bold_co=$white      ;    fs_co=$nc_co     ;      num_co=$white      ;
          date_co=$nc_co      ;  head_co=$white     ;    quest_co=$green      ;
           dev_co=$white      ;    hi_co=$white     ;     quit_co=$green      ;
@@ -1509,6 +1513,7 @@ set_colors() {
         fname_co=$white      ;     m_co=$nc_co     ;     warn_co=$yellow     ; ;;
 
         bw)
+         inst_co=$white      ;  mark_co=$rev_co    ;     grep_co="1;37"
          bold_co=$white      ;    fs_co=$nc_co     ;      num_co=$white      ;
          date_co=$nc_co      ;  head_co=$white     ;    quest_co=$white      ;
           dev_co=$white      ;    hi_co=$white     ;     quit_co=$white      ;
