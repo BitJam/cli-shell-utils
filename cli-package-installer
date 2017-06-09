@@ -107,8 +107,9 @@ main() {
 
     find_man_page
     mkdir -p $WORK_DIR || fatal "Could not create directory %s" "$WORK_DIR"
+    testing || mount_work_dir
 
-    msg "Checking to see if an %s is needed ..." "$(pq apt-get update)"
+    #msg "Checking to see if an %s is needed ..." "$(pq apt-get update)"
 
     # Don't run check_for_updates or generate_database_files automatically
     local JUST_UPDATE=true
@@ -1461,7 +1462,38 @@ load_lib() {
     exit 17
 }
 
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+mount_work_dir() {
+    local dir=${1:_$WORK_DIR}
+
+    if is_mountpoint $WORK_DIR; then
+        warn "The directory %s is already a mount point"
+        return
+    fi
+    mount -t tmpfs tmpfs $WORK_DIR || fatal "Could not mount tmpfs at %s" $dir
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+umount_work_dir() {
+    local dir=${1:-$WORK_DIR}
+    sync
+    is_mountpoint "$dir" || return 0
+
+    local try
+    for try in $(seq 1 30); do
+        umount --recursive "$dir"  2>/dev/null
+        is_mountpoint "$dir" || return 0
+        sleep .1
+    done
+    rmdir "$dir"
+}
+
 on_exit() {
+    testing || umount_work_dir
     testing || unflock
 }
 
