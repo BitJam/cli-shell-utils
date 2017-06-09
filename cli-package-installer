@@ -465,7 +465,9 @@ do_search() {
             # The action variable helps us to figure out what to do in the surrounding loop
             local action enter=$(bqq "Enter")
             while true; do
-                questn "Please enter the number of the package you want to mark or install"
+
+                questn "Press %s to skip picking a package" "<$enter>"
+                questn "Or enter the number of the package you want to mark or install"
                 questn "Use %s to go to main menu, %s to search again, %s to see the results again" \
                     "$(bqq q)<$enter>" "$(bqq s)<$enter>" "$(bqq r)<$enter>"
                 quest "> "
@@ -474,7 +476,7 @@ do_search() {
                 read number
 
                 case $number in
-                       "") continue ;;
+                       "") break ;;
                     [qQ]*) return   ;;
                     [rR]*) action=review ; break ;;
                     [sS]*) action=search ; break ;;
@@ -498,17 +500,20 @@ do_search() {
                 search) break    ;;
             esac
 
-            local full_package=$(nl $SEARCH_FILE | sed -n -r "s/^\s*$number\s+//p")
-            if [ -z "$full_package" ]; then
-                warn "Could not find package number %s" "$number"
-                break
+            local full_package
+            if [ "$number" ]; then
+                full_package=$(nl $SEARCH_FILE | sed -n -r "s/^\s*$number\s+//p")
+                if [ -z "$full_package" ]; then
+                    warn "Could not find package number %s" "$number"
+                    break
+                fi
+                msg "Selected package %s" "$(nq $number)"
+                show_package "$full_package"
             fi
-
-            msg "Selected package %s" "$(nq $number)"
-            show_package "$full_package"
 
             local menu=$(
                 mark_or_install_menu "$full_package"
+                mark_all_menu $SEARCH_FILE
                 menu_printf search $"Search again"
                 menu_printf quit   $"Back to main menu"
             )
@@ -520,8 +525,10 @@ do_search() {
                 unmark)    unmark_package "$full_package" ;;
                install)   install_package "$full_package" ;;
              uninstall) uninstall_package "$full_package" ;;
-                search) break  ;;
-                  quit) return ;;
+              mark-all)     mark_all_file $SEARCH_FILE    ;;
+            unmark-all)   unmark_all_file $SEARCH_FILE    ;;
+                search) break                             ;;
+                  quit) return                            ;;
                      *) internal_err "2nd search result menu" "$ans" ;;
             esac
 
