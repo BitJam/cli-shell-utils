@@ -602,7 +602,7 @@ uninstall_package() {
            install) apt_get_cmd install $pack ;;
          reinstall) apt_get_cmd --reinstall install $pack ;;
               quit) return  ;;
-              *) fatal "internal uninstall_menu error %s" "$ans" ;;
+              *) internal_err "uninstall menu" "$ans" ;;
     esac
     update_package_status
 }
@@ -685,6 +685,33 @@ count_matches() {
         msg "$fmt" "$found" "$cnt" "$lab2"
     fi
 }
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+count_star_matches() {
+    local prefix=$1  lab1=$2  lab2=$3  stars=$4  found="Found"
+    eval local str=\$${prefix}_str
+
+    local cnt=$(star_search "$str" --count)
+
+    eval ${prefix}_cnt=\$cnt
+
+    local fmt="  %s $num_co%5s$m_co %s"
+    TOTAL_MATCHES=$((TOTAL_MATCHES + $cnt))
+    local lab=$lab2
+    [ $cnt -eq 1 ] && lab=$lab1
+
+    return
+
+    if [ $# -lt 4 ]; then
+        msg "  %s $num_co%3s$m_co %s" "$found" "$cnt" "$lab"
+    else
+        msg "  %s $num_co%3s$m_co %s %s" "$found" "$cnt" "$(starq "$stars")" "$lab"
+    fi
+}
+
+starq() { printf "%5s" "$1" | sed -r "s/(\*+)/$bold_co\1$m_co/" ; }
 
 
 #------------------------------------------------------------------------------
@@ -770,12 +797,19 @@ perform_search() {
 }
 
 #------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+star_search() {
+    local str=$1  file=$SUGGESTED_FILE ; shift
+    egrep "$@" "$str" "$file"
+}
+
+#------------------------------------------------------------------------------
 #List all packages that a given package depends on.  We use this for marking
 # all dependences when a single package gets marked.
 #------------------------------------------------------------------------------
 list_depends() {
-    local pack=$(package_name "$1")
-    apt-cache depends $pack | sed -n -r "s/^\s*Depends:\s*//"
+    apt-cache depends $* | sed -n -r "s/^\s*Depends:\s*//p" | grep -v "^<" | sort -u
 }
 
 #------------------------------------------------------------------------------
@@ -1227,24 +1261,89 @@ do_view_marked() {
 #
 #------------------------------------------------------------------------------
 do_suggested() {
-    local db=${1:-$DB_FILE}  local mark_co=
+    local db=${1:-$DB_FILE}  local
 
-    shout_subtitle "Suggested Packages"
 
+    local mark_cnt=0
     local ans
     while true; do
 
-        cat $SUGGESTED_FILE | color_suggestions | my_nl | color_headers > $SEARCH_FILE
-        local pack_cnt=$(grep --count "^[0-9a-z]" $SUGGESTED_FILE)
-        local line_cnt=$(cat $SEARCH_FILE | wc -l)
+        shout_subtitle "Suggested Packages"
 
-        local height=$(screen_height)
-        if [ $line_cnt -lt $((height - 5)) ]; then
-            cat $SEARCH_FILE | less -EXRS
+        local   all_str="^[MIa-z0-9]"
+        local  five_str="^[MIa-z0-9].*\*{5}"
+        local  four_str="^[MIa-z0-9].*\*{4}"
+        local three_str="^[MIa-z0-9].*\*{3}"
+        local   two_str="^[MIa-z0-9].*\*{2}"
+        local   one_str="^[MIa-z0-9].*\*{1}"
+        local  zero_str="^[MIa-z0-9][^\*]+$"
+
+        local all_cnt=    five_cnt=    four_cnt=    three_cnt=    two_cnt=    one_cnt=
+        local all_match=  five_match=  four_match=  three_match=  two_match=  one_match=
+
+        local TOTAL_MATCHES=0  FOUND_MATCH=
+        count_star_matches   all   "total suggestion" "total suggestions"
+        count_star_matches  five   "star package"     "star packages"  "*****"
+        count_star_matches  four   "star package"     "star packages"  "****+"
+        count_star_matches three   "star package"     "star packages"  "***+"
+        #count_star_matches   two   "package"     "star packages  "**+""
+        #count_star_matches   one   "package"     "star packages" "*+"
+        count_star_matches   zero  "zero star package"  "no star packages" ""
+
+        if [ $TOTAL_MATCHES -eq 0 ]; then
+            warn "No suggestions were found!"
+            warn "Check for the file %s" $SUGGESTED_FILE
+            return
+        fi
+
+       # Need to use a file because the commands below are in a subshell
+        rm -f $FOUND_MATCH_FILE
+        local star_menu=$(
+            [ $mark_cnt -gt 0 ] && add_mark_entry
+            add_to_star_menu all    "View all" "suggestions"
+            add_to_star_menu five   "View"     "star packages"      "*****"
+            add_to_star_menu four   "View"     "star packages"      "****+"
+            add_to_star_menu three  "View"     "star packages"      "***+"
+            add_to_star_menu zero   "View"     "zero star packages" ""
+            menu_printf             skip       "Skip to next step (don't view packages)"
+            #add_to_star_menu
+            menu_printf  'quit'    "Go back to main menu"
+        )
+
+        local ans
+        my_select ans "Please select which packages to view" "$star_menu"
+
+        local action=${ans#*-}
+        local search_type=${ans%%-*}
+
+        local skip=  regex=
+        case $ans in
+         view-marked) do_view_marked ; return         ;;
+            all-view) regex="^"                       ;;
+              *-view) eval regex=\$${search_type}_str ;;
+                skip) skip=true                       ;;
+                quit) return                          ;;
+                   *) internal_err "star menu 1" "$ans" ;;
+        esac
+
+        if [ "$action" = 'view' ]; then
+            #star_search "$regex" -e "^#" -e "^$" -e > $SEARCH_FILE
+            star_search "$regex" > $SEARCH_FILE
+            local pack_cnt=$(egrep --count "^[MI0-9a-z]" $SEARCH_FILE)
+            local line_cnt=$(cat $SEARCH_FILE | wc -l)
+            local height=$(screen_height)
+        fi
+
+        if [ "$skip" ]; then
+            :
+
+        elif [ $line_cnt -lt $((height - 5)) ]; then
+            echo
+            cat $SEARCH_FILE | number_suggestions | less -EXRS
         else
             local blanks=5
             (local i; for i in $(seq 1 $blanks); do echo; done)  > $SEARCH_FILE.nl
-            cat $SEARCH_FILE                                    >> $SEARCH_FILE.nl
+            cat $SEARCH_FILE | number_suggestions               >> $SEARCH_FILE.nl
 
             local enter="$(pqq "Enter")"
             msg "%s packages were found." "$(nq $pack_cnt)"
@@ -1253,12 +1352,15 @@ do_suggested() {
             questn "Use <up-arrow>, <down-arrow>, <page-up>, and <page down> to scroll the list"
             questn "Position the package you want near the bottom and then press 'q' to continue"
             msg
-            questn "press %s to see the list, %s to go the main menu," \
-                "<$enter>" "$(pqq q)<$enter>"
+            questn "press %s to see the list, %s to go the main menu, %s to search again" \
+                "<$enter>" "$(pqq q)" "$(pqq r)"
 
-            read ans
+            local xxx
+            read -n1 ans
+            #read xxx -t .01
             case $ans in
-                [qQ]*) return ;;
+                [qQ]*) return   ;;
+                [rR]*) continue ;;
             esac
 
             # Never start with blank lines under the last line
@@ -1267,21 +1369,24 @@ do_suggested() {
 
             less -RXSm +$offset --shift=.20 $SEARCH_FILE.nl
         fi
-        local action enter=$(bqq "Enter")
+
+        local action=  enter=$(bqq "Enter")
+
         while true; do
-            questn "Please enter the number of the package you want to mark or install"
-            questn "Use %s to go to main menu, %s to search again, %s to see the results again" \
-                "$(bqq q)<$enter>" "$(bqq s)<$enter>" "$(bqq r)<$enter>"
+            [ "$skip" ] && break
+            questn "Press %s  to skip picking a package" "<$enter>"
+            questn "Or enter the number of the package you want to mark or install"
+            questn "Use %s to go to main menu, %s to see the results again" "$(bqq q)<$enter>" "$(bqq r)<$enter>"
             quest "> "
 
             local number
             read number
 
             case $number in
-                   "") continue ;;
+                   "")  action=skip; break ;;
                 [qQ]*) return   ;;
                 [rR]*) action=review ; break ;;
-                [sS]*) action=search ; break ;;
+                #[sS]*) action=search ; break ;;
                 [1-9]|[1-9][0-9]|[1-9][0-9][0-9]) ;;
                             [1-9][0-9][0-9][0-9]) ;;
                        [1-9][0-9][0-9][0-9][0-9]) ;;
@@ -1289,7 +1394,7 @@ do_suggested() {
                 *) warn "Invalid input.  Please try again" ; continue ;;
             esac
 
-            if [ "$number" -gt $cnt ]; then
+            if [ $number -gt $pack_cnt ]; then
                 warn "That number was out of range, please try again"
                 continue
             fi
@@ -1299,25 +1404,47 @@ do_suggested() {
 
         case $action in
             review) continue ;;
-            search) break    ;;
         esac
 
-        local full_package=$(nl $SEARCH_FILE | sed -n -r "s/^\s*$number\s+//p")
-        if [ -z "$full_package" ]; then
-            warn "Could not find package number %s" "$number"
-            break
+        local full_package=
+
+        if [ "$number" ]; then
+            full_package=$(cat $SEARCH_FILE | my_nl | sed -n -r "s/^\s*$number\s+//p")
+            if [ -z "$full_package" ]; then
+                warn "Could not find package number %s" "$number"
+                break
+            fi
+
+            msg "Selected package number %s" "$(bq $number)"
+            show_package "$full_package"
         fi
 
-        local mark_cnt=$(grep --count "^M" $SUGGESTED_FILE)
-
-
-        local menu=$(suggest_menu $mark_cnt)
+        local menu=$(
+            mark_or_install_menu "$full_package"
+            mark_all_menu        $SEARCH_FILE
+            menu_printf suggest  $"See suggestions again"
+            menu_printf quit     $"Back to main menu"
+        )
 
         my_select ans "Please select an action" "$menu"
 
+        case $ans in
+                  mark)        mark_package "$full_package" ;;
+                unmark)      unmark_package "$full_package" ;;
+               install)     install_package "$full_package" ;;
+             uninstall)   uninstall_package "$full_package" ;;
+              mark-all)       mark_all_file $SEARCH_FILE    ;;
+            unmark-all)     unmark_all_file $SEARCH_FILE    ;;
+        install-marked)     install_marked  $SEARCH_FILE    ;;
+               suggest) continue                            ;;
+                  quit) return                              ;;
+                    *) internal_err "bottom suggestion menu" "$ans" ;;
+        esac
+
+        mark_cnt=$(grep --count "^M" $SUGGESTED_FILE)
+
     done
 }
-
 
 #------------------------------------------------------------------------------
 #
