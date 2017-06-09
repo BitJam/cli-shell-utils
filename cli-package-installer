@@ -125,9 +125,8 @@ main() {
     # Ok, you can run check_for_updates or generate_database_file automatically now
     JUST_UPDATE=
 
-    shout_title "$MAIN_MENU"
-
-    do_search
+    #shout_title "$MAIN_MENU"
+    #do_search
 
     while true; do
         do_main_menu
