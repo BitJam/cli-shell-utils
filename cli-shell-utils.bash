@@ -1656,7 +1656,7 @@ shout_title() {
 shout_subtitle() {
     local title=$1
     echo "$m_co$SBAR_80$nc_co"
-    printf "\n-----> " >>$LOG_FILE
+    printf "\n=====> " >>$LOG_FILE
     shout "$title"
     echo "$m_co$SBAR_80$nc_co"
 }
