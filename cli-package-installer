@@ -342,9 +342,9 @@ do_search() {
 
             local desc_str=${all_str#^}
             desc_str=${desc_str%$}
-            local name_str="${all_str}[^ ]* "
-            local lead_str="^([MI]+ )?${desc_str#^}"
-            local exact_str="${lead_str%$} "
+            local name_str="^([MI]+ )?[^ ]*$desc_str"
+            local lead_str="^([MI]+ )?$desc_str"
+            local exact_str="$lead_str "
 
             local exact_cnt=   lead_cnt=    name_cnt=    desc_cnt=
             local exact_match= lead_match=  name_match=  desc_match=
@@ -355,7 +355,7 @@ do_search() {
             count_matches  exact "exact name match"           "exact name matches"
             count_matches  lead  "leading name match"         "leading name matches"
             count_matches  name  "any name match"             "any name matches"
-            #count_matches  desc  "name or description match"  "name or description matches"
+            count_matches  desc  "name or description match"  "name or description matches"
 
             if [ $TOTAL_MATCHES -eq 0 ]; then
                 warn "No matches were found"
