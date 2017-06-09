@@ -1630,7 +1630,7 @@ do_upgrade_menu() {
                quit) return              ;;
             upgrade) do_upgrade ; return ;;
                view) view_upgrades       ;;
-                  *) fatal "Internal error: upgrade_menu: %s" $ans ;;
+                  *) internal_err "upgrade_menu" "$ans" ;;
         esac
     done
 }
