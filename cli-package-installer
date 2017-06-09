@@ -415,15 +415,18 @@ do_search() {
                     "$(pqq q)"
                 msg
 
-                questn "press <%s> to see the list, %s to go the main menu, %s to do another search" \
-                    "$(pqq Enter)" "$(pqq q)" "$(pqq s)"
+                questn "press <%s> to see the list, %s to go the main menu, %s to repeat same search, %s to do another search" \
+                    "$(pqq Enter)" "$(pqq q)" "$(pqq r)" "$(pqq s)"
 
                 quest "> "
 
-                read ans
+                local xxx
+                read -n1 ans
+                #read xxx -t .01
                 case $ans in
-                    [qQ]*) return ;;
-                    [sS]*) break  ;;
+                    [qQ]*) return    ;;
+                    [sS]*) break     ;;
+                    [rR]*) continue  ;;
                 esac
 
                 # Never start with blank lines under the last line
