@@ -146,6 +146,8 @@ do_main_menu() {
     msg
     shout_title "$MAIN_TITLE"
 
+    suggest_warning
+
     local title=$"Main Menu"
     local ans
 
@@ -189,9 +191,20 @@ main_menu() {
 #------------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------------
+suggest_warning() {
+    local file=$SUGGESTED_FILE
+    test -r $file || return
+    local tot=$(egrep --count "^[MIa-z0-9]" $file)
+    local cnt=$(egrep -v "^M?I"$file | egrep --count "^[MIa-z0-9]")
+    [ $cnt -gt 0 ] && return
+    [ $tot -eq 0 ] && return
+    msg
+    shout "All %s suggested packages have been installed" "$(pnh $tot)"
+}
+
 add_suggest_entry() {
     test -r $SUGGESTED_FILE || return
-    local cnt=$(egrep --count "^[MIa-z0-9]" $SUGGESTED_FILE)
+    local cnt=$(egrep "^[MIa-z0-9]" | egrep -v "^M?I"$SUGGESTED_FILE)
     [ $cnt -gt 0 ] || return
     menu_printf suggested "View a list of %s suggested packages to install" "$(nq $cnt)"
 }
