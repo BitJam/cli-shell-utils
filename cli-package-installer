@@ -400,10 +400,10 @@ do_search() {
 
             case $action in
                   view) ;;
-                  mark)      mark_package "$found_match"  ;;
-                unmark)    unmark_package "$found_match"  ;;
-               install)   install_package "$found_match"  ;;
-             uninstall) uninstall_package "$found_match"  ;;
+                  mark)      mark_package "$found_match"          ;;
+                unmark)    unmark_package "$found_match"          ;;
+               install)   install_package "$found_match" ; return ;; # Should we really return?
+             uninstall) uninstall_package "$found_match" ; return ;;
 
                 search) break  ;;
                   quit) return ;;
@@ -519,24 +519,24 @@ do_search() {
 
             local menu=$(
                 mark_or_install_menu "$full_package"
-                mark_all_menu $SEARCH_FILE
-                menu_printf repeat $"Repeat the same search"
-                menu_printf search $"Search again"
-                menu_printf quit   $"Back to main menu"
+                mark_all_menu        $SEARCH_FILE
+                menu_printf repeat   $"Repeat the same search"
+                menu_printf search   $"Search again"
+                menu_printf quit     $"Back to main menu"
             )
 
             my_select 'ans' "Please select an action" "$menu"
 
             case $ans in
-                  mark)      mark_package "$full_package" ;;
-                unmark)    unmark_package "$full_package" ;;
-               install)   install_package "$full_package" ;;
-             uninstall) uninstall_package "$full_package" ;;
-              mark-all)     mark_all_file $SEARCH_FILE    ;;
-            unmark-all)   unmark_all_file $SEARCH_FILE    ;;
-                repeat) continue                          ;;
-                search) break                             ;;
-                  quit) return                            ;;
+                  mark)      mark_package "$full_package"          ;;
+                unmark)    unmark_package "$full_package"          ;;
+               install)   install_package "$full_package" ; return ;;
+             uninstall) uninstall_package "$full_package" ; return ;;
+              mark-all)     mark_all_file $SEARCH_FILE             ;;
+            unmark-all)   unmark_all_file $SEARCH_FILE             ;;
+                repeat) continue                                   ;;
+                search) break                                      ;;
+                  quit) return                                     ;;
                      *) internal_error "2nd search result menu" "$ans" ;;
             esac
 
