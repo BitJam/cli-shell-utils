@@ -190,7 +190,7 @@ main_menu() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Gently warn if the suggestions are all already installed
 #------------------------------------------------------------------------------
 suggest_warning() {
     local file=$SUGGESTED_FILE
@@ -581,14 +581,15 @@ color_results() {
 
 
 #------------------------------------------------------------------------------
-#
+# Add numbers and colorize a list of packages
 #------------------------------------------------------------------------------
 number_suggestions() {
     color_suggestions | my_nl | color_numbers | color_headers
 }
 
 #------------------------------------------------------------------------------
-#
+# Colorize the suggestions list.  This is similar to but not identical to
+# color_results()
 #------------------------------------------------------------------------------
 color_suggestions() {
     # The first 2nd & 3rd expressions are for "undoing" grep highlighting
@@ -728,7 +729,7 @@ count_matches() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Count the number of ***'ed packages
 #------------------------------------------------------------------------------
 count_star_matches() {
     local prefix=$1  lab1=$2  lab2=$3  stars=$4  found="Found"
@@ -783,7 +784,7 @@ add_to_result_menu() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Add a entry for showing only the ***+ packages
 #------------------------------------------------------------------------------
 add_to_star_menu() {
     local prefix=$1  view=$2  lab=$3  stars=$4
@@ -855,7 +856,7 @@ perform_search() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Search
 #------------------------------------------------------------------------------
 star_search() {
     local str=$1  file=$SUGGESTED_FILE ; shift
@@ -1342,7 +1343,6 @@ do_view_marked() {
 do_suggested() {
     local db=${1:-$DB_FILE}  local
 
-
     local mark_cnt=0
     local ans
     while true; do
@@ -1563,22 +1563,29 @@ mark_all_file() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Unmark all packages listed inside of a file
 #------------------------------------------------------------------------------
 unmark_all_file() {
     local file=$1  files=${2:-$DB_FILE $SUGGESTED_FILE}
     local packs=$(egrep "^MI? [a-z0-9]" $file | sed -r -e "s/MI? //" -e "s/ .*//")
     local regex=$(echo $packs | tr ' ' '|')
-    echo $regex
+    #echo $regex
     sed -r -i -e "s/^M ($regex) /\1 /" -e "s/^MI ($regex) /I \1 /"  $files
 
     local cnt=$(echo $packs | wc -w)
-    arrow_msg "Unmarked %s previously marked packages" "$(nq $cnt)"
+    arrow_msg "Unmarked all %s previously marked packages" "$(nq $cnt)"
+
+    local mcnt=$(grep --count "^M" $DB_FILE)
+    if [ $mcnt -gt 0 ]; then
+        msg "%s package(s) are still marked" "$(nq $mcnt)"
+    fi
+
     MARK_CNT=$((MARK_CNT - cnt))
 }
 
 #------------------------------------------------------------------------------
-#
+# menu for marking or unmarking all packages within a file.  Used in both
+# do_suggested() and do_search()
 #------------------------------------------------------------------------------
 mark_all_menu() {
     local file=$1
@@ -1599,7 +1606,9 @@ mark_all_menu() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Used for number only packages inside of the suggestion file.  We only number
+# a line if it starts with a char other than "#".  This looseness allows us
+# to run on colorized output (as long as the headers aren't colored).
 #------------------------------------------------------------------------------
 my_nl() {
     local cnt=1  line  blank_cnt=0
@@ -1641,7 +1650,7 @@ list_installed() { dpkg-query --show | sort | cut -f1; }
 count_upgrades() { apt list --upgradable 2>/dev/null | grep -v "^Listing" | wc -l;  }
 
 #------------------------------------------------------------------------------
-#
+# Check to for system upgrades
 #------------------------------------------------------------------------------
 check_for_upgrades() {
     msg "Checking for package upgrades ..."
@@ -1774,7 +1783,8 @@ load_lib() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Mount the work directory as tmpfs.  This should make our searches slightly
+# faster.
 #------------------------------------------------------------------------------
 mount_work_dir() {
     local dir=${1:_$WORK_DIR}
@@ -1787,7 +1797,7 @@ mount_work_dir() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Unmount the work directory
 #------------------------------------------------------------------------------
 umount_work_dir() {
     local dir=${1:-$WORK_DIR}
