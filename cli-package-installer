@@ -1425,7 +1425,10 @@ do_suggested() {
             cat $SEARCH_FILE | number_suggestions               >> $SEARCH_FILE.nl
 
             local enter="$(bqq "Enter")"
-            msg "%s packages were found." "$(nq $pack_cnt)"
+            local ucnt=$(egrep --count "^(M |[a-z0-9])" $SEARCH_FILE)
+
+            msg "%s packages were found (%s uninstalled)." "$(nq $pack_cnt)" "$(nq $ucnt)"
+
             msg
             questn "In the next step you will been shown a list of packages that you can scroll"
             questn "Use <up-arrow>, <down-arrow>, <page-up>, and <page down> to scroll the list"
