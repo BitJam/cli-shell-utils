@@ -147,6 +147,7 @@ do_main_menu() {
     shout_title "$MAIN_TITLE"
 
     suggest_warning
+    upgrade_warning
 
     local title=$"Main Menu"
     local ans
@@ -198,19 +199,26 @@ suggest_warning() {
     local cnt=$(egrep -v "^M?I" $file | egrep --count "^[MIa-z0-9]")
     [ $cnt -gt 0 ] && return
     [ $tot -eq 0 ] && return
-    msg
-    shout "All %s suggested packages have been installed" "$(pnh $tot)"
+    msg "All %s suggested packages have been installed" "$tot"
 }
 
 #------------------------------------------------------------------------------
-#
+# Gently warn if there are no pending upgrades
+#------------------------------------------------------------------------------
+upgrade_warning() {
+    [ $UPGRADE_CNT -gt 0 ] && return
+    msg "(no pending upgrades)"
+}
+
+#------------------------------------------------------------------------------
+# Add the suggestions entry if there are any left to install
 #------------------------------------------------------------------------------
 add_suggest_entry() {
     local file=$SUGGESTED_FILE
     test -r $file || return
     local cnt=$(egrep "^[MIa-z0-9]" $file | egrep --count -v "^M?I")
     [ $cnt -gt 0 ] || return
-    menu_printf suggested "View a list of %s suggested packages to install" "$(nq $cnt)"
+    menu_printf suggested "View a list of %s suggested uninstalled packages" "$(nq $cnt)"
 }
 
 #------------------------------------------------------------------------------
