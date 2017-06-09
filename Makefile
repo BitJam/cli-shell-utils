@@ -7,6 +7,7 @@ ME          := cli-shell-utils
 
 APT_WRAPPER := cli-package-installer
 
+SHARE_DIR   := $(ROOT)/usr/local/share/$(APT_WRAPPER)
 MY_SCRIPTS  := choose-console-width $(APT_WRAPPER)
 SCRIPTS     := live-usb-maker live-kernel-updater
 LIB_DIR     := $(ROOT)/usr/local/lib/$(ME)
@@ -16,9 +17,9 @@ DESK_DIR    := $(ROOT)/usr/share/applications/antix
 MAN_DIR     := $(ROOT)/usr/share/man/man1
 SCRIPTS_ALL := $(addsuffix -all, $(SCRIPTS))
 
-ALL_DIRS   := $(LIB_DIR) $(BIN_DIR) $(LOCALE_DIR) $(DESK_DIR) $(MAN_DIR)
+ALL_DIRS   := $(LIB_DIR) $(BIN_DIR) $(LOCALE_DIR) $(DESK_DIR) $(MAN_DIR) $(SHARE_DIR)
 
-.PHONY: $(SCRIPTS) help all lib $(SCRIPTS_ALL) local-scripts man-pages
+.PHONY: $(SCRIPTS) help all lib $(SCRIPTS_ALL) local-scripts man-pages share-files
 
 help:
 	@echo "make help                show this help"
@@ -31,7 +32,7 @@ help:
 	@#echo ""
 	@#echo ""
 
-all: $(SCRIPTS) lib local-scripts man-pages
+all: $(SCRIPTS) lib local-scripts man-pages shared
 
 local-scripts: | $(BIN_DIR)
 	cp $(MY_SCRIPTS) $(BIN_DIR)
@@ -50,6 +51,10 @@ live-usb-maker-gui: | $(BIN_DIR)
 
 man-pages: man/$(APT_WRAPPER).1 | $(MAN_DIR)
 	test -e $< && gzip -c $< > $(MAN_DIR)/$$(basename $<).gz || true
+
+
+shared: | $(SHARE_DIR)
+	cp -r share/* $(SHARE_DIR)
 
 $(ALL_DIRS):
 	test -d $(ROOT)/
