@@ -742,13 +742,34 @@ add_to_result_menu() {
 }
 
 #------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+add_to_star_menu() {
+    local prefix=$1  view=$2  lab=$3  stars=$4
+    local cnt match
+    eval cnt=\$${prefix}_cnt
+    if [ $# -lt 4 ]; then
+        menu_printf "$prefix-view" "%s $num_co%3s$m_co %s" "$view" "$cnt"  "$lab"
+    else
+        menu_printf "$prefix-view" "%s $num_co%3s$m_co %s %s" "$view" "$cnt" "$(starq "$stars")"  "$lab"
+    fi
+}
+
+#------------------------------------------------------------------------------
 # This generates two menu entries for marking/unmarking a package and for
 # isntalling/uninstalling it.
 #------------------------------------------------------------------------------
 mark_or_install_menu() {
     local match=$1  prefix=$2
+    [ -z "$match" ] && return
+
     local package=$(package_name "$match")
     local pq_pack=$(pq $package)
+
+    if is_installed "$match"; then
+        menu_printf "${prefix}uninstall" "Uninstall package %s" "$pq_pack"
+        return
+    fi
 
     if is_marked "$match"; then
         menu_printf "${prefix}unmark"   "Unmark package %s"  "$pq_pack"
@@ -756,11 +777,7 @@ mark_or_install_menu() {
         menu_printf "${prefix}mark"     "Mark package %s"    "$pq_pack"
     fi
 
-    if is_installed "$match"; then
-        menu_printf "${prefix}uninstall" "Uninstall package %s" "$pq_pack"
-    else
-        menu_printf "${prefix}install"   "Install package %s"   "$pq_pack"
-    fi
+    menu_printf "${prefix}install"   "Install package %s"   "$pq_pack"
 }
 
 #------------------------------------------------------------------------------
