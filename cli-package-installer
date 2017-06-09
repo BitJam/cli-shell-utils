@@ -398,7 +398,7 @@ do_search() {
 
                 search) break  ;;
                   quit) return ;;
-                     *) internal_err "search result menu" "$action" ;;
+                     *) internal_error "search result menu" "$action" ;;
             esac
 
             if [ "$action" != 'view' ]; then
@@ -408,7 +408,7 @@ do_search() {
                           search) break                   ;;
                           review) continue                ;;
                             quit) return                  ;;
-                    *) internal_err "search again menu" "$ans" ;;
+                    *) internal_error "search again menu" "$ans" ;;
                 esac
             fi
 
@@ -514,6 +514,7 @@ do_search() {
             local menu=$(
                 mark_or_install_menu "$full_package"
                 mark_all_menu $SEARCH_FILE
+                menu_printf repeat $"Repeat the same search"
                 menu_printf search $"Search again"
                 menu_printf quit   $"Back to main menu"
             )
@@ -527,9 +528,10 @@ do_search() {
              uninstall) uninstall_package "$full_package" ;;
               mark-all)     mark_all_file $SEARCH_FILE    ;;
             unmark-all)   unmark_all_file $SEARCH_FILE    ;;
+                repeat) continue                          ;;
                 search) break                             ;;
                   quit) return                            ;;
-                     *) internal_err "2nd search result menu" "$ans" ;;
+                     *) internal_error "2nd search result menu" "$ans" ;;
             esac
 
 
@@ -540,7 +542,7 @@ do_search() {
                  search) break                          ;;
                  review) continue                       ;;
                    quit) return                         ;;
-                      *) internal_err "install menu" "$ans" ;;
+                      *) internal_error "install menu" "$ans" ;;
             esac
         done
     done
@@ -633,7 +635,7 @@ uninstall_package() {
            install) apt_get_cmd install $pack ;;
          reinstall) apt_get_cmd --reinstall install $pack ;;
               quit) return  ;;
-              *) internal_err "uninstall menu" "$ans" ;;
+              *) internal_error "uninstall menu" "$ans" ;;
     esac
     update_package_status
 }
@@ -1286,7 +1288,7 @@ do_view_marked() {
           install-marked) install_marked ; return ;;
               unmark-all) unmark_all     ; return ;;
                     quit) return                  ;;
-                    *) internal_err "view mark menu" "$ans"
+                    *) internal_error "view mark menu" "$ans"
         esac
 
         local height=$(screen_height)
@@ -1392,7 +1394,7 @@ do_suggested() {
               *-view) eval regex=\$${search_type}_str ;;
                 skip) skip=true                       ;;
                 quit) return                          ;;
-                   *) internal_err "star menu 1" "$ans" ;;
+                   *) internal_error "star menu 1" "$ans" ;;
         esac
 
         if [ "$action" = 'view' ]; then
@@ -1507,7 +1509,7 @@ do_suggested() {
         install-marked)     install_marked  $SEARCH_FILE    ;;
                suggest) continue                            ;;
                   quit) return                              ;;
-                    *) internal_err "bottom suggestion menu" "$ans" ;;
+                    *) internal_error "bottom suggestion menu" "$ans" ;;
         esac
 
         mark_cnt=$(grep --count "^M" $SUGGESTED_FILE)
@@ -1665,7 +1667,7 @@ do_upgrade_menu() {
                quit) return              ;;
             upgrade) do_upgrade ; return ;;
                view) view_upgrades       ;;
-                  *) internal_err "upgrade_menu" "$ans" ;;
+                  *) internal_error "upgrade_menu" "$ans" ;;
         esac
     done
 }
