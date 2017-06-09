@@ -153,7 +153,7 @@ do_main_menu() {
              upgrade) do_upgrade_menu ;;
                 edit) do_source_menu  ;;
            suggested) do_suggested    ;;
-           view-mark) do_view_marked  ;;
+         view-marked) do_view_marked  ;;
                 quit) exit            ;;
 
         *)  warn "The '%s' feature isn't implemented yet" "$(pqw $ans)"
@@ -360,17 +360,17 @@ do_search() {
 
                 search) break  ;;
                   quit) return ;;
-                     *) fatal "Internal error in search result menu %s" "$action" ;;
+                     *) internal_err "search result menu" "$action" ;;
             esac
 
             if [ "$action" != 'view' ]; then
                 my_select ans "What next?" "$(search_again_menu)"
                 case $ans in
-                       view-mark) do_view_marked ; return ;;
+                     view-marked) do_view_marked ; return ;;
                           search) break                   ;;
                           review) continue                ;;
                             quit) return                  ;;
-                    *) fatal "Internal error: search again menu: %s" "$ans" ;;
+                    *) internal_err "search again menu" "$ans" ;;
                 esac
             fi
 
@@ -481,18 +481,18 @@ do_search() {
              uninstall) uninstall_package "$full_package" ;;
                 search) break  ;;
                   quit) return ;;
-                     *) fatal "Internal error in 2nd search result menu %s" "$ans" ;;
+                     *) internal_err "2nd search result menu" "$ans" ;;
             esac
 
 
             my_select 'ans' "Now what?" "$(search_again_menu)"
 
             case $ans in
-              view-mark) do_view_marked ; return        ;;
+            view-marked) do_view_marked ; return        ;;
                  search) break                          ;;
                  review) continue                       ;;
                    quit) return                         ;;
-                      *) fatal "Internal install menu error %s" "$ans" ;;
+                      *) internal_err "install menu" "$ans" ;;
             esac
         done
     done
@@ -1084,15 +1084,36 @@ install_marked() {
     unmark_and_mark_installed $(echo $packs)
 }
 
+marked_size() {
+    local file=${1:-$DB_FILE}  db=${1:-$DB_FILE}
+
+    local packs=$(grep "^M " $file | sed -e "s/^M //" -e "s/ .*//")
+    if testing; then
+        echo 1777
+    else
+        apt-cache show $(echo $packs) | grep -i "^installed-size:" \
+            | awk '{tot = tot + $2} END{printf "%4.2f\n", (tot / 1024)}'
+    fi
+}
+
+package_size() {
+    if testing; then
+        echo 1777
+        return
+    fi
+    apt-cache show $* | grep -i "^installed-size:" \
+        | awk '{tot = tot + $2} END{printf "%4.2f\n", (tot / 1024)}'
+}
+
 #------------------------------------------------------------------------------
 # This menu gives options inside of do_view_marked().
 #------------------------------------------------------------------------------
 mark_menu() {
     [ $MARK_CNT -gt 0 ] || return
     local cnt=$MARK_CNT
-    menu_printf_plural install-mark "$cnt" "Install %s marked package"  "Install all %s marked packages"
-    menu_printf_plural    view-mark "$cnt" "View %s marked package"     "View all %s marked packages"
-    menu_printf_plural   unmark-all "$cnt" "Unmark %s marked package"   "Unmark all %s marked packages"
+    menu_printf_plural install-marked "$cnt" "Install %s marked package"  "Install all %s marked packages"
+    menu_printf_plural    view-marked "$cnt" "View %s marked package"     "View all %s marked packages"
+    menu_printf_plural     unmark-all "$cnt" "Unmark %s marked package"   "Unmark all %s marked packages"
 }
 
 #------------------------------------------------------------------------------
@@ -1114,29 +1135,37 @@ do_view_marked() {
             warn "No marked packages were found"
             return
         fi
+
+        shout_subtitle "View or Install Marked Packages"
+
         local menu=$(
             mark_menu
             menu_printf quit "Back to main"
         )
 
+        local marked_size=$(marked_size)
+        msg "Marked packages(s) will add %s Meg" "$(nq $marked_size)"
+
         local ans
         my_select ans "Please select an action" "$menu"
 
         case $ans in
-               view-mark)                         ;;
-            install-mark) install_marked ; return ;;
+             view-marked)                         ;;
+          install-marked) install_marked ; return ;;
               unmark-all) unmark_all     ; return ;;
                     quit) return                  ;;
-                    *) fatal "Internal error: view mark menu %s" "$ans"
+                    *) internal_err "view mark menu" "$ans"
         esac
 
         local height=$(screen_height)
         if [ $cnt -lt $((height - 5)) ]; then
             cat $SEARCH_FILE | color_results | less -EXRS
+            msg "Press <Enter> to continue"
+            read xxx
         else
             local blanks=5
             (local i; for i in $(seq 1 $blanks); do echo; done)  > $SEARCH_FILE.nl
-            cat $SEARCH_FILE | color_results                     >> $SEARCH_FILE.nl
+            cat $SEARCH_FILE | color_results                    >> $SEARCH_FILE.nl
 
             msg "%s packages were found." $cnt
             msg
