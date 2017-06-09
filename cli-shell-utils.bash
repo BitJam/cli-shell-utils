@@ -456,6 +456,7 @@ shout_pretend() { [ "$PRETEND_MODE" ] && Shout $"PRETEND MODE ENABLED" ;}
 menu_printf() {
     local payload=$1  fmt=$2  ; shift 2
     printf "%s$P_IFS$m_co$fmt$nc_co\n" "$payload" "$@"
+    printf "  * $fmt\n" "$@" | strip_color  >> $LOG_FILE
 }
 
 #------------------------------------------------------------------------------
@@ -465,8 +466,10 @@ menu_printf_plural() {
     local payload=$1  cnt=$2  lab1=$3  lab2=$4
 
     case $cnt in
-        1) printf "%s$P_IFS$lab1\n" "$payload" "$(nq $cnt)" ;;
-        *) printf "%s$P_IFS$lab2\n" "$payload" "$(nq $cnt)" ;;
+        1) printf "%s$P_IFS$lab1\n" "$payload" "$(nq $cnt)"
+           printf "  * $lab1\n" "$cnt" | strip_color >> $LOG_FILE ;;
+        *) printf "%s$P_IFS$lab2\n" "$payload" "$(nq $cnt)"
+           printf "  * $lab2\n" "$cnt" | strip_color >> $LOG_FILE ;;
     esac
 }
 
@@ -1640,6 +1643,7 @@ Shout() {
 shout_title() {
     local title=$1
     echo "$m_co$BAR_80$nc_co"
+    printf "\n=====> " >>$LOG_FILE
     shout "$title"
     echo "$m_co$BAR_80$nc_co"
 }
@@ -1650,6 +1654,7 @@ shout_title() {
 shout_subtitle() {
     local title=$1
     echo "$m_co$SBAR_80$nc_co"
+    printf "\n-----> " >>$LOG_FILE
     shout "$title"
     echo "$m_co$SBAR_80$nc_co"
 }
@@ -1680,7 +1685,6 @@ log_it_q() {
     [ -z "$QUIET" ] && echo "$msg"
     echo "$msg" 2>&1 | strip_color >> $LOG_FILE
 }
-
 
 #------------------------------------------------------------------------------
 # Throw a fatal error.  There is some funny business to include a question in
