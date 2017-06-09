@@ -24,7 +24,7 @@ MY_LIB_DIR=$(readlink -f "$MY_DIR/../cli-shell-utils")
     LIST_DIR=/var/lib/apt/lists
   SOURCE_DIR=/etc/apt/sources.list.d
 
-  SUGGESTED_SRC=/usr/share/$ME/suggested.packages
+  SUGGESTED_SRC=/usr/local/share/$ME/suggested.packages
 
   THE_LOG_FILE=/var/log/$ME.log
 
