@@ -325,11 +325,13 @@ do_search() {
             local exact_cnt=   lead_cnt=    name_cnt=    desc_cnt=
             local exact_match= lead_match=  name_match=  desc_match=
 
+            local start_t=$(get_time)
+
             local TOTAL_MATCHES=0  FOUND_MATCH=
             count_matches  exact "exact name match"           "exact name matches"
             count_matches  lead  "leading name match"         "leading name matches"
             count_matches  name  "any name match"             "any name matches"
-            count_matches  desc  "name or description match"  "name or description matches"
+            #count_matches  desc  "name or description match"  "name or description matches"
 
             if [ $TOTAL_MATCHES -eq 0 ]; then
                 warn "No matches were found"
