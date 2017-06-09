@@ -87,6 +87,7 @@ start_testing_mode() {
 main() {
     testing || need_root
 
+    # Used in my_select() to return instead of exit on 'q'
     BACK_TO_MAIN="go back to main menu"
 
     local UPGRADE_CNT
