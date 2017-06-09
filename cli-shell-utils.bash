@@ -217,7 +217,7 @@ q_mode() {
 # Pause execution if $here or "all" are in comma delimited $PAUSE
 #------------------------------------------------------------------------------
 pause() {
-    local here=$1  xlated_here=${2:-$1}  ans
+    local here=$1  xlated_here=${2:-$1}
     case ,$PAUSE, in
         *,$here,*)        ;;
           *,all,*)        ;;
@@ -225,7 +225,16 @@ pause() {
     esac
 
     msg $"Paused at '%s'" $xlated_here
-    quest $"Press <Enter> to continue"
+    press_enter
+}
+
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+press_enter() {
+    local ans enter=$"Enter"
+    quest $"Press <%s> to continue" "$(pqq "$enter")"
     read ans
 }
 
