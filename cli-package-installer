@@ -350,6 +350,8 @@ do_search() {
             )
 
             echo
+            msg "%s took %s second(s)" $"searches" "$(nq $(show_delta_t $start_t))"
+            echo
 
             local found_match
             read found_match 2>/dev/null <$FOUND_MATCH_FILE
