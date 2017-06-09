@@ -51,6 +51,8 @@ SBAR_80="#----------------------------------------------------------------------
 
 start_testing_mode() {
 
+    VERBOSE_SELECT=true
+
     TEST_DIR=Private/apt
     SOURCE_DIR=$TEST_DIR/sources.d
     LIST_DIR=$TEST_DIR/lists
