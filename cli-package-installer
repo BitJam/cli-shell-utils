@@ -854,6 +854,7 @@ check_list_files() {
     local type url repo other root
     local ext
 
+    msg "Checking source files ..."
     while read type url repo other; do
         [ -n "$type" ] || continue
         case $repo in
@@ -907,7 +908,12 @@ Read_Sources
     local apt_get=$(pq apt-get update)
     local run_now=$(printf "Run %s now?" "$apt_get")
 
-    if [ $LIST_FOUND_CNT -eq 0 ]; then
+    if [ $LIST_FOUND_CNT -eq 0 ] && ! have_net; then
+        warn "No network connection was found!"
+        YES_no "Do you want to try again?" || exit
+        return 2
+
+    elif [ $LIST_FOUND_CNT -eq 0 ]; then
         Msg "No list files were found"
         Msg "An %s is required in order to continue" "$apt_get"
         # FIXME BACK_TO_MAIN
