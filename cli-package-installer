@@ -994,14 +994,14 @@ do_update() {
 # version of the list of suggested files.
 #------------------------------------------------------------------------------
 generate_database_files() {
-    msg "Updating database file ..."
+    msg "Creating database ..."
     local start_t=$(get_time)
     local db=${1:-$DB_FILE}   installed=${2:-$INSTALLED_FILE}
     list_installed > $installed
     list_all | mark-installed-debs $installed > $db
     cat $SUGGESTED_SRC | mark-installed-debs $installed > $SUGGESTED_FILE
 
-    msg "%s took %s second(s)" "$(pq database generation)" "$(pnq $(show_delta_t $start_t))"
+    msg "%s took %s second(s)" "database generation" "$(nq $(show_delta_t $start_t))"
 }
 
 #------------------------------------------------------------------------------
