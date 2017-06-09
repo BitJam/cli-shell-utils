@@ -1049,15 +1049,16 @@ mark_uninstalled() {
 # Mark a package unmarked and installed, for use in install_marked()
 #------------------------------------------------------------------------------
 unmark_and_mark_installed() {
-    local pack ilist files=${2:-$DB_FILE $SUGGESTED_FILE}
+    local pack ilist files="$DB_FILE $SUGGESTED_FILE"
 
-    msg "updating database..."
+    msg "Updating database ..."
 
     # Build a regular expression so we only have to edit each file once
     for pack; do
         really_is_installed $pack && ilist=$ilist${ilist:+|}$pack
     done
 
+    #echo "ilist: $ilist"
     sed -i -r -e "s/^M?I? ?(($ilist) )/I \1/" $files
 
     MARK_CNT=$(grep --count "^M" $db)
@@ -1067,17 +1068,19 @@ unmark_and_mark_installed() {
 # Mark a package and all uninstalled dependencies
 #------------------------------------------------------------------------------
 mark_package() {
-    local pack=$(package_name "$1")  db=${2:-$DB_FILE} sug=${3:-$SUGGESTED_FILE}
+    local pack=$(package_name "$1")  db=$DB_FILE sug=$SUGGESTED_FILE
     _mark_package "$pack"
 
     #testing && return
 
     # ignore <...> depends for now
-    local dep  deps=$(list_depends "$pack" | grep -v "^<")
-    msg "found %s dependencies" "$(nq $(echo $deps | wc -w))"
-    echo "regex: $regex"
+    local all_deps=$(list_depends "$pack")
+    msg "found %s dependencies" "$(nq $(echo $all_deps | wc -w))"
+    local regex=$(echo $all_deps | tr ' ' '|')
+    #echo "regex: $regex"
     local cnt=$(egrep --count "^($regex) " $db)
     arrow_msg "Marking %s uninstalled dependencies" "$(nq $cnt)"
+    echo $(egrep "^($regex) " $db | sed "s/ .*//" )
     sed -i -r "s/^($regex) /M \1 /" $db $sug
     MARK_CNT=$((MARK_CNT + cnt))
 }
@@ -1092,7 +1095,7 @@ _mark_package() {
     egrep -q "^(I )?$pack " $db || return
 
     arrow_msg "Marking package %s" "$(pq $pack)"
-    sed -i -r -e "s/^I ($pack )/MI \1/" -e "s/^($pack )/M \1/" $db
+    sed -i -r -e "s/^(I $pack )/M\1/" -e "s/^($pack )/M \1/" $db
     MARK_CNT=$((MARK_CNT + 1))
 }
 
@@ -1113,11 +1116,11 @@ unmark_package() {
 # Unmark all packages
 #------------------------------------------------------------------------------
 unmark_all() {
-    local pack=$1  db=${2:-$DB_FILE}
+    local db=$DB_FILE  sug=$SUGGESTED_FILE
     local cnt=$(grep --count "^M" $db)
 
     arrow_msg "Unmarking %s package(s)" "$(nq $cnt)"
-    sed -i "s/^M ?//" $db
+    sed -i -r "s/^M ?//" $db $sug
     MARK_CNT=0
 }
 
@@ -1131,29 +1134,37 @@ install_package() {
 
     show_package "$full"
 
-    local all_deps=$(list_depends "$pack" | grep -v "^<")
-    msg "found %s dependencies" "$(nq $(echo $all_deps | wc -w))"
-    local regex=$(echo $all_deps | tr ' ' '|')
-    local real_deps=$(egrep "^(M )?($regex) " $db | sed "s/ .*//")
-    local cnt=$(echo "$real_deps" | wc -l)
-    msg "found %s unmet dependencies that will also get installed" "$(nq $cnt)"
+    local all_deps=$(list_depends "$pack")
+    local all_cnt=$(echo $all_deps | wc -w)
+    msg "found %s dependencies" "$(nq $all_cnt)"
 
+    local regex=$(echo $all_deps | tr ' ' '|')
+
+    # want only un-installed packages
+    local real_deps
+    if [ $all_cnt -gt 0 ]; then
+        real_deps=$(egrep "^(M )?($regex) " $db | sed -r -e "s/^MI? //" -e "s/ .*//")
+        local real_cnt=$(echo "$real_deps" | wc -l)
+        msg "found %s unmet dependencies that will also get installed" "$(nq $real_cnt)"
+    fi
+    echo $real_deps
+    local size=$(package_size $pack $real_deps)
+    msg "This packages and dependencies will take %s Meg" "$(nq $size)"
     YES_no "Do you want to install this package now?" || return
 
     msg "Installing %s" "$(pq $pack)"
-    local dep_packs=$(echo "$real_deps" | sed "s/^M //")
-    apt_get_cmd install "$pack $(echo $dep_packs)"
+    apt_get_cmd install "$pack $(echo $real_deps)"
 
-    unmark_and_mark_installed $pack $dep_packs
+    unmark_and_mark_installed $pack $real_deps
 }
-
 
 #------------------------------------------------------------------------------
 # Install all files marked in the main database that are NOT yet installed.
 #------------------------------------------------------------------------------
 install_marked() {
-    local db=${1:-$DB_FILE}
-    local packs=$(grep "^M " $db | sed -e "s/^M //" -e "s/ .*//")
+    local file=${1:-$DB_FILE}  db=${1:-$DB_FILE}
+
+    local packs=$(grep "^M " $file | sed -e "s/^M //" -e "s/ .*//")
     local cnt=$(echo $packs | wc -w)
     msg "Found %s un-installed marked packages" "$(nq $cnt)"
 
@@ -1476,6 +1487,70 @@ suggestion_menu() {
     menu_printf install-marked
     menu_printf install-unmarked
     menu_printf
+}
+
+
+#------------------------------------------------------------------------------
+# Mark all unmarked, uninstalled packages that are listed in a file
+#------------------------------------------------------------------------------
+mark_all_file() {
+    local file=$1  db=$DB_FILE  files="$DB_FILE $SUGGESTED_FILE"
+    local packs=$(egrep "^[a-z0-9]" $file | sed -e "s/I //" -e "s/ .*//")
+    local regex=$(echo $packs | tr ' ' '|')
+    #echo $regex
+    #sed -r -i -e "s/^I ($regex) /MI \1 /" -e "s/^($regex) /M \1 /" $files
+    sed -r -i "s/^($regex) /M \1 /" $files
+    local cnt=$(echo $packs | wc -w)
+    shout "Marked %s previously unmarked packages" "$cnt"
+    MARK_CNT=$((MARK_CNT + cnt))
+
+    echo "real marked: $(grep --count "^M" $db)"
+    local deps=$(list_depends $(echo $packs))
+
+    msg "found %s dependencies" "$(nq $(echo $deps | wc -w))"
+    regex=$(echo $deps | tr ' ' '|')
+    local real_deps=$(egrep "^($regex) " $db | sed "s/ .*//")
+    cnt=$(echo "$real_deps" | wc -l)
+    msg "Marked %s unmet dependencies" "$(nq $cnt)"
+    sed -i -r "s/^($regex) /M \1 /" $files
+    echo "real marked: $(grep --count "^M" $db)"
+    MARK_CNT=$((MARK_CNT + cnt))
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+unmark_all_file() {
+    local file=$1  files=${2:-$DB_FILE $SUGGESTED_FILE}
+    local packs=$(egrep "^MI? [a-z0-9]" $file | sed -r -e "s/MI? //" -e "s/ .*//")
+    local regex=$(echo $packs | tr ' ' '|')
+    echo $regex
+    sed -r -i -e "s/^M ($regex) /\1 /" -e "s/^MI ($regex) /I \1 /"  $files
+
+    local cnt=$(echo $packs | wc -w)
+    shout "Umarked %s previously marked packages" "$cnt"
+    MARK_CNT=$((MARK_CNT - cnt))
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+mark_all_menu() {
+    local file=$1
+    test -r $file || return
+
+    local    total=$(egrep --count "^[IMa-z0-9]" $file)
+    local can_mark=$(egrep --count "^[a-z0-9]"   $file)
+    local   marked=$(egrep --count "^M"          $file)
+
+    [ $can_mark -gt 0 ] \
+        && menu_printf_plural   mark-all $can_mark "Mark %s unmarked, uninstalled package" "Mark %s unmarked, uninstalled packages"
+
+    [ $marked -gt 0 ]\
+        && menu_printf_plural unmark-all $marked   "Unmark %s marked package" "Unmark %s marked packages"
+
+    #[ $marked -gt 0 ] \
+    #    && menu_printf_plural install-marked "$marked" "Install %s marked package"  "Install all %s marked packages"
 }
 
 #------------------------------------------------------------------------------
