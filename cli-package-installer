@@ -1272,8 +1272,8 @@ do_view_marked() {
             questn "Use <up-arrow>, <down-arrow>, <page-up>, and <page down> to scroll the list"
             questn "Position the package you want near the bottom and then press 'q' to continue"
             msg
-            questn "press <Enter> to see the list, %s to go the main menu, %s to do another search" \
-                "$(pqq q)" "$(pqq s)"
+            questn "press <%s> to see the list, %s to go the main menu, %s to do another search" \
+                "$(pqq "Enter")" "$(pqq q)" "$(pqq s)"
 
             read ans
             case $ans in
@@ -1408,7 +1408,7 @@ do_suggested() {
 
         while true; do
             [ "$skip" ] && break
-            questn "Press %s  to skip picking a package" "<$enter>"
+            questn "Press %s to skip picking a package" "<$enter>"
             questn "Or enter the number of the package you want to mark or install"
             questn "Use %s to go to main menu, %s to see the results again" "$(bqq q)<$enter>" "$(bqq r)<$enter>"
             quest "> "
