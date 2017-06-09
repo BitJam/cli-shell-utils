@@ -217,9 +217,10 @@ upgrade_menu() {
 # Add a entry linking to mark menu if appropriate
 #------------------------------------------------------------------------------
 add_mark_entry() {
-    [ $MARK_CNT -gt 0 ] || return
+    MARK_CNT=$(grep --count "^M" $DB_FILE)
     local cnt=$MARK_CNT
-    menu_printf_plural view-mark "$cnt" "View or install %s marked package"  "View or install %s marked packages"
+    [ $cnt -gt 0 ] || return
+    menu_printf_plural view-marked "$cnt" "View or install %s marked package"  "View or install %s marked packages"
 }
 
 #------------------------------------------------------------------------------
