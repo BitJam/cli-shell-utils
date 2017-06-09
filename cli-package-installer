@@ -268,7 +268,7 @@ source_menu() {
 # package is installed and/or marked
 #------------------------------------------------------------------------------
 show_package() {
-    local match=$1  width=$(screen_width)  attrib
+    local match=$(echo "$1" | tr -s ' ')  width=$(screen_width)  attrib
     local max_width=$((width - 5))
     [ -z "$match" ] && return
     if [ -z "${match##M*}" ]; then
