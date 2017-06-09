@@ -75,8 +75,8 @@ start_testing_mode() {
     }
 
     list_depends() {
-        local pack=$(package_name "$1")
-        grep "^$pack:" $TEST_DIR/all.depend | cut -d" " --complement -f1 | tr ' ' '\n'
+        local regex=$(echo "$*" | tr ' ' '|')
+        egrep "^($regex):" $TEST_DIR/all.depend | cut -d" " --complement -f1 | tr ' ' '\n' | sort -u
     }
 }
 
