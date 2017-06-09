@@ -1640,7 +1640,7 @@ do_upgrade_menu() {
 #------------------------------------------------------------------------------
 view_upgrades() {
     # FIXME: Use UPGRADE_CNT to optimize how we use "less".
-    apt list --upgradable | less
+    apt list --upgradable 2>/dev/null | less
 }
 
 #------------------------------------------------------------------------------
