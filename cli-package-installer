@@ -408,15 +408,15 @@ do_search() {
                 msg "%s packages were found." "$(nq $cnt)"
                 msg
                 questn "In the next step you will been shown a list of packages that you can scroll"
-                questn "Use <%s>, <%s>, <%s>, and <%s> to scroll the list" \
-                    $(pqq up-arrow) $(pqq down-arrow) $(pqq page-up) $(pqq page-down)
+                questn "Use %s, %s, %s, and %s to scroll the list" \
+                    "<$(pqq up-arrow)>" "<$(pqq down-arrow)>" "<$(pqq page-up)>" "<$(pqq page-down)>"
 
                 questn "Position the package you want near the bottom and then press %s to continue" \
                     "$(pqq q)"
                 msg
 
-                questn "press <%s> to see the list, %s to go the main menu, %s to repeat same search, %s to do another search" \
-                    "$(pqq Enter)" "$(pqq q)" "$(pqq r)" "$(pqq s)"
+                questn "press %s to see the list, %s to go the main menu, %s to repeat same search, %s to do another search" \
+                    "<$(pqq Enter)>" "'$(pqq q)'" "'$(pqq r)'" "'$(pqq s)'"
 
                 quest "> "
 
@@ -638,8 +638,8 @@ apt_get_cmd() {
 get_glob_string() {
     local var_nam=$1  enter=$(pqq "Enter")
     local line1="Please enter the term you want to search for."
-    local line2=$(printf "Standard globbing wildcards '%s' and '%s' work." "$(bqq '*')" "$(bqq '?')")
-    local line3=$(printf "Use an empty string or %s to return to main menu." "$(bqq 'q')<$enter>")
+    local line2=$(printf "Standard globbing wildcards %s and %s work." "'$(bqq '*')'" "'$(bqq '?')'")
+    local line3=$(printf "Use an empty string or %s to return to main menu." "'$(bqq q)'<$enter>")
 
     title=$(printf "%s\n%s\n\n%s\n" "$line1" "$line2" "$line3")
 
@@ -1269,11 +1269,14 @@ do_view_marked() {
             msg "%s packages were found." $cnt
             msg
             questn "In the next step you will been shown a list of packages that you can scroll"
-            questn "Use <up-arrow>, <down-arrow>, <page-up>, and <page down> to scroll the list"
+
+            questn "Use %s, %s, %s, and %s to scroll the list" \
+                "<$(pqq up-arrow)>" "<$(pqq down-arrow)>" "<$(pqq page-up)>" "<$(pqq page-down)>"
+
             questn "Position the package you want near the bottom and then press 'q' to continue"
             msg
-            questn "press <%s> to see the list, %s to go the main menu, %s to do another search" \
-                "$(pqq "Enter")" "$(pqq q)" "$(pqq s)"
+            questn "press %s to see the list, %s to go the main menu, %s to do another search" \
+                "<$(pqq "Enter")>" "'$(pqq q)'" "'$(pqq s)'"
 
             read ans
             case $ans in
