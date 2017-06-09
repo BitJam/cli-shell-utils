@@ -195,16 +195,20 @@ suggest_warning() {
     local file=$SUGGESTED_FILE
     test -r $file || return
     local tot=$(egrep --count "^[MIa-z0-9]" $file)
-    local cnt=$(egrep -v "^M?I"$file | egrep --count "^[MIa-z0-9]")
+    local cnt=$(egrep -v "^M?I" $file | egrep --count "^[MIa-z0-9]")
     [ $cnt -gt 0 ] && return
     [ $tot -eq 0 ] && return
     msg
     shout "All %s suggested packages have been installed" "$(pnh $tot)"
 }
 
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
 add_suggest_entry() {
-    test -r $SUGGESTED_FILE || return
-    local cnt=$(egrep "^[MIa-z0-9]" | egrep -v "^M?I"$SUGGESTED_FILE)
+    local file=$SUGGESTED_FILE
+    test -r $file || return
+    local cnt=$(egrep "^[MIa-z0-9]" $file | egrep --count -v "^M?I")
     [ $cnt -gt 0 ] || return
     menu_printf suggested "View a list of %s suggested packages to install" "$(nq $cnt)"
 }
@@ -636,7 +640,6 @@ uninstall_menu() {
     menu_printf reinstall "Reinstall package [even if it is up to date]"
     menu_printf install   "Install package [only if it is not up to date]"
 }
-
 
 #------------------------------------------------------------------------------
 # A simple wrapper around "apt-get".
