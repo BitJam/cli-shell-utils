@@ -1505,7 +1505,6 @@ mark_all_file() {
     shout "Marked %s previously unmarked packages" "$cnt"
     MARK_CNT=$((MARK_CNT + cnt))
 
-    echo "real marked: $(grep --count "^M" $db)"
     local deps=$(list_depends $(echo $packs))
 
     msg "found %s dependencies" "$(nq $(echo $deps | wc -w))"
