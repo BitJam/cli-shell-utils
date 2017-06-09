@@ -1548,7 +1548,7 @@ mark_all_file() {
     cnt=$(echo "$real_deps" | wc -l)
     msg "Marked %s unmet dependencies" "$(nq $cnt)"
     sed -i -r "s/^($regex) /M \1 /" $files
-    echo "real marked: $(grep --count "^M" $db)"
+    #echo "real marked: $(grep --count "^M" $db)"
     MARK_CNT=$((MARK_CNT + cnt))
 }
 
