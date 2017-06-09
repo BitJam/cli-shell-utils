@@ -170,9 +170,9 @@ main_menu() {
     local upgrade_lab
     : ${UPGRADE_CNT:=$(count_upgrades)}
 
-    menu_printf search    "Search for and install packages"
-    #menu_printf package   "Select packages to install from a list"
-    menu_printf suggested "Browse a list of suggested packages"
+    menu_printf search    "Search for packages to mark or install"
+    add_suggest_entry
+    menu_printf kernels   "Search for kernels or antiX kernels"
     menu_printf update    "Update package index"
     menu_printf edit      "Edit the repo source files"
 
@@ -183,6 +183,15 @@ main_menu() {
     menu_printf quit      "Quit"
 }
 
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+add_suggest_entry() {
+    test -r $SUGGESTED_FILE || return
+    local cnt=$(egrep --count "^[MIa-z0-9]" $SUGGESTED_FILE)
+    [ $cnt -gt 0 ] || return
+    menu_printf suggested "View a list of %s suggested packages to install" "$(nq $cnt)"
+}
 
 #------------------------------------------------------------------------------
 # Add an "upgrade" entry if it is appropriate
