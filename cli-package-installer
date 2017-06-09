@@ -105,7 +105,7 @@ main() {
     trap on_exit EXIT
 
     testing || do_flock
-    shout $"Starting %s" "$ME"
+    #shout $"Starting %s" "$ME"
     start_log "$*"
 
     find_man_page
@@ -256,8 +256,9 @@ add_mark_entry() {
 #------------------------------------------------------------------------------
 do_source_menu() {
 
+    shout_subtitle "Edit-Source Menu"
+
     while true; do
-        shout "Edit-Source Menu"
         local ans  title="Please select a source file to edit"
         my_select ans "$title" "$(source_menu)"
         case $ans in
@@ -433,20 +434,17 @@ do_search() {
                 msg
                 questn "In the next step you will been shown a list of packages that you can scroll"
                 questn "Use %s, %s, %s, and %s to scroll the list" \
-                    "<$(pqq up-arrow)>" "<$(pqq down-arrow)>" "<$(pqq page-up)>" "<$(pqq page-down)>"
+                    "<$(bqq up-arrow)>" "<$(bqq down-arrow)>" "<$(bqq page-up)>" "<$(bqq page-down)>"
 
                 questn "Position the package you want near the bottom and then press %s to continue" \
-                    "$(pqq q)"
+                    "$(bqq q)"
                 msg
 
-                questn "press %s to see the list, %s to go the main menu, %s to repeat same search, %s to do another search" \
-                    "<$(pqq Enter)>" "'$(pqq q)'" "'$(pqq r)'" "'$(pqq s)'"
-
+                questn "Press %s to see the list, %s to go the main menu,"  "<$(bqq Enter)>" "'$(bqq q)'"
+                questn "%s to repeat same search, %s to do another search"  "'$(bqq r)'"     "'$(bqq s)'"
                 quest "> "
 
-                local xxx
                 read -n1 ans
-                #read xxx -t .01
                 case $ans in
                     [qQ]*) return    ;;
                     [sS]*) break     ;;
@@ -468,11 +466,11 @@ do_search() {
 
                 questn "Press %s to skip picking a package" "<$enter>"
                 questn "Or enter the number of the package you want to mark or install"
-                questn "Use %s to go to main menu, %s to search again, %s to see the results again" \
+                questn "%s go to main menu, %s new search, %s see the results again" \
                     "$(bqq q)<$enter>" "$(bqq s)<$enter>" "$(bqq r)<$enter>"
                 quest "> "
 
-                local number
+                local number=
                 read number
 
                 case $number in
@@ -500,7 +498,7 @@ do_search() {
                 search) break    ;;
             esac
 
-            local full_package
+            local full_package=
             if [ "$number" ]; then
                 full_package=$(nl $SEARCH_FILE | sed -n -r "s/^\s*$number\s+//p")
                 if [ -z "$full_package" ]; then
@@ -624,8 +622,9 @@ number_results() {
 #------------------------------------------------------------------------------
 uninstall_package() {
     local ans  full=$1  pack=$(package_name "$1")
-    msg
-    shout "Remove / Purge Menu"
+
+    shout_subtitle "Remove / Purge Menu"
+
     local ans
     show_package "$full"
     my_select ans "Please choose an action for this package" "$(uninstall_menu)"
@@ -670,7 +669,7 @@ apt_get_cmd() {
 # conversion may not be a good idea.
 #------------------------------------------------------------------------------
 get_glob_string() {
-    local var_nam=$1  enter=$(pqq "Enter")
+    local var_nam=$1  enter=$(bqq "Enter")
     local line1="Please enter the term you want to search for."
     local line2=$(printf "Standard globbing wildcards %s and %s work." "'$(bqq '*')'" "'$(bqq '?')'")
     local line3=$(printf "Use an empty string or %s to return to main menu." "'$(bqq q)'<$enter>")
@@ -1153,8 +1152,9 @@ unmark_all() {
     local db=$DB_FILE  sug=$SUGGESTED_FILE
     local cnt=$(grep --count "^M" $db)
 
-    arrow_msg "Unmarking %s package(s)" "$(nq $cnt)"
     sed -i -r "s/^M ?//" $db $sug
+    arrow_msg "Unmarked %s package(s)" "$(nq $cnt)"
+
     MARK_CNT=0
 }
 
@@ -1305,12 +1305,12 @@ do_view_marked() {
             questn "In the next step you will been shown a list of packages that you can scroll"
 
             questn "Use %s, %s, %s, and %s to scroll the list" \
-                "<$(pqq up-arrow)>" "<$(pqq down-arrow)>" "<$(pqq page-up)>" "<$(pqq page-down)>"
+                "<$(bqq up-arrow)>" "<$(bqq down-arrow)>" "<$(bqq page-up)>" "<$(bqq page-down)>"
 
             questn "Position the package you want near the bottom and then press 'q' to continue"
             msg
-            questn "press %s to see the list, %s to go the main menu, %s to do another search" \
-                "<$(pqq "Enter")>" "'$(pqq q)'" "'$(pqq s)'"
+            questn "Press %s to see the list, %s to go the main menu, %s to do another search" \
+                "<$(bqq "Enter")>" "'$(bqq q)'" "'$(bqq s)'"
 
             read ans
             case $ans in
@@ -1416,7 +1416,7 @@ do_suggested() {
             (local i; for i in $(seq 1 $blanks); do echo; done)  > $SEARCH_FILE.nl
             cat $SEARCH_FILE | number_suggestions               >> $SEARCH_FILE.nl
 
-            local enter="$(pqq "Enter")"
+            local enter="$(bqq "Enter")"
             msg "%s packages were found." "$(nq $pack_cnt)"
             msg
             questn "In the next step you will been shown a list of packages that you can scroll"
@@ -1424,7 +1424,7 @@ do_suggested() {
             questn "Position the package you want near the bottom and then press 'q' to continue"
             msg
             questn "press %s to see the list, %s to go the main menu, %s to search again" \
-                "<$enter>" "$(pqq q)" "$(pqq r)"
+                "<$enter>" "$(bqq q)" "$(bqq r)"
 
             local xxx
             read -n1 ans
@@ -1539,7 +1539,7 @@ mark_all_file() {
     #sed -r -i -e "s/^I ($regex) /MI \1 /" -e "s/^($regex) /M \1 /" $files
     sed -r -i "s/^($regex) /M \1 /" $files
     local cnt=$(echo $packs | wc -w)
-    shout "Marked %s previously unmarked packages" "$cnt"
+    arrow_msg "Marked %s previously unmarked packages" "$(nq $cnt)"
     MARK_CNT=$((MARK_CNT + cnt))
 
     local deps=$(list_depends $(echo $packs))
@@ -1548,7 +1548,7 @@ mark_all_file() {
     regex=$(echo $deps | tr ' ' '|')
     local real_deps=$(egrep "^($regex) " $db | sed "s/ .*//")
     cnt=$(echo "$real_deps" | wc -l)
-    msg "Marked %s unmet dependencies" "$(nq $cnt)"
+    arrow_msg "Marked %s unmet dependencies" "$(nq $cnt)"
     sed -i -r "s/^($regex) /M \1 /" $files
     #echo "real marked: $(grep --count "^M" $db)"
     MARK_CNT=$((MARK_CNT + cnt))
@@ -1565,7 +1565,7 @@ unmark_all_file() {
     sed -r -i -e "s/^M ($regex) /\1 /" -e "s/^MI ($regex) /I \1 /"  $files
 
     local cnt=$(echo $packs | wc -w)
-    shout "Umarked %s previously marked packages" "$cnt"
+    arrow_msg "Unmarked %s previously marked packages" "$(nq $cnt)"
     MARK_CNT=$((MARK_CNT - cnt))
 }
 
@@ -1658,8 +1658,9 @@ do_upgrade_menu() {
         return
     fi
 
+    shout_subtitle "System Upgrade Menu"
+
     while true; do
-        shout "Package Upgrade Menu"
         local ans
         my_select ans "Please select an action" "$(upgrade_menu $UPGRADE_CNT)" "" $default_entry
         case $ans in
