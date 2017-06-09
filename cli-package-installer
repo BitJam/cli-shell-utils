@@ -644,10 +644,12 @@ uninstall_menu() {
 apt_get_cmd() {
     local cmd="apt-get $*"
     local fold_width=$(($(screen_width) - 5))
-    printf "=> %s\n" "$cmd" | fold -w $fold_width -s
+    printf "=> %s\n" "$cmd" | fold -w $fold_width -s | tee -a $LOG_FILE
     testing && return 0
-    $cmd && return 0
-    warn "The command %s failed" "$(pqw $cmd)"
+    $cmd 2>&1                       #| tee -a $LOG_FILE
+    local ret=${PIPESTATUS[0]}
+    [ $ret -eq 0 ] && return 0
+    warn "The %s command failed" "$(pqw apt-get)"
     return 1
 }
 
