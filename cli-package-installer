@@ -32,7 +32,7 @@ AUTO_UPDATE_INTERVAL="5"  # Days
 
     WORK_DIR=/tmp/$ME
 
-           LOCK_FILE=$WORK_DIR/lock
+           LOCK_FILE=/run/lock/$ME.lock
     FOUND_MATCH_FILE=$WORK_DIR/found-match
          SEARCH_FILE=$WORK_DIR/SEARCH-RESULTS
              DB_FILE=$WORK_DIR/all.list
