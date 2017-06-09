@@ -834,9 +834,8 @@ list_depends() {
 # description to get the package name and nothing else.
 #------------------------------------------------------------------------------
 package_name() {
-    echo ${1%% *} | sed -r "s/^[MI]+ //"
+    echo "$1" | sed -r -e "s/^[MI]+ //" -e "s/ .*//"
 }
-
 
 #==============================================================================
 # Check to see if all (most) list files exist as expected
