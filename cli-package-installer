@@ -1222,6 +1222,8 @@ mark_menu() {
 do_view_marked() {
     local db=${1:-$DB_FILE}  local mark_co=
 
+    shout_subtitle "View or Install Marked Packages"
+
     while true; do
 
         grep "^M" $db > $SEARCH_FILE
@@ -1235,8 +1237,6 @@ do_view_marked() {
             warn "No marked packages were found"
             return
         fi
-
-        shout_subtitle "View or Install Marked Packages"
 
         local menu=$(
             mark_menu
