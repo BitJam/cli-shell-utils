@@ -1529,17 +1529,6 @@ do_suggested() {
 }
 
 #------------------------------------------------------------------------------
-#
-#------------------------------------------------------------------------------
-suggestion_menu() {
-    menu_printf install-all
-    menu_printf install-marked
-    menu_printf install-unmarked
-    menu_printf
-}
-
-
-#------------------------------------------------------------------------------
 # Mark all unmarked, uninstalled packages that are listed in a file
 #------------------------------------------------------------------------------
 mark_all_file() {
