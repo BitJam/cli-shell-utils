@@ -59,7 +59,7 @@ start_testing_mode() {
     LOG_FILE=$ME.log
     #PRETEND_MODE=true
 
-  SUGGESTED_SRC=$TEST_DIR/suggested.packages
+  SUGGESTED_SRC=share/suggested.packages
 
     ARCH="i386"
 
