@@ -1569,8 +1569,10 @@ my_nl() {
         fi
         blank_cnt=0
 
+        # Only number packages
         if [ -n "$line" -a -z "${line##[^#]*}" ]; then
-            printf "$m_co%5s$quest_co)$nc_co %s\n" "$cnt" "$line"
+            #printf "$m_co%5s$quest_co)$nc_co %s\n" "$cnt" "$line"
+            printf "%3s %s\n" "$cnt" "$line"
             cnt=$((cnt + 1))
         else
             printf "%s\n" "$line"
