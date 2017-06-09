@@ -233,9 +233,13 @@ upgrade_menu() {
 # Add a entry linking to mark menu if appropriate
 #------------------------------------------------------------------------------
 add_mark_entry() {
+    local old_cnt=$MARK_CNT
     MARK_CNT=$(grep --count "^M" $DB_FILE)
     local cnt=$MARK_CNT
+    [ $cnt -ne $old_cnt ] && warn "Mark count adjusted from %s to %s" $old_cnt $cnt
+
     [ $cnt -gt 0 ] || return
+
     menu_printf_plural view-marked "$cnt" "View or install %s marked package"  "View or install %s marked packages"
 }
 
@@ -1245,7 +1249,7 @@ do_view_marked() {
         grep "^M" $db > $SEARCH_FILE
         local cnt=$(cat $SEARCH_FILE | wc -l)
         if [ $cnt -ne $MARK_CNT ]; then
-            warn "Mark count adjusted to %s" $cnt
+            warn "Mark count adjusted from %s to %s" $MARK_CNT $cnt
             MARK_CNT=$cnt
         fi
 
