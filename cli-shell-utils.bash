@@ -456,7 +456,6 @@ shout_pretend() { [ "$PRETEND_MODE" ] && Shout $"PRETEND MODE ENABLED" ;}
 menu_printf() {
     local payload=$1  fmt=$2  ; shift 2
     printf "%s$P_IFS$m_co$fmt$nc_co\n" "$payload" "$@"
-    printf "  * $fmt\n" "$@" | strip_color  >> $LOG_FILE
 }
 
 #------------------------------------------------------------------------------
@@ -466,10 +465,8 @@ menu_printf_plural() {
     local payload=$1  cnt=$2  lab1=$3  lab2=$4
 
     case $cnt in
-        1) printf "%s$P_IFS$lab1\n" "$payload" "$(nq $cnt)"
-           printf "  * $lab1\n" "$cnt" | strip_color >> $LOG_FILE ;;
-        *) printf "%s$P_IFS$lab2\n" "$payload" "$(nq $cnt)"
-           printf "  * $lab2\n" "$cnt" | strip_color >> $LOG_FILE ;;
+        1) printf "%s$P_IFS$lab1\n" "$payload" "$(nq $cnt)" ;;
+        *) printf "%s$P_IFS$lab2\n" "$payload" "$(nq $cnt)" ;;
     esac
 }
 
@@ -504,8 +501,11 @@ my_select() {
 $(echo -e "$list")
 My_Select
 
+    [ "$VERBOSE_SELECT" ] && printf "\nMENU: $title\n$menu" | strip_color >> $LOG_FILE
+
     IFS=$orig_ifs
     my_select_2 $var "$title" "$default" "$data" "$menu" "$def_str"
+
 }
 
 #------------------------------------------------------------------------------
@@ -612,6 +612,8 @@ my_select_2() {
         # FIXME!  is this always right?
         [ "$val" = 'default' ] && val=
         eval $var=\$val
+
+        [ "$VERBOSE_SELECT" ] && printf "ANS: $input: $val\n" >> $LOG_FILE
         break
     done
 }
