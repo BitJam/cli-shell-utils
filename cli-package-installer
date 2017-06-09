@@ -1043,9 +1043,9 @@ generate_database_files() {
 update_package_status() {
     local pack=$1
     if really_is_installed $pack; then
-        mark_installed $pack
+        mark_as_installed $pack
     else
-        mark_uninstalled $pack
+        mark_as_uninstalled $pack
     fi
 }
 
@@ -1065,7 +1065,7 @@ really_is_installed() {
 #------------------------------------------------------------------------------
 # Mark a package installed
 #------------------------------------------------------------------------------
-mark_installed() {
+mark_as_installed() {
     local pack=$1  files=${2:-$DB_FILE $SUGGESTED_FILE}
     sed -i -r -e "s/^($pack )/I \1/"  -e "s/^M ($pack )/MI \1/" $files
 }
@@ -1073,7 +1073,7 @@ mark_installed() {
 #------------------------------------------------------------------------------
 # Mark a package uninstalled
 #------------------------------------------------------------------------------
-mark_uninstalled() {
+mark_as_uninstalled() {
     local pack=$1  files=${2:-$DB_FILE $SUGGESTED_FILE}
     sed -i -r -e "s/^I ($pack )/\1/" -e "s/^MI ($pack )/M \1/" $files
 }
