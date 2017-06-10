@@ -1095,6 +1095,7 @@ mark_as_uninstalled() {
 unmark_and_mark_installed() {
     local pack ilist files="$DB_FILE $SUGGESTED_FILE"
 
+    local start_t=$(get_time)
     msg "Updating database ..."
 
     # Build a regular expression so we only have to edit each file once
@@ -1104,14 +1105,15 @@ unmark_and_mark_installed() {
 
     #echo "ilist: $ilist"
     sed -i -r -e "s/^M?I? ?(($ilist) )/I \1/" $files
-
     MARK_CNT=$(grep --count "^M" $db)
+
+    msg "%s took %s second(s)" "database update" "$(nq $(show_delta_t $start_t))"
 }
 
 #------------------------------------------------------------------------------
 # Mark a package and all uninstalled dependencies
 #------------------------------------------------------------------------------
-mark_package() {
+mark_package_and_deps() {
     local pack=$(package_name "$1")  db=$DB_FILE sug=$SUGGESTED_FILE
     _mark_package "$pack"
 
