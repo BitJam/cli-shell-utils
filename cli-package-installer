@@ -1126,10 +1126,35 @@ mark_package_and_deps() {
     #echo "regex: $regex"
     local cnt=$(egrep --count "^($regex) " $db)
     arrow_msg "Marking %s uninstalled dependencies" "$(nq $cnt)"
-    echo $(egrep "^($regex) " $db | sed "s/ .*//" )
+    echo $(egrep "^($regex) " $db | sed "s/ .*//")
     sed -i -r "s/^($regex) /M \1 /" $db $sug
     MARK_CNT=$((MARK_CNT + cnt))
 }
+
+#------------------------------------------------------------------------------
+# Mark a package and report dependencies
+#------------------------------------------------------------------------------
+mark_package() {
+    local pack=$(package_name "$1")  db=$DB_FILE sug=$SUGGESTED_FILE
+    _mark_package "$pack"
+
+    #testing && return
+
+    local all_deps=$(list_depends "$pack")
+    msg "found %s dependencies" "$(nq $(echo $all_deps | wc -w))"
+    local regex=$(echo $all_deps | tr ' ' '|')
+    #echo "regex: $regex"
+    local cnt=$(egrep --count "^($regex) " $db)
+    msg "found %s unmet dependencies" "$(nq $cnt)"
+    local unmet_deps=$(egrep "^($regex) " $db | sed "s/ .*//")
+
+    local fold_width=$(($(screen_width) - 5))
+    log_it_q echo $unmet_deps | fold -w $fold_width -s
+
+    local size=$(package_size $pack $unmet_deps)
+    msg "This package and unmet dependencies will take %s Meg" "$(nq $size)"
+}
+
 
 #------------------------------------------------------------------------------
 # Mark a single package if it is not already marked
@@ -1188,21 +1213,26 @@ install_package() {
     local regex=$(echo $all_deps | tr ' ' '|')
 
     # want only un-installed packages
-    local real_deps
+    local unmet_deps
     if [ $all_cnt -gt 0 ]; then
-        real_deps=$(egrep "^(M )?($regex) " $db | sed -r -e "s/^MI? //" -e "s/ .*//")
-        local real_cnt=$(echo "$real_deps" | wc -l)
+        unmet_deps=$(egrep "^(M )?($regex) " $db | sed -r -e "s/^MI? //" -e "s/ .*//")
+        local real_cnt=$(echo "$unmet_deps" | wc -l)
         msg "found %s unmet dependencies that will also get installed" "$(nq $real_cnt)"
     fi
-    echo $real_deps
-    local size=$(package_size $pack $real_deps)
-    msg "This packages and dependencies will take %s Meg" "$(nq $size)"
+
+    local unmet_deps=$(egrep "^($regex) " $db | sed "s/ .*//")
+
+    local fold_width=$(($(screen_width) - 5))
+    log_it_q echo $unmet_deps | fold -w $fold_width -s
+
+    local size=$(package_size $pack $unmet_deps)
+    msg "This package and dependencies will take %s Meg" "$(nq $size)"
     YES_no "Do you want to install this package now?" || return
 
     msg "Installing %s" "$(pq $pack)"
-    apt_get_cmd install "$pack $(echo $real_deps)"
+    apt_get_cmd install "$pack $(echo $unmet_deps)"
 
-    unmark_and_mark_installed $pack $real_deps
+    unmark_and_mark_installed $pack $unmet_deps
     press_enter
 }
 
@@ -1231,6 +1261,9 @@ install_marked() {
     press_enter
 }
 
+#------------------------------------------------------------------------------
+# Size of all marked packages in a file
+#------------------------------------------------------------------------------
 marked_size() {
     local file=${1:-$DB_FILE}  db=${1:-$DB_FILE}
 
@@ -1535,6 +1568,32 @@ do_suggested() {
 #------------------------------------------------------------------------------
 # Mark all unmarked, uninstalled packages that are listed in a file
 #------------------------------------------------------------------------------
+mark_all_file_and_deps() {
+    local file=$1  db=$DB_FILE  files="$DB_FILE $SUGGESTED_FILE"
+    local packs=$(egrep "^[a-z0-9]" $file | sed -e "s/I //" -e "s/ .*//")
+    local regex=$(echo $packs | tr ' ' '|')
+    #echo $regex
+    #sed -r -i -e "s/^I ($regex) /MI \1 /" -e "s/^($regex) /M \1 /" $files
+    sed -r -i "s/^($regex) /M \1 /" $files
+    local cnt=$(echo $packs | wc -w)
+    arrow_msg "Marked %s previously unmarked packages" "$(nq $cnt)"
+    MARK_CNT=$((MARK_CNT + cnt))
+
+    local all_deps=$(list_depends $(echo $packs))
+
+    msg "found %s dependencies" "$(nq $(echo $all_deps | wc -w))"
+    regex=$(echo $all_deps | tr ' ' '|')
+    local unmet_deps=$(egrep "^($regex) " $db | sed "s/ .*//")
+    cnt=$(echo "$unmet_deps" | wc -l)
+    arrow_msg "Marked %s unmet dependencies" "$(nq $cnt)"
+    sed -i -r "s/^($regex) /M \1 /" $files
+    #echo "real marked: $(grep --count "^M" $db)"
+    MARK_CNT=$((MARK_CNT + cnt))
+}
+
+#------------------------------------------------------------------------------
+# Mark all uninstalled packages listed in a file.  Report on deps
+#------------------------------------------------------------------------------
 mark_all_file() {
     local file=$1  db=$DB_FILE  files="$DB_FILE $SUGGESTED_FILE"
     local packs=$(egrep "^[a-z0-9]" $file | sed -e "s/I //" -e "s/ .*//")
@@ -1546,16 +1605,19 @@ mark_all_file() {
     arrow_msg "Marked %s previously unmarked packages" "$(nq $cnt)"
     MARK_CNT=$((MARK_CNT + cnt))
 
-    local deps=$(list_depends $(echo $packs))
+    local all_deps=$(list_depends $(echo $packs))
 
-    msg "found %s dependencies" "$(nq $(echo $deps | wc -w))"
-    regex=$(echo $deps | tr ' ' '|')
-    local real_deps=$(egrep "^($regex) " $db | sed "s/ .*//")
-    cnt=$(echo "$real_deps" | wc -l)
-    arrow_msg "Marked %s unmet dependencies" "$(nq $cnt)"
-    sed -i -r "s/^($regex) /M \1 /" $files
-    #echo "real marked: $(grep --count "^M" $db)"
-    MARK_CNT=$((MARK_CNT + cnt))
+    msg "found %s dependencies" "$(nq $(echo $all_deps | wc -w))"
+    regex=$(echo $all_deps | tr ' ' '|')
+    local unmet_deps=$(egrep "^($regex) " $db | sed "s/ .*//")
+    cnt=$(echo "$unmet_deps" | wc -l)
+    msg "found %s unmet dependencies" "$(nq $cnt)"
+
+    local fold_width=$(($(screen_width) - 5))
+    log_it_q echo $unmet_deps | fold -w $fold_width -s
+
+    local size=$(package_size $pack $unmet_deps)
+    msg "This package and unmet dependencies will take %s Meg" "$(nq $size)"
 }
 
 #------------------------------------------------------------------------------
