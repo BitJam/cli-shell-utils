@@ -570,8 +570,8 @@ my_select_2() {
             IFS=$orig_IFS
             case $input_1 in
                 "") input=         ; break  ;;
-                 q) input=$input_1 ; break  ;;
-                 h) input=$input_1 ; break  ;;
+              [qQ]) input=$input_1 ; break  ;;
+              [hH]) input=$input_1 ; break  ;;
              [0-9]) echo -ne "\b"
                     read -ei "$input_1" input
                     break  ;;
@@ -582,16 +582,16 @@ my_select_2() {
 
         # Evaluate again in case of backspacing
         case $input in
-            q*) if [ -n "$BACK_TO_MAIN" ]; then
-                    eval $var=quit
-                    echo
-                    return
-                else
-                    final_quit ; continue
-                fi ;;
-            h*) if [ "$HAVE_MAN" ]; then
-                    man "$MAN_PAGE" ; echo ; continue
-                fi;;
+             [qQ]*) if [ -n "$BACK_TO_MAIN" ]; then
+                        eval $var=quit
+                        echo
+                        return
+                    else
+                        final_quit ; continue
+                    fi ;;
+             [hH]*) if [ "$HAVE_MAN" ]; then
+                        man "$MAN_PAGE" ; echo ; continue
+                    fi;;
         esac
 
         [ -z "$input" -a -n "$default" ] && input=$default
