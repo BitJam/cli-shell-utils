@@ -870,7 +870,7 @@ star_search() {
 # all dependences when a single package gets marked.
 #------------------------------------------------------------------------------
 list_depends() {
-    apt-cache depends $* | sed -n -r "s/^\s*Depends:\s*//p" | grep -v "^<" | sort -u
+    apt-cache depends $* | sed -n -r "s/^\s*(Pre)?Depends:\s*//p" | grep -v "^<" | sort -u
 }
 
 #------------------------------------------------------------------------------
