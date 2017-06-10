@@ -1276,6 +1276,9 @@ marked_size() {
     fi
 }
 
+#------------------------------------------------------------------------------
+# The installed size of one or more packages
+#------------------------------------------------------------------------------
 package_size() {
     if testing; then
         echo 1777
@@ -1813,7 +1816,6 @@ arrow_msg() {
     local fmt=$1 ; shift
     msg "$(bq "==>") $fmt" "$@"
 }
-
 
 #------------------------------------------------------------------------------
 # Load the lib either from a neighboring repo or from the standard location.
