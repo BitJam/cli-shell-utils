@@ -104,3 +104,4 @@ fbset                 framebuffer device maintenance program
 fbterm                fast framebuffer based terminal emulator for Linux
 vim             ***** extremely full featured text editor born from vi
 zhcon                 Fast console CJK system using FrameBuffer
+zsh              **** shell with lots of features
