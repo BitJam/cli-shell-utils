@@ -13,13 +13,11 @@ fbless            *** terminal fiction book reader
 fbtv                  television viewer - Linux framebuffer application
 mps-youtube     ***** Terminal based YouTube jukebox with playlist management
 mpv              **** video player based on MPlayer/mplayer2
-presentty             Console-based presentation software
 ttv                   television viewer - console application
 
 #-------------------------------------------------------------------------------
 # Toys and Games
 #-------------------------------------------------------------------------------
-binclock              binary clock for console with color support
 bsdgames              collection of classic textual unix games
 cavezofphear          ASCII Boulder Dash clone
 cmatrix          **** simulates the display from "The Matrix"
@@ -27,7 +25,6 @@ killbots              port of the classic BSD console game robots
 ninvaders        **** A space invaders-like game using ncurses
 nsnake                classic snake game on the terminal
 sudoku                console based sudoku
-tty-clock             simple terminal clock
 
 #-------------------------------------------------------------------------------
 # Browsers
@@ -69,19 +66,33 @@ vnstat                console-based network traffic monitor
 htop            ***** interactive processes viewer
 multitail             view multiple logfiles windowed on console
 qtop                  windowed version of the console top command
+sysinfo               display computer and system information
 ttyload               console based color-coded graphs of CPU load average
 
 #-------------------------------------------------------------------------------
-# Utilities 
+# Office and Utilities
 #-------------------------------------------------------------------------------
+calcurse              text-based calendar and todo manager
 concalc               console calculator
-conspy                Remote control of Linux virtual consoles
+dict                  dictionary client
 khard                 address book for the Linux console
 nodau                 simple console based note taking program
+presentty             Console-based presentation software
+tpp                   text presentation program
+
+#-------------------------------------------------------------------------------
+# Utilities
+#-------------------------------------------------------------------------------
+binclock              binary clock for console with color support
+conspy                Remote control of Linux virtual consoles
+hexcompare            utility to compare and identify binary files
 physlock              lightweight Linux console locking tool
+pinfo                 An alternative info-file viewer
 pwman3                console password management application
 task                  feature-rich console based todo list manager - transitional package
 taskwarrior           feature-rich console based todo list manager
+tty-clock             simple terminal clock
+tzwatch          **** Displays time and date in specified time zones on console
 vlock                 Virtual Console locking program
 
 #-------------------------------------------------------------------------------
@@ -92,12 +103,12 @@ deluge-console        bittorrent client written in Python/PyGTK (console ui)
 irssi           ***** terminal based IRC client
 mcabber               small Jabber (XMPP) console client
 ttytter               console Twitter client
-tzwatch          **** Displays time and date in specified time zones on console
 weechat-curses        Fast, light and extensible chat client - console client
 
 #-------------------------------------------------------------------------------
 # Other
 #-------------------------------------------------------------------------------
+dvorak7min            typing tutor for Dvorak keyboards
 dvtm                  Tiling window management for the console
 etktab                ASCII guitar tab editor
 fbset                 framebuffer device maintenance program
