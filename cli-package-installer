@@ -332,6 +332,8 @@ do_search() {
     local ans
     # This loop is for doing new searches.  Maybe there is a better way in
     # order to avoid so much nesting
+
+    # LOOP: new search
     while true; do
         shout
         shout_subtitle "Search for packages"
@@ -350,6 +352,7 @@ do_search() {
         # a 'break' gets you to a new search and a 'continue' will reshow the
         # same results
 
+        # LOOP: repeat same search
         while true; do
 
             local desc_str=${all_str#^}
@@ -369,48 +372,59 @@ do_search() {
             count_matches  name  "any name match"             "any name matches"
             count_matches  desc  "name or description match"  "name or description matches"
 
+            echo
+            msg "%s took %s second(s)" $"searches" "$(nq $(show_delta_t $start_t))"
+            echo
+
             if [ $TOTAL_MATCHES -eq 0 ]; then
                 warn "No matches were found"
                 YES_no "Do you want to try a different search?" && break
                 return
             fi
 
-            # Need to use a file because the commands below are in a subshell
-            rm -f $FOUND_MATCH_FILE
-            local result_menu=$(
-                add_to_result_menu exact "exact"
-                add_to_result_menu lead  "leading"
-                add_to_result_menu name  "total name"
-                add_to_result_menu desc  "description"
-                menu_printf  'search'    "Do a different search"
-            )
+            # LOOP: package info
+            while true; do
 
-            echo
-            msg "%s took %s second(s)" $"searches" "$(nq $(show_delta_t $start_t))"
-            echo
+                # Need to use a file because the commands below are in a subshell
+                rm -f $FOUND_MATCH_FILE
+                local result_menu=$(
+                    add_to_result_menu exact "exact"
+                    add_to_result_menu lead  "leading"
+                    add_to_result_menu name  "total name"
+                    add_to_result_menu desc  "description"
+                    menu_printf  'search'    "Do a different search"
+                )
 
-            local found_match
-            read found_match 2>/dev/null <$FOUND_MATCH_FILE
 
-            local menu_result the_string
-            shout "Search Result Menu"
-            local result_title="Please select an action"
-            my_select 'menu_result' "$result_title" "$result_menu"
-            [ -z "$menu_result" ] && continue
+                local found_match= act2=
+                read found_match 2>/dev/null <$FOUND_MATCH_FILE
 
-            local action=${menu_result#*-}
-            local search_type=${menu_result%%-*}
+                local menu_result the_string
+                shout "Search Result Menu"
+                local result_title="Please select an action"
+                my_select 'menu_result' "$result_title" "$result_menu"
+                [ -z "$menu_result" ] && continue
 
-            case $action in
-                  view) ;;
-                  mark)      mark_package "$found_match"          ;;
-                unmark)    unmark_package "$found_match"          ;;
-               install)   install_package "$found_match" ; return ;; # Should we really return?
-             uninstall) uninstall_package "$found_match" ; return ;;
+                local action=${menu_result#*-}
+                local search_type=${menu_result%%-*}
 
-                search) break  ;;
-                  quit) return ;;
-                     *) internal_error "search result menu" "$action" ;;
+                case $action in
+                      view) ;;
+                      info)      package_info "$found_match" ; continue ;;
+                      mark)      mark_package "$found_match"            ;;
+                    unmark)    unmark_package "$found_match"            ;;
+                   install)   install_package "$found_match" ; return   ;; # Should we really return?
+                 uninstall) uninstall_package "$found_match" ; return   ;;
+
+                    search) act2=break  ;;
+                      quit) return      ;;
+                         *) internal_error "search result menu" "$action" ;;
+                esac
+                break
+            done
+
+            case $act2 in
+                break) break ;;
             esac
 
             if [ "$action" != 'view' ]; then
@@ -473,6 +487,8 @@ do_search() {
             # This loop is to repeat the 'number' input if needed.
             # The action variable helps us to figure out what to do in the surrounding loop
             local action enter=$(bqq "Enter")
+
+            # LOOP: enter a number
             while true; do
 
                 questn "Press %s to skip picking a package" "<$enter>"
@@ -487,8 +503,8 @@ do_search() {
                 case $number in
                        "") break ;;
                     [qQ]*) return   ;;
-                    [rR]*) action=review ; break ;;
-                    [sS]*) action=search ; break ;;
+                    [rR]*) action=continue ; break ;;
+                    [sS]*) action=break ; break ;;
                     [1-9]|[1-9][0-9]|[1-9][0-9][0-9]) ;;
                                 [1-9][0-9][0-9][0-9]) ;;
                            [1-9][0-9][0-9][0-9][0-9]) ;;
@@ -505,8 +521,8 @@ do_search() {
             done
 
             case $action in
-                review) continue ;;
-                search) break    ;;
+                continue) continue ;;
+                   break) break    ;;
             esac
 
             local full_package=
@@ -520,29 +536,40 @@ do_search() {
                 show_package "$full_package"
             fi
 
-            local menu=$(
-                mark_or_install_menu "$full_package"
-                mark_all_menu        $SEARCH_FILE
-                menu_printf repeat   $"Repeat the same search"
-                menu_printf search   $"Search again"
-                menu_printf quit     $"Back to main menu"
-            )
+            # LOOP: package info
+            while true; do
+                action=
+                local menu=$(
+                    mark_or_install_menu "$full_package"
+                    mark_all_menu        $SEARCH_FILE
+                    menu_printf repeat   $"Repeat the same search"
+                    menu_printf search   $"Search again"
+                    menu_printf quit     $"Back to main menu"
+                )
 
-            my_select 'ans' "Please select an action" "$menu"
+                my_select 'ans' "Please select an action" "$menu"
 
-            case $ans in
-                  mark)      mark_package "$full_package"          ;;
-                unmark)    unmark_package "$full_package"          ;;
-               install)   install_package "$full_package" ; return ;;
-             uninstall) uninstall_package "$full_package" ; return ;;
-              mark-all)     mark_all_file $SEARCH_FILE             ;;
-            unmark-all)   unmark_all_file $SEARCH_FILE             ;;
-                repeat) continue                                   ;;
-                search) break                                      ;;
-                  quit) return                                     ;;
-                     *) internal_error "2nd search result menu" "$ans" ;;
+                case $ans in
+                      info)      package_info "$full_package" ; continue ;;
+                      mark)      mark_package "$full_package"          ;;
+                    unmark)    unmark_package "$full_package"          ;;
+                   install)   install_package "$full_package" ; return ;;
+                 uninstall) uninstall_package "$full_package" ; return ;;
+                  mark-all)     mark_all_file $SEARCH_FILE             ;;
+                unmark-all)   unmark_all_file $SEARCH_FILE             ;;
+                    repeat) action=continue                            ;;
+                    search) action=break                               ;;
+                      quit) return                                     ;;
+                         *) internal_error "2nd search result menu" "$ans" ;;
+                esac
+                break
+
+            done
+
+            case $action in
+                continue) continue ;;
+                   break) break    ;;
             esac
-
 
             my_select 'ans' "Now what?" "$(search_again_menu)"
 
@@ -811,6 +838,8 @@ mark_or_install_menu() {
     local package=$(package_name "$match")
     local pq_pack=$(pq $package)
 
+    menu_printf "${prefix}info" "Show more information about package %s" "$pq_pack"
+
     if is_installed "$match"; then
         menu_printf "${prefix}uninstall" "Uninstall package %s" "$pq_pack"
         return
@@ -894,6 +923,7 @@ package_name() {
 check_list_files() {
     src_dir=${1:-$SOURCE_DIR}  list_dir=${2:-$LIST_DIR}
 
+    # LOOP: until list files check out
     while true; do
 
         local LIST_ERR_CNT=0  LIST_FOUND_CNT=0  LIST_OLDEST_T=999999999999
@@ -1195,6 +1225,70 @@ unmark_all() {
 }
 
 #------------------------------------------------------------------------------
+# Provide information about a package
+#------------------------------------------------------------------------------
+package_info() {
+    local full=$1  pack=$(package_name "$1") db=$DB_FILE
+
+    #shout_subtitle "Package Info"
+
+    show_package "$full"
+
+    local all_deps=$(list_depends "$pack")
+    local all_cnt=$(echo $all_deps | wc -w)
+    msg "found %s dependencies" "$(nq $all_cnt)"
+
+    local regex=$(echo $all_deps | tr ' ' '|')
+
+    # want only un-installed packages
+    local unmet_deps
+    if [ $all_cnt -gt 0 ]; then
+        unmet_deps=$(egrep "^(M )?($regex) " $db | sed -r -e "s/^MI? //" -e "s/ .*//")
+        local real_cnt=$(echo "$unmet_deps" | wc -l)
+        msg "found %s unmet dependencies" "$(nq $real_cnt)"
+    fi
+
+    local unmet_deps=$(egrep "^($regex) " $db | sed "s/ .*//")
+
+    local fold_width=$(($(screen_width) - 5))
+    log_it_q echo $unmet_deps | fold -w $fold_width -s
+
+    local size=$(package_size $pack $unmet_deps)
+    msg "This package and dependencies will take %s Meg" "$(nq $size)"
+
+    if testing; then
+        press_enter
+        return
+    fi
+
+    apt-cache show $pack | show_deb_info
+
+    YES_no "Do you want to see more detailed information?" || return
+
+    apt-cache show $pack | sed -r "s/^([A-Za-z0-9-]+):/$cyan\1://" | less -R
+
+    #press_enter
+}
+
+#------------------------------------------------------------------------------
+# Display text between "Description-en:" and the next "Whatever:"
+#------------------------------------------------------------------------------
+show_deb_info() {
+    while read line; do
+        case $line in
+            Description-en:*) ;;
+            *) continue;
+        esac
+        echo "$cyab${line#Description-en: }$nc_co"
+        break
+    done
+
+    while read line; do
+        echo "$line" | egrep -q "^[A-Za-z0-9-]+:" && break
+        echo "${line#.}"
+    done
+}
+#------------------------------------------------------------------------------
 # Install a single package
 #------------------------------------------------------------------------------
 install_package() {
@@ -1492,6 +1586,7 @@ do_suggested() {
 
         local action=  enter=$(bqq "Enter")
 
+        # LOOP: enter a number
         while true; do
             [ "$skip" ] && break
             questn "Press %s to skip picking a package" "<$enter>"
@@ -1539,30 +1634,42 @@ do_suggested() {
             show_package "$full_package"
         fi
 
-        local menu=$(
-            mark_or_install_menu "$full_package"
-            mark_all_menu        $SEARCH_FILE
-            menu_printf suggest  $"See suggestions again"
-            menu_printf quit     $"Back to main menu"
-        )
+        local action=
+        # LOOP: package info
+        while true; do
 
-        my_select ans "Please select an action" "$menu"
+            local menu=$(
+                mark_or_install_menu "$full_package"
+                mark_all_menu        $SEARCH_FILE
+                install_all_menu     $SEARCH_FILE
+                menu_printf suggest  $"See suggestions again"
+                menu_printf quit     $"Back to main menu"
+            )
 
-        case $ans in
-                  mark)        mark_package "$full_package" ;;
-                unmark)      unmark_package "$full_package" ;;
-               install)     install_package "$full_package" ;;
-             uninstall)   uninstall_package "$full_package" ;;
-              mark-all)       mark_all_file $SEARCH_FILE    ;;
-            unmark-all)     unmark_all_file $SEARCH_FILE    ;;
-        install-marked)     install_marked  $SEARCH_FILE    ;;
-               suggest) continue                            ;;
-                  quit) return                              ;;
-                    *) internal_error "bottom suggestion menu" "$ans" ;;
+            my_select ans "Please select an action" "$menu"
+
+            case $ans in
+                      info)        package_info "$full_package" ; continue ;;
+                      mark)        mark_package "$full_package"            ;;
+                    unmark)      unmark_package "$full_package"            ;;
+                   install)     install_package "$full_package"            ;;
+                 uninstall)   uninstall_package "$full_package"            ;;
+                  mark-all)       mark_all_file $SEARCH_FILE               ;;
+                unmark-all)     unmark_all_file $SEARCH_FILE               ;;
+            install-marked)     install_marked  $SEARCH_FILE               ;;
+                   suggest) action=continue                                ;;
+                      quit) return                                         ;;
+                        *) internal_error "bottom suggestion menu" "$ans" ;;
+            esac
+
+            mark_cnt=$(grep --count "^M" $SUGGESTED_FILE)
+
+            break
+        done
+
+        case $action in
+            continue) continue;;
         esac
-
-        mark_cnt=$(grep --count "^M" $SUGGESTED_FILE)
-
     done
 }
 
@@ -1650,7 +1757,7 @@ mark_all_menu() {
     local file=$1
     test -r $file || return
 
-    local    total=$(egrep --count "^[IMa-z0-9]" $file)
+    #local    total=$(egrep --count "^[IMa-z0-9]" $file)
     local can_mark=$(egrep --count "^[a-z0-9]"   $file)
     local   marked=$(egrep --count "^M"          $file)
 
@@ -1664,6 +1771,20 @@ mark_all_menu() {
     #    && menu_printf_plural install-marked "$marked" "Install %s marked package"  "Install all %s marked packages"
 }
 
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+install_all_menu() {
+    local file=$1
+    test -r $file || return
+
+    local    total=$(egrep --count "^[IMa-z0-9]" $file)
+    local can_mark=$(egrep --count "^[a-z0-9]"   $file)
+    local   marked=$(egrep --count "^M"          $file)
+
+    [ $marked -gt 0 ] \
+        && menu_printf_plural install-marked "$marked" "Install %s marked package"  "Install all %s marked packages"
+}
 #------------------------------------------------------------------------------
 # Used for number only packages inside of the suggestion file.  We only number
 # a line if it starts with a char other than "#".  This looseness allows us
