@@ -83,6 +83,12 @@ start_testing_mode() {
         local regex=$(echo "$*" | tr ' ' '|')
         egrep "^($regex):" $TEST_DIR/all.depend | cut -d" " --complement -f1 | tr ' ' '\n' | sort -u
     }
+
+    package_exists() {
+        local pack=$1
+        [ -n "${pack##p*}" ]
+        return $?
+    }
 }
 
 #------------------------------------------------------------------------------
@@ -1043,7 +1049,7 @@ generate_database_files() {
     local db=${1:-$DB_FILE}   installed=${2:-$INSTALLED_FILE}
     list_installed > $installed
     list_all | mark-installed-debs $installed > $db
-    cat $SUGGESTED_SRC | mark-installed-debs $installed > $SUGGESTED_FILE
+    cat $SUGGESTED_SRC | only_valid_packages | mark-installed-debs $installed > $SUGGESTED_FILE
 
     msg "%s took %s second(s)" "database generation" "$(nq $(show_delta_t $start_t))"
 }
@@ -1693,6 +1699,37 @@ my_nl() {
             printf "%s\n" "$line"
         fi
     done
+}
+
+#------------------------------------------------------------------------------
+# Filter out invalid packages but pass through non-package lines
+#------------------------------------------------------------------------------
+only_valid_packages() {
+    local line
+    while read line; do
+        if [ -z "$line" -o -n "${line##[a-z0-9]*}" ]; then
+            echo "$line"
+            continue
+        fi
+
+        local pack=${line%% *}
+        if package_exists "$pack"; then
+            echo "$line"
+        else
+            printf "Missing suggested package %s\n" "$pack" >> $LOG_FILE
+        fi
+    done
+}
+
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+package_exists() {
+    local pack=$1
+    local desc=$(apt-cache search "^$pack$")
+    [ -n "$desc" ]
+    return $?
 }
 
 #------------------------------------------------------------------------------
