@@ -21,7 +21,6 @@ ttv                   television viewer - console application
 bsdgames              collection of classic textual unix games
 cavezofphear          ASCII Boulder Dash clone
 cmatrix          **** simulates the display from "The Matrix"
-killbots              port of the classic BSD console game robots
 ninvaders        **** A space invaders-like game using ncurses
 nsnake                classic snake game on the terminal
 sudoku                console based sudoku
@@ -74,7 +73,6 @@ hexcompare            utility to compare and identify binary files
 #-------------------------------------------------------------------------------
 htop            ***** interactive processes viewer
 multitail             view multiple logfiles windowed on console
-qtop                  windowed version of the console top command
 sysinfo               display computer and system information
 ttyload               console based color-coded graphs of CPU load average
 
