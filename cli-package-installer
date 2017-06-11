@@ -1071,7 +1071,8 @@ generate_database_files() {
     local db=${1:-$DB_FILE}   installed=${2:-$INSTALLED_FILE}
     list_installed > $installed
     list_all | mark-installed-debs $installed > $db
-    cat $SUGGESTED_SRC | only_valid_packages | mark-installed-debs $installed > $SUGGESTED_FILE
+    #cat $SUGGESTED_SRC | only_valid_packages | mark-installed-debs $installed > $SUGGESTED_FILE
+    cat $SUGGESTED_SRC | mark-installed-debs $installed > $SUGGESTED_FILE
 
     msg "%s took %s second(s)" "database generation" "$(nq $(show_delta_t $start_t))"
 }
