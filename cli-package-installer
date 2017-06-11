@@ -127,9 +127,7 @@ main() {
     local JUST_UPDATE=true
 
     # FIXME!!
-    while true; do
-        run_outer check_list_files && break
-    done
+    run_outer check_list_files || exit
 
     check_for_upgrades
     generate_database_files
@@ -189,11 +187,8 @@ main_menu() {
     menu_printf kernels   "Search for kernels or antiX kernels"
     menu_printf update    "Update package index"
     menu_printf edit      "Edit the repo source files"
-
     add_upgrade_entry
-
     add_mark_entry
-
     menu_printf quit      "Quit"
 }
 
@@ -288,7 +283,7 @@ do_source_menu() {
         nano "$file"
     done
     echo
-    check_list_files
+    check_list_files || exit
 }
 
 #------------------------------------------------------------------------------
@@ -899,90 +894,87 @@ package_name() {
 check_list_files() {
     src_dir=${1:-$SOURCE_DIR}  list_dir=${2:-$LIST_DIR}
 
-    local LIST_ERR_CNT=0  LIST_FOUND_CNT=0  LIST_OLDEST_T=999999999999
+    while true; do
 
-    local type url repo other root
-    local ext
+        local LIST_ERR_CNT=0  LIST_FOUND_CNT=0  LIST_OLDEST_T=999999999999
 
-    msg "Checking source files ..."
-    while read type url repo other; do
-        [ -n "$type" ] || continue
-        case $repo in
-            *updates) continue ;;
-            *) ;;
-        esac
-        root=${url#*://}
-        root=${root//\//_}
+        local type url repo other root ext
 
-        #echo "$type $root $repo $other"
-        root=${root%_}_dists_$repo
+        msg "Checking source files ..."
+        while read type url repo other; do
+            [ -n "$type" ] || continue
+            case $repo in
+                *updates) continue ;;
+                *) ;;
+            esac
+            root=${url#*://}
+            root=${root//\//_}
 
-        local full=$list_dir/$root
+            #echo "$type $root $repo $other"
+            root=${root%_}_dists_$repo
 
-        if [ "$type" = "deb" ]; then
-            ext="_binary-${ARCH}_Packages"
-            find_list_file ${full}_InRelease \
-                || find_list_file ${full}_Release \
-                || list_error "${root}_Release or ${root}_InRelease"
+            local full=$list_dir/$root
 
-            for part in $other; do
-                test_list_file ${full}_$part$ext
-            done
+            if [ "$type" = "deb" ]; then
+                ext="_binary-${ARCH}_Packages"
+                find_list_file ${full}_InRelease \
+                    || find_list_file ${full}_Release \
+                    || list_error "${root}_Release or ${root}_InRelease"
 
-        elif [ "$type" = "deb-src" ]; then
-            ext="_source_Sources"
-            for part in $other; do
-                test_list_file ${full}_$part$ext
-            done
-        fi
+                for part in $other; do
+                    test_list_file ${full}_$part$ext
+                done
 
-    done << Read_Sources
+            elif [ "$type" = "deb-src" ]; then
+                ext="_source_Sources"
+                for part in $other; do
+                    test_list_file ${full}_$part$ext
+                done
+            fi
+
+        done << Read_Sources
 $(grep -h "^\s*\(deb\|deb-src\)\>" $src_dir/*.list)
 Read_Sources
 
-    local now_t=$(date +%s)
-    local max_interval=$((AUTO_UPDATE_INTERVAL * 60 * 60 * 24))
-    local interval=$(($(date +%s) - LIST_OLDEST_T))
-    local days=$((interval / 60 / 60 / 24))
+        local now_t=$(date +%s)
+        local max_interval=$((AUTO_UPDATE_INTERVAL * 60 * 60 * 24))
+        local interval=$(($(date +%s) - LIST_OLDEST_T))
+        local days=$((interval / 60 / 60 / 24))
 
-    (
-        echo
-        printf  "      Found list files: %s\n"  "$LIST_FOUND_CNT"
-        printf  "    Missing list files: %s\n"  "$LIST_ERR_CNT"
-        printf  " Oldest list file time: %s\n"  "$LIST_OLDEST_T"
-        printf  "  Seconds since update: %s\n"  "$interval"
-        printf  "     Days since update: %s\n"  "$days"
-        echo
-    ) >> $LOG_FILE
+        (
+            echo
+            printf  "      Found list files: %s\n"  "$LIST_FOUND_CNT"
+            printf  "    Missing list files: %s\n"  "$LIST_ERR_CNT"
+            #printf  " Oldest list file time: %s\n"  "$LIST_OLDEST_T"
+            #printf  "  Seconds since update: %s\n"  "$interval"
+            #printf  "     Days since update: %s\n"  "$days"
+            echo
+        ) >> $LOG_FILE
 
-    local apt_get=$(pq apt-get update)
-    local run_now=$(printf "Run %s now?" "$apt_get")
+        local apt_get=$(pq apt-get update)
+        local run_now=$(printf "Run %s now?" "$apt_get")
 
-    if [ $LIST_FOUND_CNT -eq 0 ] && ! have_net; then
-        warn "No network connection was found!"
-        YES_no "Do you want to try again?" || exit
-        return 2
+        if [ $LIST_FOUND_CNT -eq 0 ]; then
+            Msg "No list files were found"
+            Msg "An %s is required in order to continue" "$apt_get"
+            # FIXME BACK_TO_MAIN
+            YES_no "$run_now" || return 1
 
-    elif [ $LIST_FOUND_CNT -eq 0 ]; then
-        Msg "No list files were found"
-        Msg "An %s is required in order to continue" "$apt_get"
-        # FIXME BACK_TO_MAIN
-        YES_no "$run_now" || return 1
+        elif [ $LIST_ERR_CNT -gt 0 ]; then
+            Msg "It appears that at least one list file is missing"
+            Msg "You should probably run %s now" "$apt_get"
+            YES_no "$run_now" || return 0
 
-    elif [ $LIST_ERR_CNT -gt 0 ]; then
-        Msg "It appears that at least one list file is missing"
-        Msg "You should probably run %s now" "$apt_get"
-        YES_no "$run_now" || return 0
+    #--    elif [ $interval -gt $max_interval ]; then
+    #--        Msg "At least one list file is at least %s day(s) old" "$days"
+    #--        Msg "You should probably run %s now" "$apt_get"
+    #--        YES_no "$run_now" || return
+        else
+            return 0
+        fi
 
-#--    elif [ $interval -gt $max_interval ]; then
-#--        Msg "At least one list file is at least %s day(s) old" "$days"
-#--        Msg "You should probably run %s now" "$apt_get"
-#--        YES_no "$run_now" || return
-    else
-        return 0
-    fi
-
-    do_update
+        do_update
+    done
 }
 
 #------------------------------------------------------------------------------
