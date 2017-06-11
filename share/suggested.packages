@@ -43,12 +43,13 @@ pianobar              console based player for Pandora radio
 zomg                  console-based libre.fm submission and radio client
 
 #-------------------------------------------------------------------------------
-# File managers
+# File Managers and Window Managers
 #-------------------------------------------------------------------------------
 apparix               console-based bookmark tool for fast file system navigation
 fdclone               console-base lightweight file manager
 lfm               *** simple but powerful file manager for the UNIX console
 mc              ***** Midnight Commander - a powerful file manager
+dvtm                  Tiling window management for the console
 
 #-------------------------------------------------------------------------------
 # Network Monitors
@@ -61,6 +62,14 @@ tshark                network traffic analyzer - console version
 vnstat                console-based network traffic monitor
 
 #-------------------------------------------------------------------------------
+# System Tools
+#-------------------------------------------------------------------------------
+backupninja           lightweight, extensible meta-backup system
+dar              **** Disk ARchive: extremely powerful backup/recovery tool
+git              **** fast, scalable, distributed revision control system
+hexcompare            utility to compare and identify binary files
+
+#-------------------------------------------------------------------------------
 # System monitors
 #-------------------------------------------------------------------------------
 htop            ***** interactive processes viewer
@@ -70,7 +79,7 @@ sysinfo               display computer and system information
 ttyload               console based color-coded graphs of CPU load average
 
 #-------------------------------------------------------------------------------
-# Office and Utilities
+# Office
 #-------------------------------------------------------------------------------
 calcurse              text-based calendar and todo manager
 concalc               console calculator
@@ -78,6 +87,8 @@ dict                  dictionary client
 khard                 address book for the Linux console
 nodau                 simple console based note taking program
 presentty             Console-based presentation software
+task                  feature-rich console based todo list manager - transitional package
+taskwarrior           feature-rich console based todo list manager
 tpp                   text presentation program
 
 #-------------------------------------------------------------------------------
@@ -85,14 +96,11 @@ tpp                   text presentation program
 #-------------------------------------------------------------------------------
 binclock              binary clock for console with color support
 conspy                Remote control of Linux virtual consoles
-hexcompare            utility to compare and identify binary files
 physlock              lightweight Linux console locking tool
 pinfo                 An alternative info-file viewer
 pwman3                console password management application
-task                  feature-rich console based todo list manager - transitional package
-taskwarrior           feature-rich console based todo list manager
 tty-clock             simple terminal clock
-tzwatch          **** Displays time and date in specified time zones on console
+tzwatch           *** Displays time and date in specified time zones on console
 vlock                 Virtual Console locking program
 
 #-------------------------------------------------------------------------------
@@ -109,7 +117,6 @@ weechat-curses        Fast, light and extensible chat client - console client
 # Other
 #-------------------------------------------------------------------------------
 dvorak7min            typing tutor for Dvorak keyboards
-dvtm                  Tiling window management for the console
 etktab                ASCII guitar tab editor
 fbset                 framebuffer device maintenance program
 fbterm                fast framebuffer based terminal emulator for Linux
