@@ -901,8 +901,7 @@ star_search() {
 }
 
 #------------------------------------------------------------------------------
-#List all packages that a given package depends on.  We use this for marking
-# all dependences when a single package gets marked.
+#List all packages that a given set of packages depend on.
 #------------------------------------------------------------------------------
 list_depends() {
     apt-cache depends $* | sed -n -r "s/^\s*(Pre)?Depends:\s*//p" | grep -v "^<" | sort -u
