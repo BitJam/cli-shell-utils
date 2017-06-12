@@ -1052,7 +1052,10 @@ list_error() {
 do_update() {
     msg "Doing %s" "$(pq apt-get update)"
 
-    if ! apt-get update; then
+    apt_get_cmd update
+    local ret=$?
+
+    if [ $ret -ne 0 ]; then
         warn "There was a problem running %s" "$(pqw apt-get update)"
         yes_NO "Do you want to continue anyway" || return 1
     fi
