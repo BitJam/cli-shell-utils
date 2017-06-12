@@ -364,7 +364,7 @@ do_search() {
             local exact_cnt=   lead_cnt=    name_cnt=    desc_cnt=
             local exact_match= lead_match=  name_match=  desc_match=
 
-            local start_t=$(get_time)
+            start_timer
 
             local TOTAL_MATCHES=0  FOUND_MATCH=
             count_matches  exact "exact name match"           "exact name matches"
@@ -373,7 +373,7 @@ do_search() {
             count_matches  desc  "name or description match"  "name or description matches"
 
             echo
-            msg "%s took %s second(s)" $"searches" "$(nq $(show_delta_t $start_t))"
+            msg_elapsed_t "searches"
             echo
 
             if [ $TOTAL_MATCHES -eq 0 ]; then
@@ -689,15 +689,20 @@ uninstall_menu() {
 }
 
 #------------------------------------------------------------------------------
-# A simple wrapper around "apt-get".
+# A "simple" wrapper around "apt-get".
 #------------------------------------------------------------------------------
 apt_get_cmd() {
-    local cmd="apt-get $*"
+    local label=${1#--}  cmd="apt-get $*"
     local fold_width=$(($(screen_width) - 5))
     printf "=> %s\n" "$cmd" | fold -w $fold_width -s | tee -a $LOG_FILE
+
     testing && return 0
+
+    start_timer
     $cmd 2>&1                       #| tee -a $LOG_FILE
     local ret=${PIPESTATUS[0]}
+    msg_elapsed_t "$label"
+
     [ $ret -eq 0 ] && return 0
     warn "The %s command failed" "$(pqw apt-get)"
     return 1
@@ -1067,14 +1072,14 @@ do_update() {
 #------------------------------------------------------------------------------
 generate_database_files() {
     msg "Creating database ..."
-    local start_t=$(get_time)
+    start_timer
     local db=${1:-$DB_FILE}   installed=${2:-$INSTALLED_FILE}
     list_installed > $installed
     list_all | mark-installed-debs $installed > $db
     #cat $SUGGESTED_SRC | only_valid_packages | mark-installed-debs $installed > $SUGGESTED_FILE
     cat $SUGGESTED_SRC | mark-installed-debs $installed > $SUGGESTED_FILE
 
-    msg "%s took %s second(s)" "database generation" "$(nq $(show_delta_t $start_t))"
+    msg_elapsed_t "database generation"
 }
 
 #------------------------------------------------------------------------------
@@ -1124,7 +1129,7 @@ mark_as_uninstalled() {
 unmark_and_mark_installed() {
     local pack ilist files="$DB_FILE $SUGGESTED_FILE"
 
-    local start_t=$(get_time)
+    start_timer
     msg "Updating database ..."
 
     # Build a regular expression so we only have to edit each file once
@@ -1136,7 +1141,7 @@ unmark_and_mark_installed() {
     sed -i -r -e "s/^M?I? ?(($ilist) )/I \1/" $files
     MARK_CNT=$(grep --count "^M" $db)
 
-    msg "%s took %s second(s)" "database update" "$(nq $(show_delta_t $start_t))"
+    msg_elapsed_t "database update"
 }
 
 #------------------------------------------------------------------------------
