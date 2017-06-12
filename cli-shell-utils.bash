@@ -1849,18 +1849,38 @@ elapsed() {
     [ $sec -gt 0 ] && plural $sec " and %n second%s"
 }
 
+#------------------------------------------------------------------------------
+# Get time in 1/100ths of a second since kernel booted.  The 2nd one puts the
+# result in the START_TIME global which is use in msg_elapased_t() below.
+#------------------------------------------------------------------------------
+get_time() { cut -d" " -f22 /proc/self/stat ; }
+start_timer() { START_TIME=$(cut -d" " -f22 /proc/self/stat) ; }
 
 #------------------------------------------------------------------------------
-#
-#------------------------------------------------------------------------------
-get_time() { cut -d" " -f22 /proc/self/stat ;}
-
-#------------------------------------------------------------------------------
-#
+# Not used.
 #------------------------------------------------------------------------------
 show_delta_t() {
     local dt=$(($(get_time) - $1))
     printf "%03d" $dt | sed -r 's/(..)$/.\1/'
+}
+
+#------------------------------------------------------------------------------
+# Show MM:SS if time is 1 minute or greater, otherwise show fractional seconds
+# Usg msg() to put the result in the log file, color, it etc.
+#------------------------------------------------------------------------------
+msg_elapsed_t() {
+    local label=$1  min  sec
+    local dt=$(($(get_time) - ${2:-$START_TIME}))
+
+    if [ $dt -ge 6000 ]; then
+        min=$((dt / 6000))
+        sec=$(((dt - 6000 * min)/ 100))
+        msg "%s took $num_co%d$m_co:$num_co%02d$m_co mm:ss" "$(pq $label)" "$min" "$sec"
+        return
+    fi
+
+    sec=$(printf "%03d" $dt | sed -r 's/(..)$/.\1/')
+    msg "%s took %s seconds" "$(pq $label)" "$(nq $sec)"
 }
 
 #------------------------------------------------------------------------------
@@ -1881,7 +1901,6 @@ plural() {
         -e "s/%are\>/$are/g" -e "s/%n\>/$num/g" -e "s/%were\>/$were/g" \
         -e "s/%es\>/$es/g" -e "s/%3d\>/$(printf "%3d" $n)/g"
 }
-
 
 #==============================================================================
 # Special Utilities
@@ -2304,7 +2323,6 @@ show_distro_version()  {
     fi
     return 0
 }
-
 
 #------------------------------------------------------------------------------
 # Read "version" file and get leading letters from first line
