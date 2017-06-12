@@ -1941,7 +1941,7 @@ view_upgrades() {
 # Do the upgrade and then regenerate our database
 #------------------------------------------------------------------------------
 do_upgrade() {
-    apt_get_cmd upgrade || return
+    apt_get_cmd upgrade
 
     [ "$JUST_UPDATE" ] && return
     generate_database_files
