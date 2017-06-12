@@ -1895,7 +1895,7 @@ check_for_upgrades() {
     msg "Checking for package upgrades ..."
     UPGRADE_CNT=$(count_upgrades)
     if [ $UPGRADE_CNT -eq 0 ]; then
-        msg "Nothing to upgrade"
+        #msg "nothing to upgrade"
         return
     fi
     msg "There are %s packages that can be upgraded" "$(nq $UPGRADE_CNT)"
