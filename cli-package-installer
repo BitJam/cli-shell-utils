@@ -1354,10 +1354,30 @@ install_marked() {
     local fold_width=$(($(screen_width) - 5))
     echo $packs | fold -s -w $fold_width
 
+    local all_deps=$(list_depends $packs)
+    local all_cnt=$(echo $all_deps | wc -w)
+    msg "found %s dependencies" "$(nq $all_cnt)"
+
+    local regex=$(echo $all_deps | tr ' ' '|')
+
+    # want only un-installed packages
+    local unmet_deps
+    if [ $all_cnt -gt 0 ]; then
+        unmet_deps=$(egrep "^(M )?($regex) " $db | sed -r -e "s/^MI? //" -e "s/ .*//")
+        local real_cnt=$(echo "$unmet_deps" | wc -l)
+        msg "found %s unmet dependencies that will also get installed" "$(nq $real_cnt)"
+    fi
+
+    local fold_width=$(($(screen_width) - 5))
+    log_it_q echo $unmet_deps | fold -w $fold_width -s
+
+    local size=$(package_size $packs $unmet_deps)
+    msg "The package(s) and dependencies will take %s Meg" "$(nq $size)"
+
     YES_no "Install these packages?" || return
     apt_get_cmd install $(echo $packs)
 
-    unmark_and_mark_installed $(echo $packs)
+    unmark_and_mark_installed $(echo $packs $unmet_depends)
     press_enter
 }
 
