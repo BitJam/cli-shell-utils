@@ -42,6 +42,7 @@
 : ${USB_DIRTY_BYTES:=20000000}  # Need this small size for the progress bar to work
 : ${PROG_BAR_WIDTH:=100}     # Width of progress bar in percent of screen width
 : ${VM_VERSION_PROG:=vmlinuz-version}
+: ${PROGRESS_SCALE:=100}
 
 # Make sure these start out empty.  See lib_clean_up()
 unset ORIG_DIRTY_BYTES ORIG_DIRTY_RATIO COPY_PPID COPY_PID
@@ -2546,13 +2547,13 @@ copy_with_progress() {
 
     while true; do
         if ! test -d /proc/$COPY_PPID; then
-            echo 100
+            echo $PROGRESS_SCALE
             break
         fi
         sleep 0.1
 
         cur_size=$(du_size $to)
-        cur_pct=$((cur_size * 100 / final_size))
+        cur_pct=$((cur_size * $PROGRESS_SCALE / final_size))
         [ $cur_pct -gt $last_pct ] || continue
         echo $cur_pct
         last_pct=$cur_pct
@@ -2613,31 +2614,24 @@ text_progress_bar() {
     while read input; do
         case $input in
             [0-9]|[0-9][0-9]|[0-9][0-9][0-9]) ;;
+                        [0-9][0-9][0-9][0-9]) ;;
             *) break;;
         esac
 
-        cur_x=$((max_x * input / 100))
+        [ $input -gt $PROGRESS_SCALE ] && input=$PROGRESS_SCALE
+        cur_x=$((max_x * input / $PROGRESS_SCALE))
+        [ $cur_x -le $last_x ] && continue
+
+        # Draw the bar
         # Note we always draw entire bar to avoid problems when switching
         # virtual terminals while the bar is being drawn
-
-        [ $cur_x -le $last_x ] && continue
-        progbar_draw $cur_x 0
+        printf "\e[u\e[0C$m_co%${cur_x}s$bold_co>$nc_co\e[u" | tr ' ' '='
+        # Show the percentage
+        printf "\e[$((max_x + 2))C%3s%%" "$((100 * input / $PROGRESS_SCALE))"
 
         last_x=$cur_x
-
-        printf "\e[$((max_x + 2))C%3s%%" "$input"
-        [ $input -ge 100 ] && break
+        [ $input -ge $PROGRESS_SCALE ] && break
     done
-}
-
-#------------------------------------------------------------------------------
-# Draw progress arrow
-#------------------------------------------------------------------------------
-progbar_draw() {
-    local x=$1  prev=$2
-    local diff=$((x - prev))
-    local bar=$(printf "$cyan%${diff}s$yellow>$nc_co" "" | tr ' ' '=')
-    printf "\e[u\e[$((prev))C$bar\e[u"
 }
 
 #------------------------------------------------------------------------------
@@ -2648,10 +2642,11 @@ percent_progress() {
     while read input; do
         case $input in
             [0-9]|[0-9][0-9]|[0-9][0-9][0-9]) ;;
+                        [0-9][0-9][0-9][0-9]) ;;
             *) break ;;
         esac
-        printf "\e[10D\e[K%3s%%" "$input"
-        [ $input -ge 100 ] && break
+        printf "\e[10D\e[K%3s%%" "$((100 * input / $PROGRESS_SCALE))"
+        [ $input -ge $PROGRESS_SCALE ] && break
     done
 }
 
@@ -2672,7 +2667,8 @@ my_type() {
 # Exercise external/internal progress bar when in pretend mode
 #------------------------------------------------------------------------------
 pretend_progress() {
-    for i in $(seq 0 2 100); do
+    local step=$((PROGRESS_SCALE/50))
+    for i in $(seq 0 $step $PROGRESS_SCALE); do
         echo $i
         sleep 0.05
     done | "$@"
