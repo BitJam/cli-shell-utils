@@ -2488,27 +2488,6 @@ color_commas() { sed "s/,/$m_co,$num_co/g" ;}
 x2() { awk "BEGIN{ printf \"%4.2f\n\", $*; }" ; }
 
 #------------------------------------------------------------------------------
-# Not used.  Create a series of "marching dots" to indicate progress or at
-# least indicate the program is not entirely dead.
-#------------------------------------------------------------------------------
-bogo_meter() {
-    local indent=${#1}  width=${2:-$SCREEN_WIDTH}
-    : ${width:=80}
-    local delay=10  dot=.
-
-    local cnt=$(( width * 80 / 100 ))
-    local sleep=$(x2 "$delay/$cnt")
-
-    while true; do
-        for s in $(seq 1 $cnt); do
-            sleep $sleep
-            echo -n "$dot"
-        done
-        printf "\n%${indent}s" ""
-    done
-}
-
-#------------------------------------------------------------------------------
 # Copy a directory while sending percentage done to an external program
 # So that program can draw a progress bar.
 #------------------------------------------------------------------------------
