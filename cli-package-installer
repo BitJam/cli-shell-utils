@@ -51,8 +51,6 @@ SBAR_80="#----------------------------------------------------------------------
 
 start_testing_mode() {
 
-    VERBOSE_SELECT=true
-
     TEST_DIR=Private/apt
     SOURCE_DIR=$TEST_DIR/sources.d
     LIST_DIR=$TEST_DIR/lists
@@ -97,6 +95,9 @@ start_testing_mode() {
 #------------------------------------------------------------------------------
 main() {
     testing || need_root
+
+    # For now (at least) add menus to the log file
+    VERBOSE_SELECT=true
 
     # Used in my_select() to return instead of exit on 'q'
     BACK_TO_MAIN="go back to main menu"
