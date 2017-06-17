@@ -36,6 +36,7 @@ links2           **** Web browser running in both graphics and text mode
 #-------------------------------------------------------------------------------
 adplay                console-based OPL2 audio player
 cdcd                  command line or console based CD player
+cdtool                text-based audio CD player and CD-ROM control commands
 moc             ***** ncurses based console audio player
 mp3blaster            Full-screen console mp3 and Ogg Vorbis player
 pianobar              console based player for Pandora radio
