@@ -2176,6 +2176,7 @@ check_writable() {
 #------------------------------------------------------------------------------
 write_file() {
     local file=$1 ; shift
+    mkdir -p "$(dirname "$file")"
     echo "$*" > "$file"
 }
 
