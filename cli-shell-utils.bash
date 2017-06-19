@@ -2487,6 +2487,7 @@ color_commas() { sed "s/,/$m_co,$num_co/g" ;}
 # Use awk to perform simple arithmetic
 #------------------------------------------------------------------------------
 x2() { awk "BEGIN{ printf \"%4.2f\n\", $*; }" ; }
+x1() { awk "BEGIN{ printf \"%3.1f\n\", $*; }" ; }
 
 #------------------------------------------------------------------------------
 # Copy a directory while sending percentage done to an external program
