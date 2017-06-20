@@ -2032,12 +2032,14 @@ unflock() {
 # Create a nice header for the .config file.
 #------------------------------------------------------------------------------
 config_header() {
-    local file=${1:-$CONFIG_FILE}  me=${2:-$ME}
+    local file=${1:-$CONFIG_FILE}  me=${2:-$ME}  version=${3:-$VERSION} date=${4:-$VERSION_DATE}
     cat<<Config_Header
 #----------------------------------------------------------------------
 # Configuration file for $me
-# File: $file
-# Created: $(date +"$DATE_FMT")
+#     Version: $version
+# Vesion date: $date
+#        File: $file
+#     Created: $(date +"$DATE_FMT")
 #
 # Config file options:
 #
@@ -2067,7 +2069,7 @@ reset_config() {
     msg "$msg" "$(pq $file)"
 
     mkdir -p $(dirname "$file") || fatal "Could not create directory for config file"
-    (config_header "$file" "$ME"
+    (config_header "$file" "$ME" "$VERSION" "$VERSION_DATE"
     sed -rn "/^#=+\s*BEGIN_CONFIG/,/^#=+\s*END_CONFIG/p" "$0" \
         | egrep -v "^#=+[ ]*(BEGIN|END)_CONFIG"
         config_footer ) > $file
