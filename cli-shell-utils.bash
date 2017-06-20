@@ -2036,10 +2036,10 @@ config_header() {
     cat<<Config_Header
 #----------------------------------------------------------------------
 # Configuration file for $me
-#     Version: $version
-# Vesion date: $date
-#        File: $file
-#     Created: $(date +"$DATE_FMT")
+#      Version: $version
+# Version date: $date
+#         File: $file
+#      Created: $(date +"$DATE_FMT")
 #
 # Config file options:
 #
