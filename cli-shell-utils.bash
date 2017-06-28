@@ -664,6 +664,54 @@ final_quit() {
 }
 
 #------------------------------------------------------------------------------
+# Returns true if the input only contains: numbers, commas, spaces. and dashes.
+#------------------------------------------------------------------------------
+is_num_range() {
+    [ -n "${1##*[^0-9, -]*}" ] 
+    return $?
+}
+
+#------------------------------------------------------------------------------
+# Convert a series of numbers, commas, spaces, and dashes into a series of 
+# numbers.  Commas are treated like spaces.   A dash surrounded by two numbers
+# is considered to be a range of numbers.  If the first number is missing and
+# <min> is given the <min> is used as the first number.  If the 2nd number is
+# missing and <max> is given then <max> is used as the 2nd number.  Interior
+# dashes and numbers are ignored so: 1---20---3 is the same as 1-3.
+#------------------------------------------------------------------------------
+num_range() {
+    is_num_range "$1" ||  return
+
+    local list=$1  min=$2   max=$3
+    local list=$(echo ${list//,/ } | sed -r -e "s/\s+-/-/g" -e "s/-\s+/-/g")
+    local num  found
+    for num in $list; do
+        if [ -n "${num##*-*}" ]; then
+            case ,$found, in
+                *,$num,*) continue ;;
+            esac
+            found=$found,$num
+            echo $num
+            continue
+        fi
+
+        local start=${num%%-*}
+        : ${start:=$min}
+        local end=${num##*-}
+        : ${end:=$max}
+        [ -z "$start" -o -z "$end" ] && continue
+        for num in $(seq $start $end); do
+            case ,$found, in
+                *,$num,*) continue ;;
+            esac
+            found=$found,$num
+            echo $num
+        done
+    done
+    echo "$found" | tr ',' ' ' >&2
+}
+
+#------------------------------------------------------------------------------
 # An interface to the text menus developed for live-init.  Each menu has .menu
 # and .data files.  The format of the .data files is slightly different here.
 #------------------------------------------------------------------------------
