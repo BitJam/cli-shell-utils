@@ -660,7 +660,9 @@ final_quit() {
     echo -n " "
     read -n1 input
     echo
-    [ "$input" = 'q' ] && exit 0
+    [ "$input" = 'q' ] || return
+    PAUSE=$(echo "$PAUSE" | sed -r "s/(^|,)exit(,|$)/,/")
+    exit 0
 }
 
 #------------------------------------------------------------------------------
