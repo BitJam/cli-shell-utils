@@ -68,10 +68,10 @@ main() {
     [ $# -gt 0 ] && fatal "Unexpected arguments: %s" "$*"
 
     if [ "$REPACK" ]; then
-        qsay "Repack: %s ---> %s" "$(pq $INITRD_FILE)" "$(pq ${INITRD_DIR%/}/)"
+        qsay "Repack: %s ---> %s" "$(pq ${INITRD_DIR%/}/)" "$(pq $INITRD_FILE)"
         repack_initrd "$INITRD_FILE" "$INITRD_DIR"
     else
-        qsay "Unpack: %s ---> %s" "$(pq ${INITRD_DIR%/}/)" "$(pq $INITRD_FILE)"
+        qsay "Unpack: %s ---> %s" "$(pq $INITRD_FILE)" "$(pq ${INITRD_DIR%/}/)"
         unpack_initrd "$INITRD_FILE" "$INITRD_DIR"
     fi
 
