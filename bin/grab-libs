@@ -131,7 +131,7 @@ main() {
 
     vsay "Raw libraries:\n$raw_libs\n"
 
-    libs=$(echo "$raw_libs" | grep "=> /" | sed 's/.*=> //' | sed 's/ .*//' ) 
+    libs=$(echo "$raw_libs" | sed -nr "s/.*=>\s*([^ ]+)\s.*/\1/p")
 
     libs="$libs $(ls $PREFIX/lib/ld-linux.* | sed "s=^$PREFIX==" )"
 
@@ -139,15 +139,16 @@ main() {
 
     for lib in $libs; do
         lib=$PREFIX$lib
-        real_lib=$(readlink -f $lib)
+        local real_lib=$(readlink -f $lib)
+        local targ_lib=$targ/$(basename $real_lib)
         if [ "$real_lib" -a "$real_lib" != "$lib" ]; then
             vsay "Real lib: $real_lib"
-            cp -a $real_lib $targ
+            test -e $targ_lib || cp -a $real_lib $targ
             sym_sorc=$targ/$(basename $lib)
             sym_dest=$(basename $real_lib)
-            [ -e "$sym_sorc" ] || ln -s $sym_dest $sym_sorc
+            test -e "$sym_sorc" || ln -s $sym_dest $sym_sorc
         else
-            cp $lib $targ
+            test -e $targ_lib || cp $lib $targ
         fi
     done
 }
