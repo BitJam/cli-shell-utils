@@ -53,6 +53,9 @@ export TEXTDOMAIN="cli-shell-utils"
 domain_dir=$(readlink -f "$MY_DIR/../cli-shell-utils/locale")
 test -d "$domain_dir" && export TEXTDOMAINDIR=$domain_dir
 
+ BAR_80="#=============================================================================="
+SBAR_80="#------------------------------------------------------------------------------"
+
 #------------------------------------------------------------------------------
 # Sometimes it's useful to process some arguments (-h --help, for example)
 # before others.  This can let normal users get simple usage.
