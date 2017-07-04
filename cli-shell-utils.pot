@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: antiX Development\n"
 "Report-Msgid-Bugs-To: translation@antixlinux.org\n"
-"POT-Creation-Date: 2017-05-04 03:31-0600\n"
+"POT-Creation-Date: 2017-07-03 14:23-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,9 +19,6 @@ msgstr ""
 
 #. starting <program name>
 msgid "Starting %s"
-msgstr ""
-
-msgid "The live media is not mounted"
 msgstr ""
 
 msgid "Will use target device %s"
@@ -75,16 +72,13 @@ msgstr ""
 msgid "Shall we begin?"
 msgstr ""
 
-msgid "Will use initial passphrase %s"
-msgstr ""
-
 msgid "install"
 msgstr ""
 
-msgid "done"
+msgid "You will be asked to create a passphrase during the first boot"
 msgstr ""
 
-msgid "You will be asked to create your own passphrase on the first boot"
+msgid "Will use initial passphrase %s"
 msgstr ""
 
 msgid "Make a full-featured live-usb"
@@ -114,7 +108,7 @@ msgstr ""
 msgid "No available target usb devices were found"
 msgstr ""
 
-msgid "Only one target usb device was found: %s"
+msgid "Only one target usb device was found %s"
 msgstr ""
 
 msgid "Please select the target usb device"
@@ -176,6 +170,12 @@ msgstr ""
 msgid "Add program %s to %s"
 msgstr ""
 
+msgid "Enable encryption in the live initrd"
+msgstr ""
+
+msgid "Disable encryption in the live initrd"
+msgstr ""
+
 #. Create syslinux directory from <boot/isolinux>
 msgid "Create syslinux directory from %s"
 msgstr ""
@@ -186,8 +186,14 @@ msgstr ""
 msgid "Less than %s MiB would remain on %s partition"
 msgstr ""
 
+msgid "done"
+msgstr ""
+
 #. Pause at '<Exit>'
 msgid "Exit"
+msgstr ""
+
+msgid "The live media is not mounted"
 msgstr ""
 
 msgid "Current running kernel is %s"
@@ -418,7 +424,11 @@ msgstr ""
 msgid "Paused at '%s'"
 msgstr ""
 
-msgid "Press <Enter> to continue"
+#. Press <Enter> for the default selection
+msgid "Enter"
+msgstr ""
+
+msgid "Press <%s> to continue"
 msgstr ""
 
 msgid "Unknown command: %s"
@@ -446,17 +456,13 @@ msgid "selection"
 msgstr ""
 
 #. Press <Enter> for the default selection
-msgid "Enter"
-msgstr ""
-
-#. Press <Enter> for the default selection
 msgid "Press <%s> for the default %s"
 msgstr ""
 
-msgid "Use '%s' for help.  Use '%s' to quit."
+msgid "Use '%s' to %s"
 msgstr ""
 
-msgid "Use '%s' to quit"
+msgid "Use '%s' for help"
 msgstr ""
 
 msgid "Opps.  Please try again"
