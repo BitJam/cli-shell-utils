@@ -1693,10 +1693,9 @@ Shout() {
 # Convenience routine for printing a pretty title
 #------------------------------------------------------------------------------
 shout_title() {
-    local title=$1
     echo "$m_co$BAR_80$nc_co"
     printf "\n=====> " >>$LOG_FILE
-    shout "$title"
+    shout "$@"
     echo "$m_co$BAR_80$nc_co"
 }
 
