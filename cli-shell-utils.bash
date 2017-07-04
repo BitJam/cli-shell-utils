@@ -442,13 +442,13 @@ YES_no_pretend() {
               no) return 1 ;;
          pretend) PRETEND_MODE=true ; shout_pretend ; return 0 ;;
                *) fatal "Internal error in YES_no_pretend()"   ;;
-        esac
+    esac
 }
 
 #------------------------------------------------------------------------------
 # Announce to the world we are in pretend mode
 #------------------------------------------------------------------------------
-:
+
 shout_pretend() { [ "$PRETEND_MODE" ] && Shout $"PRETEND MODE ENABLED" ;}
 
 #------------------------------------------------------------------------------
@@ -1704,10 +1704,9 @@ shout_title() {
 # Convenience routine for printing a pretty sub-title
 #------------------------------------------------------------------------------
 shout_subtitle() {
-    local title=$1
     echo "$m_co$SBAR_80$nc_co"
     printf "\n=====> " >>$LOG_FILE
-    shout "$title"
+    shout "$@"
     echo "$m_co$SBAR_80$nc_co"
 }
 
