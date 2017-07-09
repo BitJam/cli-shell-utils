@@ -7,7 +7,7 @@ ME=${0##*/}
 : ${LIB_SUBDIR:=lib}
 
 : ${DEFAULT_PROG_LIST:=ntfs-3g eject}
-: ${ENCRYPT_PROG_LIST:=cryptsetup dmsetup}
+: ${ENCRYPT_PROG_LIST:=cryptsetup}
 
 VAR_LIST="PATH_LIST BIN_SUBDIR LIB_SUBDIR DEFAULT_PROG_LIST ENCRYPT_PROG_LIST"
 
@@ -95,14 +95,13 @@ main() {
 
     local prog_list abs_prog_list
     case $# in
-        0)  prog_list=$DEFAULT_PROG_LIST
-            qsay "Using default program list"     ;;
+        0)  prog_list=$DEFAULT_PROG_LIST                     ;;
         *)  prog_list="$*"
             qsay "Using %s program(s) from command line" $#  ;;
     esac
 
     if [ $# -eq 0 -a -n "$ADD_ENCRYPT$DO_CLEAN" ]; then
-        qsay "Adding encryption programs"
+        #qsay "Adding encryption programs"
         prog_list="$prog_list $ENCRYPT_PROG_LIST"
     fi
 
