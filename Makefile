@@ -12,9 +12,10 @@ LIB_DIR     := $(ROOT)/usr/local/lib/$(ME)
 BIN_DIR     := $(ROOT)/usr/local/bin
 LOCALE_DIR  := $(ROOT)/usr/share/
 DESK_DIR    := $(ROOT)/usr/share/applications/antix
+MAN_DIR     := $(ROOT)/usr/local/share/man/man1
 SCRIPTS_ALL := $(addsuffix -all, $(SCRIPTS))
 
-ALL_DIRS   := $(LIB_DIR) $(BIN_DIR) $(LOCALE_DIR) $(DESK_DIR)
+ALL_DIRS   := $(LIB_DIR) $(BIN_DIR) $(LOCALE_DIR) $(DESK_DIR) $(MAN_DIR)
 
 .PHONY: $(SCRIPTS) help all lib $(SCRIPTS_ALL)
 
