@@ -43,6 +43,7 @@
 : ${PROG_BAR_WIDTH:=100}     # Width of progress bar in percent of screen width
 : ${VM_VERSION_PROG:=vmlinuz-version}
 : ${PROGRESS_SCALE:=100}
+: ${INITRD_CONFIG:=/live/config/initrd.out}
 
 # Make sure these start out empty.  See lib_clean_up()
 unset ORIG_DIRTY_BYTES ORIG_DIRTY_RATIO COPY_PPID COPY_PID
@@ -305,7 +306,7 @@ check_cmds() {
 # Works like cmd() below but ignores the $PRETEND_MODE variable.  This can be
 # useful  if you want to always run a command but also want to record the call.
 #------------------------------------------------------------------------------
-always_cmd() { PRETEND_MODE= cmd "$@" ;}
+always_cmd() { local PRETEND_MODE=  ; cmd "$@" ;}
 
 #------------------------------------------------------------------------------
 # Always send the command line and all output to the log file.  Set the log
@@ -331,6 +332,7 @@ cmd() {
     return $ret
 }
 
+verbose_cmd() { local BE_VERBOSE=true ; cmd "$@" ;}
 #==============================================================================
 # BASIC TEXT UI ELEMENTS
 #
@@ -2335,17 +2337,38 @@ its_alive_usb() {
 # Get the device mounted at $LIVE_MP (usually /live/boot-dev)
 #------------------------------------------------------------------------------
 get_live_dev() {
-    local live_dev=$(sed -rn "s|^([^ ]+) $LIVE_MP .*|\1|p" /proc/mounts)
+    local live_dev INITRD_CRYPT_UUID
+
+    # Check to see if we are running from an enrypted live-usb
+    read_initrd_param CRYPT_UUID >&2
+    if [ -z "$INITRD_CRYPT_UUID" ]; then
+        # if not then just see what is mounted at /live/boot-dev
+        live_dev=$(sed -rn "s|^([^ ]+) $LIVE_MP .*|\1|p" /proc/mounts)
+        echo ${live_dev##*/}
+    fi
+
+    # If so then don't allow it to be the target
+    live_dev=$(blkid -c /dev/null -U "$INITRD_CRYPT_UUID")
+    [ -z "$live_dev" ] && return
     echo ${live_dev##*/}
 }
 
 #------------------------------------------------------------------------------
-#
+# Assign all variables from initrd.out, adddng INITRD_ prefix to var names
 #------------------------------------------------------------------------------
 read_initrd_config() {
-    file=${1:-/live/config/initrd.out}  pre=${2:-INITRD_}
+    file=${1:-$INITRD_CONFIG}  pre=${2:-INITRD_}
     test -r "$file" || fatal "Could not find/read file %s" "$file"
     eval $(sed -r -n "s/^\s*([A-Z0-9_]+=)/$pre\1/p" $file)
+}
+
+#------------------------------------------------------------------------------
+# Assign selected variable from initrd.out, adding INITRD_ prefix to var name
+#------------------------------------------------------------------------------
+read_initrd_param() {
+    name=$1  file=${2:-$INITRD_CONFIG}  pre=${3:-INITRD_}
+    test -r "$file" || return
+    eval $(sed -r -n "s/^\s*($name=)/$pre\1/p" $file)
 }
 
 #------------------------------------------------------------------------------
