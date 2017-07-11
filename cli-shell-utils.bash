@@ -1534,7 +1534,6 @@ set_colors() {
         lt_red=  ; magenta=  ;   yellow=  ;   white=  ;
          nc_co=  ;   brown=  ;   rev_co=
 
-
          inst_co=            ;  mark_co=           ;     grep_co=
          bold_co=            ;    fs_co=           ;      num_co=            ;
          date_co=            ;  head_co=           ;    quest_co=            ;
