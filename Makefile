@@ -7,6 +7,8 @@ ME          := cli-shell-utils
 
 APT_WRAPPER := cli-package-installer
 
+DEB_ROOT    := debian
+
 SCRIPTS     := live-usb-maker live-kernel-updater
 LIB_DIR     := $(ROOT)/usr/local/lib/$(ME)
 BIN_DIR     := $(ROOT)/usr/local/bin
@@ -17,10 +19,13 @@ SCRIPTS_ALL := $(addsuffix -all, $(SCRIPTS))
 
 ALL_DIRS   := $(LIB_DIR) $(BIN_DIR) $(LOCALE_DIR) $(DESK_DIR) $(MAN_DIR)
 
-.PHONY: $(SCRIPTS) help all lib $(SCRIPTS_ALL)
+.PHONY: $(SCRIPTS) help all lib $(SCRIPTS_ALL) debian clean
 
 help:
 	@echo "make help                show this help"
+	@echo "make debian              Install under $(DEB_ROOT)/ directory"
+	@echo "                          delete scripts that are packaaged elsewhere"
+	@echo "make clean               remove the $(DEB_ROOT)/ directory"
 	@echo "make all                 install to current directory"
 	@echo "make all ROOT=           install to /"
 	@echo "make all ROOT=dir        install to directory dir"
@@ -31,6 +36,14 @@ help:
 	@#echo ""
 
 all: $(SCRIPTS) lib
+
+debian:
+	mkdir -p $(DEB_ROOT)
+	make all ROOT=$(DEB_ROOT)
+	rm -f $(DEB_ROOT)/$(LIB_DIR)/bin/copy-initrd-*
+
+clean:
+	test -d $(DEB_ROOT) && rm -r $(DEB_ROOT) || true
 
 lib: | $(LIB_DIR) $(LOCALE_DIR)
 	cp -r $(ME).bash bin text-menus $(LIB_DIR)
