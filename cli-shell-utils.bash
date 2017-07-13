@@ -1541,7 +1541,7 @@ set_colors() {
            red=  ;  purple=  ;    brown=  ; lt_gray=  ;
        dk_gray=  ; lt_blue=  ; lt_green=  ; lt_cyan=  ;
         lt_red=  ; magenta=  ;   yellow=  ;   white=  ;
-         nc_co=  ;   brown=  ;   rev_co=
+         nc_co=  ;   brown=  ;   rev_co="$e[7m" ; nc_co="$e[0m"
 
          inst_co=            ;  mark_co=           ;     grep_co=
          bold_co=            ;    fs_co=           ;      num_co=            ;
