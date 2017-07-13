@@ -673,6 +673,8 @@ final_quit() {
     read -n1 input
     echo
     [ "$input" = 'q' ] || return
+
+    # Don't pause on exit after 'q' 'q'
     PAUSE=$(echo "$PAUSE" | sed -r "s/(^|,)exit(,|$)/,/")
     exit 0
 }
