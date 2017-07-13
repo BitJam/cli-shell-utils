@@ -1559,13 +1559,15 @@ set_colors() {
 
     local e=$(printf "\e")
 
+    rev_co="$e[7m" ; nc_co="$e[0m"
+
     if [ "$color" = 'off' ]; then
 
          black=  ;    blue=  ;    green=  ;    cyan=  ;
            red=  ;  purple=  ;    brown=  ; lt_gray=  ;
        dk_gray=  ; lt_blue=  ; lt_green=  ; lt_cyan=  ;
         lt_red=  ; magenta=  ;   yellow=  ;   white=  ;
-         nc_co=  ;   brown=  ;   rev_co="$e[7m" ; nc_co="$e[0m"
+         brown=  ;
 
          inst_co=            ;  mark_co=           ;     grep_co=
          bold_co=            ;    fs_co=           ;      num_co=            ;
@@ -1576,11 +1578,11 @@ set_colors() {
          return
      fi
 
-         black="$e[0;30m" ;    blue="$e[0;34m" ;    green="$e[0;32m" ;    cyan="$e[0;36m" ;
-           red="$e[0;31m" ;  purple="$e[0;35m" ;    brown="$e[0;33m" ; lt_gray="$e[0;37m" ;
+         black="$e[30m"   ;    blue="$e[34m"   ;    green="$e[32m"   ;    cyan="$e[36m"   ;
+           red="$e[31m"   ;  purple="$e[35m"   ;    brown="$e[33m"   ; lt_gray="$e[37m"   ;
        dk_gray="$e[1;30m" ; lt_blue="$e[1;34m" ; lt_green="$e[1;32m" ; lt_cyan="$e[1;36m" ;
         lt_red="$e[1;31m" ; magenta="$e[1;35m" ;   yellow="$e[1;33m" ;   white="$e[1;37m" ;
-         nc_co="$e[0m"    ;   brown="$e[0;33m" ;   rev_co="$e[7m"
+         nc_co="$e[0m"    ;   brown="$e[33m"   ;   rev_co="$e[7m"    ;    gray="$e[37m"
 
     case $color in
         high)
@@ -1592,36 +1594,36 @@ set_colors() {
         fname_co=$white      ;     m_co=$lt_cyan   ;     warn_co=$yellow     ; ;;
 
         dark)
-         inst_co=$cyan    ;  mark_co=$rev_co       ;     grep_co="1;34"
+         inst_co=$cyan       ;  mark_co=$rev_co    ;     grep_co="1;34"
          bold_co=$brown      ;    fs_co=$lt_blue   ;      num_co=$brown   ;
-         date_co=$cyan       ;  head_co=$nc_co     ;    quest_co=$green   ;
-          dev_co=$nc_co      ;    hi_co=$nc_co     ;     quit_co=$brown   ;
-          err_co=$red        ;   lab_co=$cyan      ;  version_co=$nc_co   ;
-        fname_co=$nc_co      ;     m_co=$cyan      ;     warn_co=$brown   ; ;;
+         date_co=$cyan       ;  head_co=$gray      ;   quest_co=$green    ;
+          dev_co=$gray       ;    hi_co=$gray      ;    quit_co=$brown    ;
+          err_co=$red        ;   lab_co=$cyan      ;  version_co=$gray    ;
+        fname_co=$gray       ;     m_co=$cyan      ;     warn_co=$brown   ; ;;
 
         low)
-         inst_co=$cyan    ;  mark_co=$rev_co       ;     grep_co="1;34"
-         bold_co=$white      ;    fs_co=$nc_co     ;      num_co=$white      ;
-         date_co=$nc_co      ;  head_co=$white     ;    quest_co=$lt_green   ;
+         inst_co=$cyan       ;  mark_co=$rev_co    ;     grep_co="1;34"
+         bold_co=$white      ;    fs_co=$gray      ;      num_co=$white      ;
+         date_co=$gray       ;  head_co=$white     ;    quest_co=$lt_green   ;
           dev_co=$white      ;    hi_co=$white     ;     quit_co=$lt_green   ;
-          err_co=$red        ;   lab_co=$nc_co     ;  version_co=$white      ;
-        fname_co=$white      ;     m_co=$nc_co     ;     warn_co=$yellow     ; ;;
+          err_co=$red        ;   lab_co=$gray      ;  version_co=$white      ;
+        fname_co=$white      ;     m_co=$gray      ;     warn_co=$yellow     ; ;;
 
         low2)
          inst_co=$cyan       ;  mark_co=$rev_co    ;     grep_co="1"
-         bold_co=$white      ;    fs_co=$nc_co     ;      num_co=$white      ;
-         date_co=$nc_co      ;  head_co=$white     ;    quest_co=$green      ;
+         bold_co=$white      ;    fs_co=$gray      ;      num_co=$white      ;
+         date_co=$gray       ;  head_co=$white     ;    quest_co=$green      ;
           dev_co=$white      ;    hi_co=$white     ;     quit_co=$green      ;
-          err_co=$red        ;   lab_co=$nc_co     ;  version_co=$white      ;
-        fname_co=$white      ;     m_co=$nc_co     ;     warn_co=$yellow     ; ;;
+          err_co=$red        ;   lab_co=$gray      ;  version_co=$white      ;
+        fname_co=$white      ;     m_co=$gray      ;     warn_co=$yellow     ; ;;
 
         bw)
          inst_co=$white      ;  mark_co=$rev_co    ;     grep_co="1;37"
-         bold_co=$white      ;    fs_co=$nc_co     ;      num_co=$white      ;
-         date_co=$nc_co      ;  head_co=$white     ;    quest_co=$white      ;
+         bold_co=$white      ;    fs_co=$gray      ;      num_co=$white      ;
+         date_co=$gray       ;  head_co=$white     ;    quest_co=$white      ;
           dev_co=$white      ;    hi_co=$white     ;     quit_co=$white      ;
           err_co=$white      ;   lab_co=$lt_gray   ;  version_co=$lt_gray    ;
-        fname_co=$white      ;     m_co=$nc_co     ;     warn_co=$white      ; ;;
+        fname_co=$white      ;     m_co=$gray      ;     warn_co=$white      ; ;;
 
         *)
             error "Unknown color parameter: %s" "$color"
@@ -2975,7 +2977,7 @@ show_graphic_menu() {
         cnt=$((cnt + 1))
         local rev=
         [ $cnt -eq $default ] && rev=$rev_co
-        printf "  $rev%s$nc_co\n" "$entry"
+        printf "  $nc_co$rev%s$nc_co\n" "$entry"
     done<<Graphic_Menu
     $(echo -ne "$menu")
 Graphic_Menu
