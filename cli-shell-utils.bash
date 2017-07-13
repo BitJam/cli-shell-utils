@@ -406,6 +406,30 @@ _yes_no() {
     local yes=$"yes"  no=$"no"  quit=$"quit"  default=$"default"
     quit="$quit_co$quit"
 
+    local menu=$(
+        menu_printf  yes "$yes"
+        menu_printf  no  "$no"
+    )
+
+    my_select answer "$question" "$menu" "" "$def_entry"
+
+    case $answer in
+      yes) return 0 ;;
+       no) return 1 ;;
+     quit) return 1 ;;
+        *) internal_error _yes_no "$anwer"
+    esac
+}
+
+
+old_yes_no() {
+    local answer ret=$1  question=$2  def_entry=$(($1 + 1))
+
+    [ "$AUTO_MODE" ] && return $ret
+
+    local yes=$"yes"  no=$"no"  quit=$"quit"  default=$"default"
+    quit="$quit_co$quit"
+
     local menu def_entry
     case $def_entry in
         1) menu=$(printf "  1) $yes ($default)\n  2) $no\n") ;;
