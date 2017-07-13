@@ -481,6 +481,13 @@ menu_printf_plural() {
 # The "1)" and so on get added automatically.
 #------------------------------------------------------------------------------
 my_select() {
+    if [ -n "$GRAPHICAL_MENUS" ]; then
+        graphical_select "$@"
+    else
+        my_select_num "$@"
+    fi
+}
+my_select_num() {
     local var=$1  title=$2  list=$3  def_str=$4  default=${5:-1}  orig_ifs=$IFS
     local IFS=$P_IFS
     local cnt=1 dcnt datum label data menu
@@ -674,12 +681,12 @@ final_quit() {
 # Returns true if the input only contains: numbers, commas, spaces. and dashes.
 #------------------------------------------------------------------------------
 is_num_range() {
-    [ -n "${1##*[^0-9, -]*}" ] 
+    [ -n "${1##*[^0-9, -]*}" ]
     return $?
 }
 
 #------------------------------------------------------------------------------
-# Convert a series of numbers, commas, spaces, and dashes into a series of 
+# Convert a series of numbers, commas, spaces, and dashes into a series of
 # numbers.  Commas are treated like spaces.   A dash surrounded by two numbers
 # is considered to be a range of numbers.  If the first number is missing and
 # <min> is given the <min> is used as the first number.  If the 2nd number is
@@ -2792,6 +2799,213 @@ luks_close() {
     [ -z "$name" ] && return
     test -e /dev/mapper/$name || return
     cryptsetup close $name
+}
+
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+graphical_select() {
+    local var=$1  title=$2  list=$3  def_str=$4  default=${5:-1}  orig_ifs=$IFS
+    local IFS=$P_IFS
+
+    local datum label max_cnt  cnt=0 menu data skip
+    while read datum label; do
+        cnt=$((cnt + 1))
+
+        [ ${#datum} -eq 0 ] && skip=$skip,$cnt
+
+        data="${data}$cnt:$datum\n"
+        menu="$menu$label\n"
+    done<<Graphic_Select_1
+$(echo -e "$list")
+Graphic_Select_1
+
+    max_cnt=$cnt
+    IFS=$orig_ifs
+
+    if [ -n "$def_str" ]; then
+        def_str="($(pqq $def_str))"
+    else
+        def_str=$"selection"
+    fi
+
+    # Press <Enter> for the default selection
+    local enter=$"Enter"
+    # Press <Enter> for the default selection
+    local p2 def_prompt=$(printf $"Press <%s> for the default %s" "$(pqq "$enter")" "$def_str")
+
+    local quit=$"quit"
+    [ -n "$BACK_TO_MAIN" ] && quit=$BACK_TO_MAIN
+    local quit_str=$(printf $"Use '%s' to %s" "$(pqq q)" "$quit")
+
+    if [ "$HAVE_MAN" ]; then
+        local man_str=$(printf $"Use '%s' for help" "$(pqq h)")
+        p2=$(printf "%s, %s" "$man_str" "$quit_str")
+    else
+        p2=$quit_str
+    fi
+
+    echo -e "$quest_co$title$nc_co"
+    hide_cursor
+
+    local menu_size=$max_cnt
+    [ "$default" ] && menu_size=$((menu_size + 1))
+    [ "$p2" ]      && menu_size=$((menu_size + 1))
+
+    show_graphic_menu "$menu" "$default"
+    [ "$default" ] && printf "$m_co%s$nc_co\n" "$quest_co$def_prompt$nc_co"
+    [ "$p2" ]      && quest "$p2\n"
+
+    while true; do
+
+        local key=$(get_key)
+        case $key in
+                [qQ]) if [ -n "$BACK_TO_MAIN" ]; then
+                          eval $var=quit
+                          return
+                      else
+                          gm_final_quit
+                      fi ;;
+
+                [hH]) if [ "$HAVE_MAN" ]; then
+                          restore_cursor
+                          printf "\e[s"
+                          printf "\e[1A"
+                          man "$MAN_PAGE"
+                          printf "\e[u"
+                          hide_cursor
+                      fi;;
+
+                enter) break ;;
+                left) _gm_step_default -100  ;;
+               right) _gm_step_default +100  ;;
+                  up) _gm_step_default   -1  ;;
+                down) _gm_step_default   +1  ;;
+             page-up) _gm_step_default   -5  ;;
+           page-down) _gm_step_default   +5  ;;
+                home) _gm_step_default -100  ;;
+                 end) _gm_step_default +100  ;;
+        esac
+
+        printf "\e[${menu_size}A\r"
+        show_graphic_menu "$menu" "$default"
+        [ "$default" ] && printf "$m_co%s$nc_co\n" "$quest_co$def_prompt$nc_co"
+        [ "$p2" ]      && quest "$p2\n"
+    done
+
+    restore_cursor
+    printf "\e[${max_cnt}B\r"
+    local val=$(echo -ne "$data" | sed -n "s/^$default://p")
+    eval $var=\$val
+}
+
+_gm_step_default() {
+    local step=$1
+    default=$((default + step))
+
+    [ $default -lt 1 ]        && default=1
+    [ $default -gt $max_cnt ] && default=$max_cnt
+
+    return
+    _gm_dont_skip && return
+
+    if [ $step -gt 0 ]; then
+        for default in $(seq $default $max_cnt); do
+            _gm_dont_skip && return
+        done
+    else
+        for default in $(seq $default -1 1); do
+            _gm_dont_skip  && return
+        done
+    fi
+}
+
+_gm_dont_skip () {
+    case ,$skip, in
+        *,$default,*) return 1 ;;
+                   *) return 0 ;;
+    esac
+}
+
+gm_final_quit() {
+    quest $"Press '%s' again to quit" "$(pqq q)"
+    case $(get_key) in
+        [qQ]) ;;
+           #*) printf "\e[1A\r%40s" "" ; return ;;
+           *) printf "\r%40s" "" ; return ;;
+    esac
+    restore_cursor
+    PAUSE=$(echo "$PAUSE" | sed -r "s/(^|,)exit(,|$)/,/")
+    exit 0
+    printf "\e[1A\r" ; printf "\e[1A\r%40s" ""
+}
+
+show_graphic_menu() {
+    local menu=$1  default=$2
+
+    local cnt=0 entry
+    while read entry; do
+        cnt=$((cnt + 1))
+        local rev=
+        [ $cnt -eq $default ] && rev=$rev_co
+        printf "  $rev%s$nc_co\n" "$entry"
+    done<<Graphic_Menu
+    $(echo -ne "$menu")
+Graphic_Menu
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+get_key() {
+    local key k1 k2 k3 k4
+    read -s -N1
+    k1=$REPLY
+    read -s -N2 -t 0.001 k2
+    read -s -N1 -t 0.001 k3 2>/dev/null
+    read -s -N1 -t 0.001 k4 2>/dev/null
+    key=$k1$k2$k3$k4
+
+    case $key in
+        $'\x1b\x4f\x50\x00')     key=f1           ;;
+        $'\x1b\x4f\x51\x00')     key=f2           ;;
+        $'\x1b\x4f\x52\x00')     key=f3           ;;
+        $'\x1b\x4f\x53\x00')     key=f4           ;;
+
+        $'\x1b\x5b\x5b\x41')     key=f1           ;;
+        $'\x1b\x5b\x5b\x42')     key=f2           ;;
+        $'\x1b\x5b\x5b\x43')     key=f3           ;;
+        $'\x1b\x5b\x5b\x44')     key=f4           ;;
+        $'\x1b\x5b\x5b\x45')     key=f5           ;;
+
+        $'\x1b\x5b\x31\x35\x7e') key=f5           ;;
+        $'\x1b\x5b\x31\x37\x7e') key=f6           ;;
+        $'\x1b\x5b\x31\x38\x7e') key=f7           ;;
+        $'\x1b\x5b\x31\x39\x7e') key=f8           ;;
+        $'\x1b\x5b\x32\x30\x7e') key=f9           ;;
+        $'\x1b\x5b\x32\x31\x7e') key=f10          ;;
+        $'\x1b\x5b\x32\x33\x7e') key=f11          ;;
+        $'\x1b\x5b\x32\x34\x7e') key=f12          ;;
+        $'\x1b\x5b\x32\x7e')     key=insert       ;;
+        $'\x1b\x5b\x33\x7e')     key=delete       ;;
+        $'\x1b\x5b\x31\x7e')     key=home         ;;
+        $'\x1b\x5b\x34\x7e')     key=end          ;;
+        $'\x1b\x5b\x35\x7e')     key=page-up      ;;
+        $'\x1b\x5b\x36\x7e')     key=page-down    ;;
+        $'\x1b\x5b\x41')         key=up           ;;
+        $'\x1b\x5b\x42')         key=down         ;;
+        $'\x1b\x5b\x43')         key=right        ;;
+        $'\x1b\x5b\x44')         key=left         ;;
+
+        $'\x7f')                 key=backspace    ;;
+        $'\x08')                 key=backspace    ;;
+        $'\x09')                 key=tab          ;;
+        $'\x0a')                 key=enter        ;;
+        $'\x1b')                 key=escape       ;;
+        $'\x20')                 key=space        ;;
+    esac
+    printf "$key"
 }
 
 #==============================================================================
