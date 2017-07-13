@@ -2841,7 +2841,12 @@ graphical_select() {
     while read datum label; do
         cnt=$((cnt + 1))
 
-        [ ${#datum} -eq 0 ] && skip=$skip,$cnt
+        if [ ${#datum} -eq 0 ]; then
+            skip=$skip,$cnt
+            label="  $label"
+        else
+            label="> $label"
+        fi
 
         data="${data}$cnt:$datum\n"
         menu="$menu$label\n"
@@ -2881,7 +2886,7 @@ Graphic_Select_1
     [ "$default" ] && menu_size=$((menu_size + 1))
     [ "$p2" ]      && menu_size=$((menu_size + 1))
 
-    show_graphic_menu "$menu" "$default"
+    show_graphic_list "$list" "$default"
     [ "$default" ] && printf "$m_co%s$nc_co\n" "$quest_co$def_prompt$nc_co"
     [ "$p2" ]      && quest "$p2\n"
 
@@ -2917,7 +2922,7 @@ Graphic_Select_1
         esac
 
         printf "\e[${menu_size}A\r"
-        show_graphic_menu "$menu" "$default"
+        show_graphic_list "$list" "$default"
         [ "$default" ] && printf "$m_co%s$nc_co\n" "$quest_co$def_prompt$nc_co"
         [ "$p2" ]      && quest "$p2\n"
     done
@@ -2929,13 +2934,13 @@ Graphic_Select_1
 }
 
 _gm_step_default() {
-    local step=$1
+    local step=$1  orig_default=$default
     default=$((default + step))
 
     [ $default -lt 1 ]        && default=1
     [ $default -gt $max_cnt ] && default=$max_cnt
 
-    return
+    #return
     _gm_dont_skip && return
 
     if [ $step -gt 0 ]; then
@@ -2947,6 +2952,7 @@ _gm_step_default() {
             _gm_dont_skip  && return
         done
     fi
+    default=$orig_default
 }
 
 _gm_dont_skip () {
@@ -2969,9 +2975,13 @@ gm_final_quit() {
     printf "\e[1A\r" ; printf "\e[1A\r%40s" ""
 }
 
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
 show_graphic_menu() {
     local menu=$1  default=$2
 
+    local IFS=
     local cnt=0 entry
     while read entry; do
         cnt=$((cnt + 1))
@@ -2979,7 +2989,31 @@ show_graphic_menu() {
         [ $cnt -eq $default ] && rev=$rev_co
         printf "  $nc_co$rev%s$nc_co\n" "$entry"
     done<<Graphic_Menu
-    $(echo -ne "$menu")
+$(echo -ne "$menu")
+Graphic_Menu
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+show_graphic_list() {
+    local list=$1  default=$2
+    local IFS=$P_IFS
+
+    local cnt=0 datum entry
+    while read datum entry; do
+        cnt=$((cnt + 1))
+        if [ -n "$datum" ]; then
+            printf "  $bold_co> $nc_co"
+        else
+            printf "    "
+        fi
+
+        local rev=
+        [ $cnt -eq $default ] && rev=$rev_co
+        printf "$nc_co$rev%s$nc_co\n" "$entry"
+    done<<Graphic_Menu
+$(echo -ne "$list")
 Graphic_Menu
 }
 
