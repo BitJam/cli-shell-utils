@@ -2672,7 +2672,7 @@ copy_with_progress() {
 # Hide cursor and prepare restore_cursor() to work just once
 #------------------------------------------------------------------------------
 hide_cursor() {
-    RESTORE_CURSOR="\e[?25h\n"
+    RESTORE_CURSOR="\e[?25h"
 
     # Disable cursor
     printf "\e[?25l"
