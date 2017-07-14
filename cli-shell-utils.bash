@@ -2871,20 +2871,21 @@ Graphic_Select_2
         def_str=$"selection"
     fi
 
-    # Press <Enter> for the default selection
+    # Press <Enter> ...
     local enter=$"Enter"
-    # Press <Enter> for the default selection
-    local p2 def_prompt=$(printf $"Press <%s> for the default %s" "$(pqq "$enter")" "$def_str")
+    # Press <Enter> to select the highlighted <selection>
+    local p2 def_prompt=$(printf $"Press %s to select the highlighted %s, %s to redraw" \
+        "<$(pqq "$enter")>" "$def_str" "'$(pqq r)'")
 
     local quit=$"quit"
     [ -n "$BACK_TO_MAIN" ] && quit=$BACK_TO_MAIN
-    local quit_str=$(printf $"Use '%s' to %s" "$(pqq q)" "$quit")
 
     if [ "$HAVE_MAN" ]; then
-        local man_str=$(printf $"Use '%s' for help" "$(pqq h)")
-        p2=$(printf "%s, %s" "$man_str" "$quit_str")
+        # Use <h> for help, use <q> to <go back to main menu>
+        p2=$(printf $"Use %s for help, use %s to %s" "'$(pqq h)'" "'$(pqq q)'" "$quit")
     else
-        p2=$quit_str
+        # Use <q> <go back to main menu>
+        p2=$(printf $"Use %s to %s" "$(pqq q)" "$quit")
     fi
 
     hide_cursor
@@ -2897,7 +2898,7 @@ Graphic_Select_2
 
         rpad_str $OUT_WIDTH "$quest_co$title"
         show_graphic_list "$menu" "$default"
-        [ "$default" ] && rpad_str $OUT_WIDTH "$quest_co$def_prompt"
+        [ "$default" ] && rpad_str $OUT_WIDTH "$def_prompt"
         [ "$p2" ]      && rpad_str $OUT_WIDTH "$p2"
 
         printf "%${OUT_WIDTH}s\n" ""
@@ -2921,7 +2922,13 @@ Graphic_Select_2
                           hide_cursor
                       fi;;
 
-                enter) break ;;
+                [rR]) printf "%${OUT_WIDTH}s\n" ""
+                      printf "%${OUT_WIDTH}s\n" ""
+                      printf "%${OUT_WIDTH}s\n" ""
+                      printf "%${OUT_WIDTH}s\r" ""
+                      continue ;;
+
+               enter) break ;;
                 left) _gm_step_default -100  ;;
                right) _gm_step_default +100  ;;
                   up) _gm_step_default   -1  ;;
@@ -2950,7 +2957,7 @@ rpad_str() {
     local len=$(str_len "$msg")
     local pad=$((width - len))
     [ $pad -lt 0 ] && pad=0
-    printf "%s%${pad}s$nc_co\n" "$msg" ""
+    printf "$quest_co%s%${pad}s$nc_co\n" "$msg" ""
 }
 
 #------------------------------------------------------------------------------
@@ -3007,6 +3014,7 @@ gm_final_quit() {
            *) printf "\r%40s" "" ; return ;;
     esac
     restore_cursor
+    echo
     PAUSE=$(echo "$PAUSE" | sed -r "s/(^|,)exit(,|$)/,/")
     exit 0
     printf "\e[1A\r" ; printf "\e[1A\r%${OUT_WIDTH}s" ""
