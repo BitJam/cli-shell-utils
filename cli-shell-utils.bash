@@ -511,6 +511,7 @@ my_select() {
         my_select_num "$@"
     fi
 }
+
 my_select_num() {
     local var=$1  title=$2  list=$3  def_str=$4  default=${5:-1}  orig_ifs=$IFS
     local IFS=$P_IFS
@@ -566,23 +567,23 @@ my_select_2() {
     if [ -n "$def_str" ]; then
         def_str="($(pqq $def_str))"
     else
-        def_str=$"selection"
+        def_str=$"entry"
     fi
 
-    # Press <Enter> for the default selection
+    # Press <Enter> for the default entry
     local enter=$"Enter"
-    # Press <Enter> for the default selection
+    # Press <Enter> for the default entry
     local p2 def_prompt=$(printf $"Press <%s> for the default %s" "$(pqq "$enter")" "$def_str")
 
     local quit=$"quit"
     [ -n "$BACK_TO_MAIN" ] && quit=$BACK_TO_MAIN
-    local quit_str=$(printf $"Use '%s' to %s" "$(pqq q)" "$quit")
 
     if [ "$HAVE_MAN" ]; then
-        local man_str=$(printf $"Use '%s' for help" "$(pqq h)")
-        p2=$(printf "%s, %s" "$man_str" "$quit_str")
+        # Use <h> for help, <q> to <go back to main menu>
+        p2=$(printf $"Use %s for help, %s to %s" "'$(pqq h)'" "'$(pqq q)'" "$quit")
     else
-        p2=$quit_str
+        # Use <q> to <go back to main menu>
+        p2=$(printf $"Use %s to %s" "'$(pqq q)'" "$quit")
     fi
 
     echo
@@ -2868,24 +2869,26 @@ Graphic_Select_2
     if [ -n "$def_str" ]; then
         def_str="($(pqq $def_str))"
     else
-        def_str=$"selection"
+        def_str=$"entry"
     fi
 
     # Press <Enter> ...
     local enter=$"Enter"
-    # Press <Enter> to select the highlighted <selection>
-    local p2 def_prompt=$(printf $"Press %s to select the highlighted %s, %s to redraw" \
-        "<$(pqq "$enter")>" "$def_str" "'$(pqq r)'")
+
+    # Press <Enter> to select the highlighted <entry>
+    local p2 def_prompt=$(printf $"Press %s to select the highlighted %s" \
+        "<$(pqq "$enter")>" "$def_str" )
 
     local quit=$"quit"
     [ -n "$BACK_TO_MAIN" ] && quit=$BACK_TO_MAIN
 
     if [ "$HAVE_MAN" ]; then
-        # Use <h> for help, use <q> to <go back to main menu>
-        p2=$(printf $"Use %s for help, use %s to %s" "'$(pqq h)'" "'$(pqq q)'" "$quit")
+        # Use <h> for help, <r> to redraw, <q> to <go back to main menu>
+        p2=$(printf $"Use %s for help, %s to redraw, %s to %s" \
+            "'$(pqq h)'"   "'$(pqq r)'"   "'$(pqq q)'"  "$quit")
     else
-        # Use <q> <go back to main menu>
-        p2=$(printf $"Use %s to %s" "$(pqq q)" "$quit")
+        # Use <r> to redraw, <q> to <go back to main menu>
+        p2=$(printf $"Use %s to redraw, %s to %s"   "'$(pqq r)'"   "'$(pqq q)'"  "$quit")
     fi
 
     hide_cursor
