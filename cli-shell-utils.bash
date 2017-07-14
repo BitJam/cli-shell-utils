@@ -2912,7 +2912,7 @@ Graphic_Select_2
                           eval $var=quit
                           return
                       else
-                          gm_final_quit
+                          gs_final_quit
                       fi ;;
 
                 [hH]) if [ "$HAVE_MAN" ]; then
@@ -2929,14 +2929,14 @@ Graphic_Select_2
                       continue ;;
 
                enter) break ;;
-                left) _gm_step_default -100  ;;
-               right) _gm_step_default +100  ;;
-                  up) _gm_step_default   -1  ;;
-                down) _gm_step_default   +1  ;;
-             page-up) _gm_step_default   -5  ;;
-           page-down) _gm_step_default   +5  ;;
-                home) _gm_step_default -100  ;;
-                 end) _gm_step_default +100  ;;
+                left) _gs_step_default -100  ;;
+               right) _gs_step_default +100  ;;
+                  up) _gs_step_default   -1  ;;
+                down) _gs_step_default   +1  ;;
+             page-up) _gs_step_default   -5  ;;
+           page-down) _gs_step_default   +5  ;;
+                home) _gs_step_default -100  ;;
+                 end) _gs_step_default +100  ;;
         esac
 
         printf "\e[u"
@@ -2971,7 +2971,7 @@ str_len() {
 #------------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------------
-_gm_step_default() {
+_gs_step_default() {
     local step=$1  orig_default=$default
     default=$((default + step))
 
@@ -2979,15 +2979,15 @@ _gm_step_default() {
     [ $default -gt $max_cnt ] && default=$max_cnt
 
     #return
-    _gm_dont_skip && return
+    _gs_dont_skip && return
 
     if [ $step -gt 0 ]; then
         for default in $(seq $default $max_cnt); do
-            _gm_dont_skip && return
+            _gs_dont_skip && return
         done
     else
         for default in $(seq $default -1 1); do
-            _gm_dont_skip  && return
+            _gs_dont_skip  && return
         done
     fi
     default=$orig_default
@@ -2996,7 +2996,7 @@ _gm_step_default() {
 #------------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------------
-_gm_dont_skip () {
+_gs_dont_skip () {
     case ,$skip, in
         *,$default,*) return 1 ;;
                    *) return 0 ;;
@@ -3006,7 +3006,7 @@ _gm_dont_skip () {
 #------------------------------------------------------------------------------
 #
 #------------------------------------------------------------------------------
-gm_final_quit() {
+gs_final_quit() {
     quest $"Press '%s' again to quit" "$(pqq q)"
     case $(get_key) in
         [qQ]) ;;
