@@ -5,7 +5,8 @@ PACKAGE_NAME="antiX Development"
 BUGS_TO="translation@antixlinux.org"
 
 out_dir="Private/pot/"
-cat_file="cli-shell-utils.pot"
+cat_file="$out_dir/cli-shell-utils.pot"
+str_file="$out_dir/strings"
 
 files="
 ../live-usb-maker/live-usb-maker
@@ -32,7 +33,7 @@ xgettext $xgt_opts \
 
 sed -i "s/charset=CHARSET/charset=UTF-8/" $ofile
 
-egrep "^(msgid|#\.)" $cat_file | sed "s/^msgid //" | sed -r 's/^"|"$//g' > strings
+egrep "^(msgid|#\.)" $cat_file | sed "s/^msgid //" | sed -r 's/^"|"$//g' > $str_file
 
 lines=$(grep ^msgid $cat_file | wc -l)
 words=$(grep ^msgid $cat_file | wc -w)
