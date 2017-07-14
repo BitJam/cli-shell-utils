@@ -2835,24 +2835,32 @@ luks_close() {
 #------------------------------------------------------------------------------
 graphical_select() {
     local var=$1  title=$2  list=$3  def_str=$4  default=${5:-1}  orig_ifs=$IFS
+    local l_margin=4
+
     local IFS=$P_IFS
 
-    local datum label max_cnt  cnt=0 menu data skip
+    local screen_width=$(stty size | cut -d" " -f2)
+    : ${screen_width:=$SCREEN_WIDTH}
+    local max_width=$((screen_width - 2 - l_margin))
+    local OUT_WIDTH=$((screen_width - 2))
+
+    local max_cnt  cnt=0 menu data skip
     while read datum label; do
         cnt=$((cnt + 1))
 
-        if [ ${#datum} -eq 0 ]; then
-            skip=$skip,$cnt
-            label="  $label"
-        else
-            label="> $label"
-        fi
+        # Will will skip over entries that have no data
+        [ ${#datum} -eq 0 ] && skip=$skip,$cnt
 
         data="${data}$cnt:$datum\n"
-        menu="$menu$label\n"
-    done<<Graphic_Select_1
+
+        width=$(str_len "$label")
+        local pad=$((max_width - width))
+        [ $pad -lt 0 ] && pad=0
+        space=$(printf "%${pad}s\\\\n" "")
+        menu="$menu$datum$P_IFS$label$(printf "%${pad}s" "")\n"
+    done<<Graphic_Select_2
 $(echo -e "$list")
-Graphic_Select_1
+Graphic_Select_2
 
     max_cnt=$cnt
     IFS=$orig_ifs
@@ -2879,18 +2887,23 @@ Graphic_Select_1
         p2=$quit_str
     fi
 
-    echo -e "$quest_co$title$nc_co"
     hide_cursor
 
-    local menu_size=$max_cnt
+    local menu_size=$((max_cnt + 1))
     [ "$default" ] && menu_size=$((menu_size + 1))
     [ "$p2" ]      && menu_size=$((menu_size + 1))
 
-    show_graphic_list "$list" "$default"
-    [ "$default" ] && printf "$m_co%s$nc_co\n" "$quest_co$def_prompt$nc_co"
-    [ "$p2" ]      && quest "$p2\n"
-
     while true; do
+
+        rpad_str $OUT_WIDTH "$quest_co$title"
+        show_graphic_list "$menu" "$default"
+        [ "$default" ] && rpad_str $OUT_WIDTH "$quest_co$def_prompt"
+        [ "$p2" ]      && rpad_str $OUT_WIDTH "$p2"
+
+        printf "%${OUT_WIDTH}s\n" ""
+        printf "%${OUT_WIDTH}s\n"   ""
+        printf "\r\e[2A"
+        printf "\e[s"
 
         local key=$(get_key)
         case $key in
@@ -2903,10 +2916,8 @@ Graphic_Select_1
 
                 [hH]) if [ "$HAVE_MAN" ]; then
                           restore_cursor
-                          printf "\e[s"
-                          printf "\e[1A"
+                          printf "\r\e[2A"
                           man "$MAN_PAGE"
-                          printf "\e[u"
                           hide_cursor
                       fi;;
 
@@ -2921,18 +2932,38 @@ Graphic_Select_1
                  end) _gm_step_default +100  ;;
         esac
 
+        printf "\e[u"
         printf "\e[${menu_size}A\r"
-        show_graphic_list "$list" "$default"
-        [ "$default" ] && printf "$m_co%s$nc_co\n" "$quest_co$def_prompt$nc_co"
-        [ "$p2" ]      && quest "$p2\n"
+        continue
     done
 
+    printf "\e[u"
     restore_cursor
-    printf "\e[${max_cnt}B\r"
+    #printf "\e[${max_cnt}B\r"
     local val=$(echo -ne "$data" | sed -n "s/^$default://p")
     eval $var=\$val
 }
 
+rpad_str() {
+    local width=$1  fmt=$2  ; shift 2
+    local msg=$(printf "$fmt" "$@")
+    local len=$(str_len "$msg")
+    local pad=$((width - len))
+    [ $pad -lt 0 ] && pad=0
+    printf "%s%${pad}s$nc_co\n" "$msg" ""
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+str_len() {
+    local msg_nc=$(echo "$*" | sed -r -e 's/\x1B\[[0-9;]+[mK]//g' -e 's/./x/g')
+    echo ${#msg_nc}
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
 _gm_step_default() {
     local step=$1  orig_default=$default
     default=$((default + step))
@@ -2955,6 +2986,9 @@ _gm_step_default() {
     default=$orig_default
 }
 
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
 _gm_dont_skip () {
     case ,$skip, in
         *,$default,*) return 1 ;;
@@ -2962,6 +2996,9 @@ _gm_dont_skip () {
     esac
 }
 
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
 gm_final_quit() {
     quest $"Press '%s' again to quit" "$(pqq q)"
     case $(get_key) in
@@ -2972,25 +3009,7 @@ gm_final_quit() {
     restore_cursor
     PAUSE=$(echo "$PAUSE" | sed -r "s/(^|,)exit(,|$)/,/")
     exit 0
-    printf "\e[1A\r" ; printf "\e[1A\r%40s" ""
-}
-
-#------------------------------------------------------------------------------
-#
-#------------------------------------------------------------------------------
-show_graphic_menu() {
-    local menu=$1  default=$2
-
-    local IFS=
-    local cnt=0 entry
-    while read entry; do
-        cnt=$((cnt + 1))
-        local rev=
-        [ $cnt -eq $default ] && rev=$rev_co
-        printf "  $nc_co$rev%s$nc_co\n" "$entry"
-    done<<Graphic_Menu
-$(echo -ne "$menu")
-Graphic_Menu
+    printf "\e[1A\r" ; printf "\e[1A\r%${OUT_WIDTH}s" ""
 }
 
 #------------------------------------------------------------------------------
