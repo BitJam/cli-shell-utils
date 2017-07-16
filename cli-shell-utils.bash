@@ -2926,8 +2926,8 @@ Graphic_Select_2
         [ "$default" ] && rpad_str $OUT_WIDTH "$def_prompt"
         [ "$p2" ]      && rpad_str $OUT_WIDTH "$p2"
 
-        printf "%${OUT_WIDTH}s\n" ""
-        printf "%${OUT_WIDTH}s\n"   ""
+        printf "%${OUT_WIDTH}s\n"  ""
+        printf "%${OUT_WIDTH}s\n"  ""
         printf "\r\e[2A"
         printf "\e[s"
 
