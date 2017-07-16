@@ -235,7 +235,7 @@ pause() {
 
 
 #------------------------------------------------------------------------------
-#
+# Wait until user presses <Enter>
 #------------------------------------------------------------------------------
 press_enter() {
     local ans enter=$"Enter"
@@ -481,7 +481,8 @@ YES_no_pretend() {
 shout_pretend() { [ "$PRETEND_MODE" ] && Shout $"PRETEND MODE ENABLED" ;}
 
 #------------------------------------------------------------------------------
-#
+# Like printf but prepend with the first argument and the payload separator.
+# This is very handy for creating menu entries.
 #------------------------------------------------------------------------------
 menu_printf() {
     local payload=$1  fmt=$2  ; shift 2
@@ -489,7 +490,7 @@ menu_printf() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Same as above but allow for singular and plural forms
 #------------------------------------------------------------------------------
 menu_printf_plural() {
     local payload=$1  cnt=$2  lab1=$3  lab2=$4
@@ -501,7 +502,8 @@ menu_printf_plural() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Print either the first label or the 2nd depending on if $cnt is 1 or not.
+# Assume there is exactly one "%s" in the labels
 #------------------------------------------------------------------------------
 printf_plural() {
     local cnt=$1 lab1=$2 lab2=$3
@@ -1832,7 +1834,7 @@ warn_z()  { [ ${#1} -gt 0 ] && return;  shift;  warn  "$@" ;}
 warn_0()  { [ $1    -ne 0 ] && return;  shift;  warn  "$@" ;}
 
 #------------------------------------------------------------------------------
-#
+# Used mostly for internal errors when a case statement doesn't have a match
 #------------------------------------------------------------------------------
 internal_error() {
     local where=$1  ;  shift
@@ -2821,7 +2823,10 @@ lib_clean_up() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Unmount a mount point and everything beneath it.  The --recursive option
+# doesn't always work in one go, hence the loop.  The number of iterations
+# may be related to depth of mounts within mounts which is usually a small
+# number.
 #------------------------------------------------------------------------------
 mp_cleanup() {
     local dir  i  busy
@@ -2843,7 +2848,7 @@ mp_cleanup() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Close the LUKS device with the given name.
 #------------------------------------------------------------------------------
 luks_close() {
     local name=$1
