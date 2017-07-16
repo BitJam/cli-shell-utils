@@ -2618,6 +2618,11 @@ x2() { awk "BEGIN{ printf \"%4.2f\n\", $*; }" ; }
 x1() { awk "BEGIN{ printf \"%3.1f\n\", $*; }" ; }
 
 #------------------------------------------------------------------------------
+# Available space in Meg as reported by the df command
+#------------------------------------------------------------------------------
+free_space() { df -Pm "$1" | awk '{size=$4}END{print size}' ;}
+
+#------------------------------------------------------------------------------
 # Copy a directory while sending percentage done to an external program
 # So that program can draw a progress bar.
 #------------------------------------------------------------------------------
@@ -2971,6 +2976,9 @@ Graphic_Select_2
     eval $var=\$val
 }
 
+#------------------------------------------------------------------------------
+# Add spaces to right side of string to make it length $width
+#------------------------------------------------------------------------------
 rpad_str() {
     local width=$1  fmt=$2  ; shift 2
     local msg=$(printf "$fmt" "$@")
@@ -2981,7 +2989,7 @@ rpad_str() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Get the "length" of a string, ignoring my ANSI color escapes
 #------------------------------------------------------------------------------
 str_len() {
     local msg_nc=$(echo "$*" | sed -r -e 's/\x1B\[[0-9;]+[mK]//g' -e 's/./x/g')
@@ -2989,7 +2997,8 @@ str_len() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Move which entry is highlighted up or down.  This gets tricky because we
+# need to skip over entries in the skip list
 #------------------------------------------------------------------------------
 _gs_step_default() {
     local step=$1  orig_default=$default
