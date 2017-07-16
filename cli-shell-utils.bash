@@ -501,6 +501,21 @@ menu_printf_plural() {
 }
 
 #------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+printf_plural() {
+    local cnt=$1 lab1=$2 lab2=$3
+    case $cnt in
+        1) printf "$lab1" "$(nq $cnt)" ;;
+        *) printf "%s$P_IFS$lab2\n" "$payload" "$(nq $cnt)" ;;
+    esac
+
+}
+
+questn_plural() { questn "$(printf_plural "$@")" ; }
+warn_plural()   { warn   "$(printf_plural "$@")" ; }
+msg_plural()    { msg    "$(printf_plural "$@")" ; }
+#------------------------------------------------------------------------------
 # Generate a simple selection menu based on a data:label data structure.
 # The "1)" and so on get added automatically.
 #------------------------------------------------------------------------------
