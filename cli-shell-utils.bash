@@ -2391,10 +2391,12 @@ get_live_dev() {
 
     # Check to see if we are running from an enrypted live-usb
     read_initrd_param CRYPT_UUID >&2
+
     if [ -z "$INITRD_CRYPT_UUID" ]; then
         # if not then just see what is mounted at /live/boot-dev
         live_dev=$(sed -rn "s|^([^ ]+) $LIVE_MP .*|\1|p" /proc/mounts)
         echo ${live_dev##*/}
+        return
     fi
 
     # If so then don't allow it to be the target
