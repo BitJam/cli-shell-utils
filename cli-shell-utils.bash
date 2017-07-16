@@ -2852,40 +2852,58 @@ luks_close() {
     cryptsetup close $name
 }
 
-
 #------------------------------------------------------------------------------
-#
+# This is the new UI for this lib!  Use arrow keys to highlight the entry you
+# want and then press <Enter>.  MUCH MUCH better than the old way IMO.
 #------------------------------------------------------------------------------
 graphical_select() {
-    local var=$1  title=$2  list=$3  def_str=$4  default=${5:-1}  orig_ifs=$IFS
-    local l_margin=4
-
+    local var=$1  title=$2  list=$3  def_str=$4  SELECTED_ENTRY=${5:-1}  orig_ifs=$IFS
+    local l_margin=4  l_pad="  "
     local IFS=$P_IFS
-
+    # Need screen width for writing spaces to blank out lines in case we get
+    # scrolled by the man program
     local screen_width=$(stty size | cut -d" " -f2)
     : ${screen_width:=$SCREEN_WIDTH}
+
+    # Use less horizontal space if there is less room
+    if [ $screen_width -lt 100 ]; then
+        l_margin=2
+        l_pad=""
+    fi
+
+    # First is width used inside of menu, 2nd is width used outside of menu
     local max_width=$((screen_width - 2 - l_margin))
     local OUT_WIDTH=$((screen_width - 2))
 
-    local max_cnt  cnt=0 menu data skip
+    # Prepare the menu to display be appending spaces (or truncating)
+    # make SKIP_ENTRIES list and the data list
+    local cnt=0 menu data SKIP_ENTRIES
     while read datum label; do
         cnt=$((cnt + 1))
 
-        # Will will skip over entries that have no data
-        [ ${#datum} -eq 0 ] && skip=$skip,$cnt
+        # We will skip over entries that have no data
+        [ ${#datum} -eq 0 ] && SKIP_ENTRIES=$SKIP_ENTRIES,$cnt
 
         data="${data}$cnt:$datum\n"
 
         width=$(str_len "$label")
-        local pad=$((max_width - width))
-        [ $pad -lt 0 ] && pad=0
-        space=$(printf "%${pad}s\\\\n" "")
-        menu="$menu$datum$P_IFS$label$(printf "%${pad}s" "")\n"
+        if [ $width -gt $max_width ]; then
+            # strip out color sequences and truncate
+            label=$(echo "$label" | strip_color)
+            menu="$menu$datum$P_IFS${label:0:$max_width}$warn_co|$nc_co\n"
+        else
+            # pad string with spaces
+            local pad=$((max_width - width))
+            [ $pad -lt 0 ] && pad=0
+            space=$(printf "%${pad}s\\\\n" "")
+            menu="$menu$datum$P_IFS$label$(printf "%${pad}s" "")\n"
+        fi
+
     done<<Graphic_Select_2
 $(echo -e "$list")
 Graphic_Select_2
 
-    max_cnt=$cnt
+    local MENU_SIZE=$cnt
     IFS=$orig_ifs
 
     if [ -n "$def_str" ]; then
@@ -2915,43 +2933,37 @@ Graphic_Select_2
 
     hide_cursor
 
-    local menu_size=$((max_cnt + 1))
-    [ "$default" ] && menu_size=$((menu_size + 1))
-    [ "$p2" ]      && menu_size=$((menu_size + 1))
+    # In case we quit back to main menu
+    eval $var=quit
+
+    local retrace_lines=$((MENU_SIZE + 3))
+    [ "$p2" ] && retrace_lines=$((retrace_lines + 1))
 
     while true; do
 
+        printf "%${OUT_WIDTH}s\n"  ""
         rpad_str $OUT_WIDTH "$quest_co$title"
-        show_graphic_list "$menu" "$default"
-        [ "$default" ] && rpad_str $OUT_WIDTH "$def_prompt"
-        [ "$p2" ]      && rpad_str $OUT_WIDTH "$p2"
 
-        printf "%${OUT_WIDTH}s\n"  ""
-        printf "%${OUT_WIDTH}s\n"  ""
-        printf "\r\e[2A"
+        show_graphic_list "$l_pad" "$menu" "$SELECTED_ENTRY"
+
+        rpad_str $OUT_WIDTH "$def_prompt"
+        [ "$p2" ] && rpad_str $OUT_WIDTH "$p2"
+
+        # Clear final line and save position
+        printf "%${OUT_WIDTH}s\r" ""
         printf "\e[s"
 
-        local key=$(get_key)
-        case $key in
-                [qQ]) if [ -n "$BACK_TO_MAIN" ]; then
-                          eval $var=quit
-                          return
-                      else
-                          gs_final_quit
-                      fi ;;
+        case $(get_key) in
+                [qQ]) [ -n "$BACK_TO_MAIN" ] && return
+                      gs_final_quit ;;
 
                 [hH]) if [ "$HAVE_MAN" ]; then
                           restore_cursor
-                          printf "\r\e[2A"
                           man "$MAN_PAGE"
                           hide_cursor
                       fi;;
 
-                [rR]) printf "%${OUT_WIDTH}s\n" ""
-                      printf "%${OUT_WIDTH}s\n" ""
-                      printf "%${OUT_WIDTH}s\n" ""
-                      printf "%${OUT_WIDTH}s\r" ""
-                      continue ;;
+                [rR]) printf "\e[200B\n" ; continue ;;
 
                enter) break ;;
                 left) _gs_step_default -100  ;;
@@ -2965,14 +2977,12 @@ Graphic_Select_2
         esac
 
         printf "\e[u"
-        printf "\e[${menu_size}A\r"
-        continue
+        printf "\e[${retrace_lines}A\r"
     done
 
     printf "\e[u"
     restore_cursor
-    #printf "\e[${max_cnt}B\r"
-    local val=$(echo -ne "$data" | sed -n "s/^$default://p")
+    local val=$(echo -ne "$data" | sed -n "s/^$SELECTED_ENTRY://p")
     eval $var=\$val
 }
 
@@ -3001,47 +3011,50 @@ str_len() {
 # need to skip over entries in the skip list
 #------------------------------------------------------------------------------
 _gs_step_default() {
-    local step=$1  orig_default=$default
-    default=$((default + step))
+    local step=$1  orig_selected=$SELECTED_ENTRY
+    SELECTED_ENTRY=$((SELECTED_ENTRY + step))
 
-    [ $default -lt 1 ]        && default=1
-    [ $default -gt $max_cnt ] && default=$max_cnt
+    [ $SELECTED_ENTRY -lt 1 ]          && SELECTED_ENTRY=1
+    [ $SELECTED_ENTRY -gt $MENU_SIZE ] && SELECTED_ENTRY=$MENU_SIZE
 
     #return
-    _gs_dont_skip && return
+    _gs_must_skip || return
 
     if [ $step -gt 0 ]; then
-        for default in $(seq $default $max_cnt); do
-            _gs_dont_skip && return
+        for SELECTED_ENTRY in $(seq $SELECTED_ENTRY $MENU_SIZE); do
+            _gs_must_skip || return
         done
     else
-        for default in $(seq $default -1 1); do
-            _gs_dont_skip  && return
+        for SELECTED_ENTRY in $(seq $SELECTED_ENTRY -1 1); do
+            _gs_must_skip || return
         done
     fi
-    default=$orig_default
+    SELECTED_ENTRY=$orig_selected
 }
 
 #------------------------------------------------------------------------------
-#
+# Is the selected entry on the skip list?  Used for skipping over entries that
+# have no payloads.
 #------------------------------------------------------------------------------
-_gs_dont_skip () {
-    case ,$skip, in
-        *,$default,*) return 1 ;;
-                   *) return 0 ;;
+_gs_must_skip() {
+    case ,$SKIP_ENTRIES, in
+        *,$SELECTED_ENTRY,*) return 0 ;;
+                          *) return 1 ;;
     esac
 }
 
 #------------------------------------------------------------------------------
-#
+# Verify user really wants to quit.  If so, really exit with no pause.  If not
+# then clean up after ourselves and return.
 #------------------------------------------------------------------------------
 gs_final_quit() {
     quest $"Press '%s' again to quit" "$(pqq q)"
+
     case $(get_key) in
         [qQ]) ;;
-           #*) printf "\e[1A\r%40s" "" ; return ;;
-           *) printf "\r%40s" "" ; return ;;
+           *) printf "\r%${OUT_WIDTH}s" "" ; return ;;
     esac
+
     restore_cursor
     echo
     PAUSE=$(echo "$PAUSE" | sed -r "s/(^|,)exit(,|$)/,/")
@@ -3050,23 +3063,24 @@ gs_final_quit() {
 }
 
 #------------------------------------------------------------------------------
-#
+# List the menu.  Mark valid entries with " >".  Mark the selectect entry with
+# reverse video.
 #------------------------------------------------------------------------------
 show_graphic_list() {
-    local list=$1  default=$2
+    local l_pad=$1  list=$2  selected=$3
     local IFS=$P_IFS
 
     local cnt=0 datum entry
     while read datum entry; do
         cnt=$((cnt + 1))
         if [ -n "$datum" ]; then
-            printf "  $bold_co> $nc_co"
+            printf "$l_pad$bold_co> $nc_co"
         else
-            printf "    "
+            printf "$l_pad  "
         fi
 
         local rev=
-        [ $cnt -eq $default ] && rev=$rev_co
+        [ $cnt -eq $selected ] && rev=$rev_co
         printf "$nc_co$rev%s$nc_co\n" "$entry"
     done<<Graphic_Menu
 $(echo -ne "$list")
@@ -3074,7 +3088,8 @@ Graphic_Menu
 }
 
 #------------------------------------------------------------------------------
-#
+# used in graphical_select().  Get a keypress from stdin without waiting for a
+# newline.  Translate esacpe sequences into reasonable names.
 #------------------------------------------------------------------------------
 get_key() {
     local key k1 k2 k3 k4
