@@ -2938,9 +2938,6 @@ Graphic_Select_2
 
     hide_cursor
 
-    # In case we quit back to main menu
-    eval $var=quit
-
     local retrace_lines=$((MENU_SIZE + 3))
     [ "$p2" ] && retrace_lines=$((retrace_lines + 1))
 
@@ -2950,7 +2947,7 @@ Graphic_Select_2
         printf "%${OUT_WIDTH}s\n"  ""
         rpad_str $OUT_WIDTH "$quest_co$title"
 
-        show_graphic_list "$l_pad" "$menu" "$SELECTED_ENTRY"
+        show_graphic_list "$l_pad" "$menu" "$SELECTED_ENTRY" "$selected"
 
         rpad_str $OUT_WIDTH "$def_prompt"
         [ "$p2" ] && rpad_str $OUT_WIDTH "$p2"
@@ -2959,11 +2956,19 @@ Graphic_Select_2
         printf "%${OUT_WIDTH}s\r" ""
         printf "\e[s"
 
-        [ -n "$end_loop" ] && break
+        case $end_loop in
+             break) break ;;
+            return) return ;;
+        esac
 
         case $(get_key) in
-                [qQ]) [ -n "$BACK_TO_MAIN" ] && return
-                      gs_final_quit ;;
+                [qQ]) if [ -n "$BACK_TO_MAIN" ]; then
+                          end_loop=return
+                          eval $var=quit
+                          SELECTED_ENTRY=0
+                      else
+                          gs_final_quit
+                      fi ;;
 
                 [hH]) if [ "$HAVE_MAN" ]; then
                           restore_cursor
@@ -2975,7 +2980,7 @@ Graphic_Select_2
 
                enter)  selected=$SELECTED_ENTRY
                        SELECTED_ENTRY=0
-                       end_loop=true         ;;
+                       end_loop=break        ;;
 
                 left) _gs_step_default -100  ;;
                right) _gs_step_default +100  ;;
@@ -3078,20 +3083,22 @@ gs_final_quit() {
 # reverse video.
 #------------------------------------------------------------------------------
 show_graphic_list() {
-    local l_pad=$1  list=$2  selected=$3
+    local l_pad=$1  list=$2  selected_entry=$3  selected=${4:-0}
     local IFS=$P_IFS
 
     local cnt=0 datum entry
     while read datum entry; do
         cnt=$((cnt + 1))
-        if [ -n "$datum" ]; then
+        if [ $cnt -eq $selected ]; then
+            printf "$l_pad$m_co= $nc_co"
+        elif [ -n "$datum" ]; then
             printf "$l_pad$bold_co> $nc_co"
         else
             printf "$l_pad  "
         fi
 
         local rev=
-        [ $cnt -eq $selected ] && rev=$rev_co
+        [ $cnt -eq $selected_entry ] && rev=$rev_co
         printf "$nc_co$rev%s$nc_co\n" "$entry"
     done<<Graphic_Menu
 $(echo -ne "$list")
