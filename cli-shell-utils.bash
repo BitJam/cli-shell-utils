@@ -2944,6 +2944,7 @@ Graphic_Select_2
     local retrace_lines=$((MENU_SIZE + 3))
     [ "$p2" ] && retrace_lines=$((retrace_lines + 1))
 
+    local selected  end_loop
     while true; do
 
         printf "%${OUT_WIDTH}s\n"  ""
@@ -2958,6 +2959,8 @@ Graphic_Select_2
         printf "%${OUT_WIDTH}s\r" ""
         printf "\e[s"
 
+        [ -n "$end_loop" ] && break
+
         case $(get_key) in
                 [qQ]) [ -n "$BACK_TO_MAIN" ] && return
                       gs_final_quit ;;
@@ -2970,7 +2973,9 @@ Graphic_Select_2
 
                 [rR]) printf "\e[200B\n" ; continue ;;
 
-               enter) break ;;
+               enter)  selected=$SELECTED_ENTRY
+                       SELECTED_ENTRY=0
+                       end_loop=true         ;;
                 left) _gs_step_default -100  ;;
                right) _gs_step_default +100  ;;
                   up) _gs_step_default   -1  ;;
@@ -2987,7 +2992,7 @@ Graphic_Select_2
 
     printf "\e[u"
     restore_cursor
-    local val=$(echo -ne "$data" | sed -n "s/^$SELECTED_ENTRY://p")
+    local val=$(echo -ne "$data" | sed -n "s/^$selected://p")
     eval $var=\$val
 }
 
