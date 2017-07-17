@@ -2901,7 +2901,7 @@ graphical_select() {
             local pad=$((max_width - width))
             [ $pad -lt 0 ] && pad=0
             space=$(printf "%${pad}s\\\\n" "")
-            menu="$menu$datum$P_IFS$label$(printf "%${pad}s" "")\n"
+            menu="$menu$datum$P_IFS$m_co$label$nc_co$(printf "%${pad}s" "")\n"
         fi
 
     done<<Graphic_Select_2
@@ -2976,6 +2976,7 @@ Graphic_Select_2
                enter)  selected=$SELECTED_ENTRY
                        SELECTED_ENTRY=0
                        end_loop=true         ;;
+
                 left) _gs_step_default -100  ;;
                right) _gs_step_default +100  ;;
                   up) _gs_step_default   -1  ;;
