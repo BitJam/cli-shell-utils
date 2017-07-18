@@ -1310,7 +1310,7 @@ Print
 
     IFS=$orig_ifs
 
-    my_select $var "$title" "$data" "" 2
+    my_select $var "$title" "$data" ""
 }
 
 #------------------------------------------------------------------------------
@@ -2916,6 +2916,11 @@ Graphic_Select_2
     else
         def_str=$"entry"
     fi
+
+    # This fixes the problem where the first entry should be skipped
+    for SELECTED_ENTRY in $(seq $SELECTED_ENTRY $MENU_SIZE); do
+        gs_must_skip || break
+    done
 
     # Press <Enter> ...
     local enter=$"Enter"
