@@ -2982,14 +2982,14 @@ Graphic_Select_2
                        SELECTED_ENTRY=0
                        end_loop=break        ;;
 
-                left) _gs_step_default -100  ;;
-               right) _gs_step_default +100  ;;
-                  up) _gs_step_default   -1  ;;
-                down) _gs_step_default   +1  ;;
-             page-up) _gs_step_default   -5  ;;
-           page-down) _gs_step_default   +5  ;;
-                home) _gs_step_default -100  ;;
-                 end) _gs_step_default +100  ;;
+                left) gs_step_default -100  ;;
+               right) gs_step_default +100  ;;
+                  up) gs_step_default   -1  ;;
+                down) gs_step_default   +1  ;;
+             page-up) gs_step_default   -5  ;;
+           page-down) gs_step_default   +5  ;;
+                home) gs_step_default -100  ;;
+                 end) gs_step_default +100  ;;
         esac
 
         printf "\e[u"
@@ -3026,7 +3026,7 @@ str_len() {
 # Move which entry is highlighted up or down.  This gets tricky because we
 # need to skip over entries in the skip list
 #------------------------------------------------------------------------------
-_gs_step_default() {
+gs_step_default() {
     local step=$1  orig_selected=$SELECTED_ENTRY
     SELECTED_ENTRY=$((SELECTED_ENTRY + step))
 
@@ -3034,15 +3034,15 @@ _gs_step_default() {
     [ $SELECTED_ENTRY -gt $MENU_SIZE ] && SELECTED_ENTRY=$MENU_SIZE
 
     #return
-    _gs_must_skip || return
+    gs_must_skip || return
 
     if [ $step -gt 0 ]; then
         for SELECTED_ENTRY in $(seq $SELECTED_ENTRY $MENU_SIZE); do
-            _gs_must_skip || return
+            gs_must_skip || return
         done
     else
         for SELECTED_ENTRY in $(seq $SELECTED_ENTRY -1 1); do
-            _gs_must_skip || return
+            gs_must_skip || return
         done
     fi
     SELECTED_ENTRY=$orig_selected
@@ -3052,7 +3052,7 @@ _gs_step_default() {
 # Is the selected entry on the skip list?  Used for skipping over entries that
 # have no payloads.
 #------------------------------------------------------------------------------
-_gs_must_skip() {
+gs_must_skip() {
     case ,$SKIP_ENTRIES, in
         *,$SELECTED_ENTRY,*) return 0 ;;
                           *) return 1 ;;
