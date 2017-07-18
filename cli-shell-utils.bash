@@ -1310,7 +1310,7 @@ Print
 
     IFS=$orig_ifs
 
-    my_select $var "$title" "$data"
+    my_select $var "$title" "$data" "" 2
 }
 
 #------------------------------------------------------------------------------
