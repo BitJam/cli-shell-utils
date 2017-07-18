@@ -2939,7 +2939,7 @@ Graphic_Select_2
 
     hide_cursor
 
-    local retrace_lines=$((MENU_SIZE + 3))
+    local retrace_lines=$((MENU_SIZE + 2 + $(echo "$title" | wc -l) ))
     [ "$p2" ] && retrace_lines=$((retrace_lines + 1))
 
     local selected  end_loop
