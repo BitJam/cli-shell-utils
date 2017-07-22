@@ -2866,7 +2866,7 @@ graphical_select() {
     local l_margin=4  l_pad="  "
     local IFS=$P_IFS
     # Need screen width for writing spaces to blank out lines in case we get
-    # scrolled by the man program
+    # scrolled by the man program or something else
     local screen_width=$(stty size | cut -d" " -f2)
     : ${screen_width:=$SCREEN_WIDTH}
 
@@ -2877,12 +2877,15 @@ graphical_select() {
     fi
 
     # First is width used inside of menu, 2nd is width used outside of menu
+    # because the menu is slightly indented
     local max_width=$((screen_width - 2 - l_margin))
     local OUT_WIDTH=$((screen_width - 2))
 
     # Prepare the menu to display be appending spaces (or truncating)
-    # make SKIP_ENTRIES list and the data list
-    local cnt=0 menu data SKIP_ENTRIES
+    # and make SKIP_ENTRIES list and the data list.  The menu drawing
+    # program only uses the data to see if it is empty or not for
+    # display purposes
+    local cnt=0 menu data  SKIP_ENTRIES
     while read datum label; do
         cnt=$((cnt + 1))
 
@@ -2911,6 +2914,7 @@ Graphic_Select_2
     local MENU_SIZE=$cnt
     IFS=$orig_ifs
 
+    # Some callers want to use a work other the "entry"
     if [ -n "$def_str" ]; then
         def_str="($(pqq $def_str))"
     else
@@ -2918,6 +2922,10 @@ Graphic_Select_2
     fi
 
     # This fixes the problem where the first entry should be skipped
+    # When we start we keep skipping forward as needed until we land
+    # on an entry that shouldn't be skipped.  If the caller sets
+    # a default entry then they should make sure it is not skipped
+    # (IOW it has data)
     for SELECTED_ENTRY in $(seq $SELECTED_ENTRY $MENU_SIZE); do
         gs_must_skip || break
     done
@@ -2929,9 +2937,14 @@ Graphic_Select_2
     local p2 def_prompt=$(printf $"Press %s to select the highlighted %s" \
         "<$(pqq "$enter")>" "$def_str" )
 
+    # Sometimes we want to use 'q' to go back to another menu instead of exiting
+    # the program.  We change the printed instructions and we also change the
+    # behavior based on a non-empty BACK_TO_MAIN string
     local quit=$"quit"
     [ -n "$BACK_TO_MAIN" ] && quit=$BACK_TO_MAIN
 
+    # A similar thing is done if we have a man page available.  We change
+    # the instructions and the behavior
     if [ "$HAVE_MAN" ]; then
         # Use <h> for help, <r> to redraw, <q> to <go back to main menu>
         p2=$(printf $"Use %s for help, %s to redraw, %s to %s" \
@@ -2941,36 +2954,52 @@ Graphic_Select_2
         p2=$(printf $"Use %s to redraw, %s to %s"   "'$(pqq r)'"   "'$(pqq q)'"  "$quit")
     fi
 
+    # Okay, here we go into semi-graphical mode
     hide_cursor
 
+    # This counts how many rows we need to jump up in the screen in order
+    # to redraw the menu.
     local retrace_lines=$((MENU_SIZE + 2 + $(echo "$title" | wc -l) ))
     [ "$p2" ] && retrace_lines=$((retrace_lines + 1))
 
+    # We draw/redraw then entire menu each time through this loop
+    # then we wait for a keypress and then do as instructed
     local selected  end_loop
     while true; do
 
         printf "%${OUT_WIDTH}s\n"  ""
+        # FIXME: this is broken for multi-line titles
         rpad_str $OUT_WIDTH "$quest_co$title"
 
-        show_graphic_list "$l_pad" "$menu" "$SELECTED_ENTRY" "$selected"
+        show_graphic_menu "$l_pad" "$menu" "$SELECTED_ENTRY" "$selected"
 
+        # Show instructions under the menu
         rpad_str $OUT_WIDTH "$def_prompt"
         [ "$p2" ] && rpad_str $OUT_WIDTH "$p2"
 
         # Clear final line and save position
+        # Although saving the position does not help us because it seems to
+        # get un-saved when we shell out to the man program.
         printf "%${OUT_WIDTH}s\r" ""
         printf "\e[s"
 
+        # This lets us draw the menu one more time before exiting.  We clear
+        # the previously selected entry (undo reverse video) and if an entry
+        # was selected we change the ">" to an "=" to mark which one was
+        # selected.  If they exit via 'q' then no "=" sign gets added.
         case $end_loop in
              break) break ;;
             return) return ;;
         esac
 
+        # Note that 'q' and <Enter> both have us go through the loop once
+        # more and we leave the loop in the case statement above.  This
+        # lets us redraw the menu a final time.
         case $(get_key) in
                 [qQ]) if [ -n "$BACK_TO_MAIN" ]; then
-                          end_loop=return
                           eval $var=quit
                           SELECTED_ENTRY=0
+                          end_loop=return
                       else
                           gs_final_quit
                       fi ;;
@@ -2981,11 +3010,12 @@ Graphic_Select_2
                           hide_cursor
                       fi;;
 
+                # This is pretty useless.  We just go further up the page
                 [rR]) printf "\e[200B\n" ; continue ;;
 
                enter)  selected=$SELECTED_ENTRY
                        SELECTED_ENTRY=0
-                       end_loop=break        ;;
+                       end_loop=break       ;;
 
                 left) gs_step_default -100  ;;
                right) gs_step_default +100  ;;
@@ -2997,18 +3027,24 @@ Graphic_Select_2
                  end) gs_step_default +100  ;;
         esac
 
+        # Restore cursor position (haha) and the jump up retrace_lines to draw
+        # the menu again
         printf "\e[u"
         printf "\e[${retrace_lines}A\r"
     done
 
+    # We go back to the blank line at the bottom of the menu
     printf "\e[u"
     restore_cursor
+
     local val=$(echo -ne "$data" | sed -n "s/^$selected://p")
     eval $var=\$val
 }
 
 #------------------------------------------------------------------------------
-# Add spaces to right side of string to make it length $width
+# Add spaces to right side of string to make it length $width.  Printf fails
+# for a couple of reasons, otherwise we'd use it.  This routine ignores ANSI
+# color escape sequences.
 #------------------------------------------------------------------------------
 rpad_str() {
     local width=$1  fmt=$2  ; shift 2
@@ -3066,7 +3102,8 @@ gs_must_skip() {
 
 #------------------------------------------------------------------------------
 # Verify user really wants to quit.  If so, really exit with no pause.  If not
-# then clean up after ourselves and return.
+# then clean up after ourselves and return.  This is very similar to the
+# final_quit() routine in the old UI.
 #------------------------------------------------------------------------------
 gs_final_quit() {
     quest $"Press '%s' again to quit" "$(pqq q)"
@@ -3084,10 +3121,11 @@ gs_final_quit() {
 }
 
 #------------------------------------------------------------------------------
-# List the menu.  Mark valid entries with " >".  Mark the selectect entry with
-# reverse video.
+# List the menu.  Mark valid entries with " >".  Mark the selected entry with
+# reverse video.  If "selected" is given then we use "=" instead of ">".  this
+# is to make which entry was selected when we show the menu for the last time.
 #------------------------------------------------------------------------------
-show_graphic_list() {
+show_graphic_menu() {
     local l_pad=$1  list=$2  selected_entry=$3  selected=${4:-0}
     local IFS=$P_IFS
 
@@ -3112,7 +3150,8 @@ Graphic_Menu
 
 #------------------------------------------------------------------------------
 # used in graphical_select().  Get a keypress from stdin without waiting for a
-# newline.  Translate esacpe sequences into reasonable names.
+# newline.  Translate escape sequences into reasonable names.  This works in
+# Bash but not in busybox shells.
 #------------------------------------------------------------------------------
 get_key() {
     local key k1 k2 k3 k4
@@ -3161,7 +3200,7 @@ get_key() {
         $'\x1b')                 key=escape       ;;
         $'\x20')                 key=space        ;;
     esac
-    printf "$key"
+    echo "$key"
 }
 
 #==============================================================================
