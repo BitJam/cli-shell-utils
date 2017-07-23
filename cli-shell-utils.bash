@@ -18,7 +18,8 @@
 #   eval_argument(arg, [val]) routine,  do whatever you want with $arg and $val
 #==============================================================================
 
-LIB_VERSION="1.00.01"
+LIB_NAME="cli-shell-utils"
+LIB_VERSION="2.00.01"
 LIB_DATE="Sat Jul 22 20:38:45 MDT 2017"
 
 : ${ME:=${0##*/}}
@@ -2203,6 +2204,16 @@ read_reset_config_file() {
     else
         test -r "$file" && . "$file"
     fi
+}
+
+#------------------------------------------------------------------------------
+# Show version information and then exit
+#------------------------------------------------------------------------------
+show_version() {
+    local fmt="%20s version %s (%s)\n"
+    printf "$fmt" "$ME"        "$VERSION"      "$VERSION_DATE"
+    printf "$fmt" "$LIB_NAME"  "$LIB_VERSION"  "$LIB_DATE"
+    exit 0
 }
 
 #==============================================================================
