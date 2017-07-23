@@ -2881,6 +2881,7 @@ graphical_select() {
     local var=$1  title=$2  list=$3  def_str=$4  SELECTED_ENTRY=${5:-1}  orig_ifs=$IFS
     local l_margin=4  l_pad="  "
     local IFS=$P_IFS
+
     # Need screen width for writing spaces to blank out lines in case we get
     # scrolled by the man program or something else
     local screen_width=$(stty size | cut -d" " -f2)
@@ -2908,6 +2909,7 @@ graphical_select() {
         # We will skip over entries that have no data
         [ ${#datum} -eq 0 ] && SKIP_ENTRIES=$SKIP_ENTRIES,$cnt
 
+        # We will eventually grep/sed this to get the data payload
         data="${data}$cnt:$datum\n"
 
         width=$(str_len "$label")
@@ -2930,18 +2932,17 @@ Graphic_Select_2
     local MENU_SIZE=$cnt
     IFS=$orig_ifs
 
-    # Some callers want to use a work other the "entry"
+    # Some callers may want to use a word other the "entry"
     if [ -n "$def_str" ]; then
         def_str="($(pqq $def_str))"
     else
         def_str=$"entry"
     fi
 
-    # This fixes the problem where the first entry should be skipped
-    # When we start we keep skipping forward as needed until we land
-    # on an entry that shouldn't be skipped.  If the caller sets
-    # a default entry then they should make sure it is not skipped
-    # (IOW it has data)
+    # This fixes the problem where the first entry should be skipped.  When we
+    # start we keep skipping forward as needed until we land on an entry that
+    # shouldn't be skipped.  If the caller sets a default entry then they
+    # should make sure it is not skipped (IOW it has data).
     for SELECTED_ENTRY in $(seq $SELECTED_ENTRY $MENU_SIZE); do
         gs_must_skip || break
     done
@@ -2978,8 +2979,8 @@ Graphic_Select_2
     local retrace_lines=$((MENU_SIZE + 2 + $(echo "$title" | wc -l) ))
     [ "$p2" ] && retrace_lines=$((retrace_lines + 1))
 
-    # We draw/redraw then entire menu each time through this loop
-    # then we wait for a keypress and then do as instructed
+    # We draw/redraw then entire menu each time through this loop.
+    # Inside, we wait for a keypress and then do as instructed.
     local selected  end_loop
     while true; do
 
@@ -3102,6 +3103,9 @@ gs_step_default() {
             gs_must_skip || return
         done
     fi
+
+    # If there are no valid entries in the direction we were asked to move then
+    # we don't move.
     SELECTED_ENTRY=$orig_selected
 }
 
@@ -3139,7 +3143,8 @@ gs_final_quit() {
 #------------------------------------------------------------------------------
 # List the menu.  Mark valid entries with " >".  Mark the selected entry with
 # reverse video.  If "selected" is given then we use "=" instead of ">".  this
-# is to make which entry was selected when we show the menu for the last time.
+# is to make visible which entry was selected when we show the menu for the
+# last time.
 #------------------------------------------------------------------------------
 show_graphic_menu() {
     local l_pad=$1  list=$2  selected_entry=$3  selected=${4:-0}
