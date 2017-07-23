@@ -18,6 +18,9 @@
 #   eval_argument(arg, [val]) routine,  do whatever you want with $arg and $val
 #==============================================================================
 
+LIB_VERSION="1.00.01"
+LIB_DATE="Sat Jul 22 20:38:45 MDT 2017"
+
 : ${ME:=${0##*/}}
 : ${MY_DIR:=$(dirname "$(readlink -f $0)")}
 : ${MY_LIB_DIR:=$(readlink -f "$MY_DIR/../cli-shell-utils")}
