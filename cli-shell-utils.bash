@@ -477,7 +477,6 @@ YES_no_pretend() {
 #------------------------------------------------------------------------------
 # Announce to the world we are in pretend mode
 #------------------------------------------------------------------------------
-
 shout_pretend() { [ "$PRETEND_MODE" ] && Shout $"PRETEND MODE ENABLED" ;}
 
 #------------------------------------------------------------------------------
@@ -528,6 +527,10 @@ my_select() {
     fi
 }
 
+#------------------------------------------------------------------------------
+# This is the original my_select() routine, a front-end to my_select_2()
+# This has been superseded by graphical_select().
+#------------------------------------------------------------------------------
 my_select_num() {
     local var=$1  title=$2  list=$3  def_str=$4  default=${5:-1}  orig_ifs=$IFS
     local IFS=$P_IFS
@@ -1235,7 +1238,6 @@ Get_Field_Width
 #
 # count_lines         Count lines in a variable, number of kernels in a list
 #------------------------------------------------------------------------------
-
 get_all_kernel() {
     local  var=$1 temp ; shift
     temp=$($VM_VERSION_PROG -nsr --delimit="$K_IFS" "$@") \
