@@ -3183,43 +3183,51 @@ get_key() {
     read -s -N1 -t 0.001 k4 2>/dev/null
     key=$k1$k2$k3$k4
 
+    # NOTE: $'...' is for ANSCI-C quoting inside of Bash for example
+    # try running: echo $'abc\nxyz'
     case $key in
-        $'\x1b\x4f\x50\x00')     key=f1           ;;
-        $'\x1b\x4f\x51\x00')     key=f2           ;;
-        $'\x1b\x4f\x52\x00')     key=f3           ;;
-        $'\x1b\x4f\x53\x00')     key=f4           ;;
+        $'\eOP\x00')  key=f1           ;;
+        $'\eOQ\x00')  key=f2           ;;
+        $'\eOR\x00')  key=f3           ;;
+        $'\eOS\x00')  key=f4           ;;
 
-        $'\x1b\x5b\x5b\x41')     key=f1           ;;
-        $'\x1b\x5b\x5b\x42')     key=f2           ;;
-        $'\x1b\x5b\x5b\x43')     key=f3           ;;
-        $'\x1b\x5b\x5b\x44')     key=f4           ;;
-        $'\x1b\x5b\x5b\x45')     key=f5           ;;
+        $'\e[[A')     key=f1           ;;
+        $'\e[[B')     key=f2           ;;
+        $'\e[[C')     key=f3           ;;
+        $'\e[[D')     key=f4           ;;
+        $'\e[[E')     key=f5           ;;
 
-        $'\x1b\x5b\x31\x35\x7e') key=f5           ;;
-        $'\x1b\x5b\x31\x37\x7e') key=f6           ;;
-        $'\x1b\x5b\x31\x38\x7e') key=f7           ;;
-        $'\x1b\x5b\x31\x39\x7e') key=f8           ;;
-        $'\x1b\x5b\x32\x30\x7e') key=f9           ;;
-        $'\x1b\x5b\x32\x31\x7e') key=f10          ;;
-        $'\x1b\x5b\x32\x33\x7e') key=f11          ;;
-        $'\x1b\x5b\x32\x34\x7e') key=f12          ;;
-        $'\x1b\x5b\x32\x7e')     key=insert       ;;
-        $'\x1b\x5b\x33\x7e')     key=delete       ;;
-        $'\x1b\x5b\x31\x7e')     key=home         ;;
-        $'\x1b\x5b\x34\x7e')     key=end          ;;
-        $'\x1b\x5b\x35\x7e')     key=page-up      ;;
-        $'\x1b\x5b\x36\x7e')     key=page-down    ;;
-        $'\x1b\x5b\x41')         key=up           ;;
-        $'\x1b\x5b\x42')         key=down         ;;
-        $'\x1b\x5b\x43')         key=right        ;;
-        $'\x1b\x5b\x44')         key=left         ;;
+        $'\e[11~')    key=f1           ;;
+        $'\e[12~')    key=f2           ;;
+        $'\e[13~')    key=f3           ;;
+        $'\e[14~')    key=f4           ;;
+        $'\e[15~')    key=f5           ;;
+        $'\e[17~')    key=f6           ;;
+        $'\e[18~')    key=f7           ;;
+        $'\e[19~')    key=f8           ;;
+        $'\e[20~')    key=f9           ;;
+        $'\e[21~')    key=f10          ;;
+        $'\e[23~')    key=f11          ;;
+        $'\e[24~')    key=f12          ;;
+        $'\e[2~')     key=insert       ;;
+        $'\e[3~')     key=delete       ;;
+        $'\e[5~')     key=page-up      ;;
+        $'\e[6~')     key=page-down    ;;
+        $'\e[7~')     key=home         ;;
+        $'\e[8~')     key=end          ;;
+        $'\e[1~')     key=home         ;;
+        $'\e[4~')     key=end          ;;
+        $'\e[A')      key=up           ;;
+        $'\e[B')      key=down         ;;
+        $'\e[C')      key=right        ;;
+        $'\e[D')      key=left         ;;
 
-        $'\x7f')                 key=backspace    ;;
-        $'\x08')                 key=backspace    ;;
-        $'\x09')                 key=tab          ;;
-        $'\x0a')                 key=enter        ;;
-        $'\x1b')                 key=escape       ;;
-        $'\x20')                 key=space        ;;
+        $'\x7f')      key=backspace    ;;
+        $'\x08')      key=backspace    ;;
+        $'\x09')      key=tab          ;;
+        $'\x0a')      key=enter        ;;
+        $'\e')        key=escape       ;;
+        $'\x20')      key=space        ;;
     esac
     echo "$key"
 }
