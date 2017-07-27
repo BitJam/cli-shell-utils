@@ -3013,7 +3013,7 @@ Graphic_Select_2
         # more and we leave the loop in the case statement above.  This
         # lets us redraw the menu a final time.
         case $(get_key) in
-                [qQ]) if [ -n "$BACK_TO_MAIN" ]; then
+            [qQ]|escape) if [ -n "$BACK_TO_MAIN" ]; then
                           eval $var=quit
                           SELECTED_ENTRY=0
                           end_loop=return
@@ -3034,8 +3034,8 @@ Graphic_Select_2
                        SELECTED_ENTRY=0
                        end_loop=break       ;;
 
-                left) gs_step_default -100  ;;
-               right) gs_step_default +100  ;;
+                left) gs_step_default   -3  ;;
+               right) gs_step_default   +3  ;;
                   up) gs_step_default   -1  ;;
                 down) gs_step_default   +1  ;;
              page-up) gs_step_default   -5  ;;
@@ -3129,8 +3129,8 @@ gs_final_quit() {
     quest $"Press '%s' again to quit" "$(pqq q)"
 
     case $(get_key) in
-        [qQ]) ;;
-           *) printf "\r%${OUT_WIDTH}s" "" ; return ;;
+        [qQ]|escape) ;;
+                  *) printf "\r%${OUT_WIDTH}s" "" ; return ;;
     esac
 
     restore_cursor
