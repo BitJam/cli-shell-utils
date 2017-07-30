@@ -24,7 +24,7 @@ into the /bin and /lib directories of the initrd.
 Options:
     -C --clean         Remove existing libraries and programs
     -c --create        Create the --to directory if it doesn't exist
-    -e --encrypt       Add cryptsetup and demsetup to built-in list of programs 
+    -e --encrypt       Add cryptsetup to built-in list of programs
     -f --from=<dir>    get libs and programs from under <dir>
     -F --force         Skip missing programs
     -h --help          Show this usage
@@ -87,8 +87,8 @@ main() {
 
     local SHIFT SHORT_STACK="cCefFhnpqtv"
 
-    local sudo
-    [ "$UID" = 1 ] || sudo=sudo
+    local SUDO
+    [ "$UID" = 1 ] || SUDO=sudo
 
     read_params "$@"
     shift $SHIFT
@@ -110,7 +110,7 @@ main() {
     : ${TO_DIR:=.}
 
 
-    [ "$CREATE" ] && my_mkdir "$TO_DIR"
+    [ "$CREATE" ] && mkdir -p "$TO_DIR"
     test -e "$TO_DIR" || fatal "The --to directory %s does not exist.  Use --create to have it created" "$TO_DIR"
 
     local bin_dir=$TO_DIR/$BIN_SUBDIR  lib_dir=$TO_DIR/$LIB_SUBDIR
@@ -159,8 +159,8 @@ main() {
 
         local raw_libs
         if [ -n "$FROM_DIR" ]; then
-            local linux_arg=$(get_linux_arg "$from_prog")
-            raw_libs=$($sudo $linux_arg chroot "$FROM_DIR" /usr/bin/ldd $abs_prog)
+            local LINUX_ARG=$(get_linux_arg "$from_prog")
+            raw_libs=$($SUDO $LINUX_ARG chroot "$FROM_DIR" /usr/bin/ldd $abs_prog)
         else
             raw_libs=$(ldd $abs_prog)
         fi
@@ -195,37 +195,35 @@ main() {
 }
 
 #------------------------------------------------------------------------------
-# Copy a symlink and what it points to into dest_dir.  This code seems way too
+# Copy a symlink and what it points to into dest_dir.  This code seems too
 # complicated for what it does.
 #------------------------------------------------------------------------------
 copy_symlink() {
-    local from_dir=$1  symlink=$2  dest_dir=$3 
+    local from_dir=$1  symlink=$2  dest_dir=$3
 
     # This works for relative symlinks and absolute symlinks that are also
     # exist on the host
-    local real_file=$(readlink -f $from_dir$symlink)
+    local real_file=$($SUDO $LINUX_ARG chroot $from_dir readlink -f $symlink)
 
-    # If the above failed, then try to resolve an absolute symlink under the
-    # from_dir.  I'm not sure if this is always kosher.
-    if [ -z "$real_file" ]; then
-        : ${real_file:=$from_dir$(readlink $from_dir$symlink)}
-    fi
-    #echo "symlink:$symlink  real_file:$real_file"
+    # echo -e "    symlink: $symlink\n  real_file: $real_file"
 
     # If it was not really a symlink then just copy and return
     if [ -z "$real_file" -o "$real_file" = "$symlink" ]; then
         local dest_file=$dest_dir/$(basename $symlink)
-        test -e $dest_file || pretend cp "$symlink" $dest_file
+        test -e $dest_file || pretend cp "$from_dir$symlink" "$dest_file" \
+            || fatal "Failed to copy:\n  %s -->\n  %s" "$from_dir$symlink" "$dest_file"
         return
     fi
 
     # Otherwise, copy the file and then make a relative symlink to it
     local dest_file=$dest_dir/$(basename $real_file)
-    test -e $dest_file || pretend cp -a $real_file $dest_file
+    test -e $dest_file || pretend cp -a "$from_dir$real_file" "$dest_file" \
+        || fatal "Failed to copy:\n  %s -->\n  %s" "$from_dir$real_file" "$dest_file"
 
-    local sym_dest=$(basename $real_file)
+    local sym_targ=$(basename $real_file)
     local sym_sorc=$dest_dir/$(basename $symlink)
-    test -e "$sym_sorc" || pretend ln -s $sym_dest $sym_sorc
+    test -e "$sym_sorc" || pretend ln -s $sym_targ $sym_sorc \
+        || fatal "Failed to create symlink at:\n  %s" "$sym_sorc"
 }
 
 #------------------------------------------------------------------------------
@@ -274,7 +272,7 @@ do_clean() {
 }
 
 #------------------------------------------------------------------------------
-# Show dolt values of our environment variables
+# Show default values of our environment variables
 #------------------------------------------------------------------------------
 do_show() {
     printf "%s environment variables\n" "$ME"
