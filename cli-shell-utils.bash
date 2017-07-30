@@ -19,8 +19,8 @@
 #==============================================================================
 
 LIB_NAME="cli-shell-utils"
-LIB_VERSION="2.00.02"
-LIB_DATE="Thu Jul 27 05:16:40 MDT 2017"
+LIB_VERSION="2.00.03"
+LIB_DATE="Sun Jul 30 15:30:46 MDT 2017"
 
 : ${ME:=${0##*/}}
 : ${MY_DIR:=$(dirname "$(readlink -f $0)")}
