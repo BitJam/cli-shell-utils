@@ -3175,7 +3175,7 @@ Graphic_Menu
 # Bash but not in busybox shells.
 #------------------------------------------------------------------------------
 get_key() {
-    local key k1 k2 k3 k4
+    local key k1 k2 k3 k4  REPLY
     read -s -N1
     k1=$REPLY
     read -s -N2 -t 0.001 k2
