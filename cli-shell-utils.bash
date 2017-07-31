@@ -2838,6 +2838,8 @@ lib_clean_up() {
 
     [ "$ORIG_DIRTY_BYTES" ] && sysctl vm.dirty_bytes=$ORIG_DIRTY_BYTES >> $LOG_FILE
     [ "$ORIG_DIRTY_RATIO" ] && sysctl vm.dirty_ratio=$ORIG_DIRTY_RATIO >> $LOG_FILE
+
+    resume_automount
 }
 
 #------------------------------------------------------------------------------
@@ -2873,6 +2875,22 @@ luks_close() {
     [ -z "$name" ] && return
     test -e /dev/mapper/$name || return
     cryptsetup close $name
+}
+
+#------------------------------------------------------------------------------
+# Note: these work on antiX-17 but are not universal
+#------------------------------------------------------------------------------
+suspend_automount() {
+    pkill -STOP udevil
+    pkill -STOP devmon
+}
+
+#------------------------------------------------------------------------------
+# Note: these work on antiX-17 but are not universal
+#------------------------------------------------------------------------------
+resume_automount() {
+    pkill -CONT devmon
+    pkill -CONT udevil
 }
 
 #------------------------------------------------------------------------------
