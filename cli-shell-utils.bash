@@ -2696,6 +2696,8 @@ copy_with_progress() {
     restore_cursor
     sync ; sync
 
+    echo
+
     sysctl vm.dirty_bytes=$ORIG_DIRTY_BYTES >> $LOG_FILE
     sysctl vm.dirty_ratio=$ORIG_DIRTY_RATIO >> $LOG_FILE
 
