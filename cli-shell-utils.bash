@@ -2656,6 +2656,7 @@ copy_with_progress() {
 
     if [ "$PRETEND_MODE" ]; then
         pretend_progress "$@" 2>/dev/null
+        echo
         restore_cursor
         return 0
     fi
@@ -2739,9 +2740,12 @@ text_progress_bar() {
     # length of ">|100%" plus one = 7
     max_x=$((abs_max_x - 7))
 
-    # Create end-points and save our location on the screen
-    printf "\e[s$green|$nc_co"
-    #printf "\e[u\e[$((max_x + 1))C$green|$nc_co\e[u"
+    local retrace="\e[1000D"
+    local eol="$retrace\e[$((max_x + 1))C"
+
+    # Show end points and 0% before we begin
+    printf "$retrace$quest_co|$nc_co"
+    printf "$eol$quest_co|$nc_co%3s%%" "0"
 
     local input cur_x last_x=0
     while read input; do
@@ -2755,12 +2759,11 @@ text_progress_bar() {
         cur_x=$((max_x * input / $PROGRESS_SCALE))
         [ $cur_x -le $last_x ] && continue
 
+        # Show the percentage first (so we can overwrite vertical bar with arrow tip)
+        printf "$eol$quest_co|$nc_co%3s%%" "$((100 * input / $PROGRESS_SCALE))"
+
         # Draw the bar
-        # Note we always draw entire bar to avoid problems when switching
-        # virtual terminals while the bar is being drawn
-        printf "\e[u\e[0C$m_co%${cur_x}s$bold_co>$nc_co\e[u" | tr ' ' '='
-        # Show the percentage
-        printf "\e[$((max_x + 2))C%3s%%" "$((100 * input / $PROGRESS_SCALE))"
+        printf "$retrace$quest_co|$m_co%${cur_x}s$bold_co>$nc_co" | tr ' ' '='
 
         last_x=$cur_x
         [ $input -ge $PROGRESS_SCALE ] && break
@@ -2803,9 +2806,8 @@ pretend_progress() {
     local step=$((PROGRESS_SCALE/50))
     for i in $(seq 0 $step $PROGRESS_SCALE); do
         echo $i
-        sleep 0.05
+        sleep 0.10
     done | "$@"
-    echo
 }
 
 #------------------------------------------------------------------------------
