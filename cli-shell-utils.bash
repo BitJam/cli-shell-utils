@@ -48,6 +48,7 @@ LIB_DATE="Tue Aug  1 15:34:56 MDT 2017"
 : ${VM_VERSION_PROG:=vmlinuz-version}
 : ${PROGRESS_SCALE:=100}
 : ${INITRD_CONFIG:=/live/config/initrd.out}
+: ${CP_ARGS:=--no-dereference --preserve=mode,links --recursive}
 
 # Make sure these start out empty.  See lib_clean_up()
 unset ORIG_DIRTY_BYTES ORIG_DIRTY_RATIO COPY_PPID COPY_PID
@@ -2652,7 +2653,7 @@ copy_with_progress() {
 
     local pre=" >"
     [ "$PRETEND_MODE" ] && pre="p>"
-    echo $pre cp -a $from/* $to/                     >> $LOG_FILE
+    echo $pre cp $CP_ARGS $from/* $to/               >> $LOG_FILE
 
     if [ "$PRETEND_MODE" ]; then
         pretend_progress "$@" 2>/dev/null
@@ -2670,7 +2671,7 @@ copy_with_progress() {
     ORIG_DIRTY_BYTES=$(sysctl -n vm.dirty_bytes)
     sysctl vm.dirty_bytes=$USB_DIRTY_BYTES >> $LOG_FILE
 
-    (cp -a $from/* $to/ || fatal "$err_msg") &
+    (cp $CP_ARGS $from/* $to/ || fatal "$err_msg") &
     COPY_PPID=$!
     sleep 0.01
     COPY_PID=$(pgrep -P $COPY_PPID)
