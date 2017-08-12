@@ -597,17 +597,20 @@ my_select_2() {
     # Press <Enter> for the default entry
     local enter=$"Enter"
     # Press <Enter> for the default entry
-    local p2 def_prompt=$(printf $"Press <%s> for the default %s" "$(pqq "$enter")" "$def_str")
+    local press_enter=$"Press <%s> for the default %s"
+    local p2 def_prompt=$(printf "$press_enter" "$(pqq "$enter")" "$def_str")
 
     local quit=$"quit"
     [ -n "$BACK_TO_MAIN" ] && quit=$BACK_TO_MAIN
 
     if [ "$HAVE_MAN" ]; then
         # Use <h> for help, <q> to <go back to main menu>
-        p2=$(printf $"Use %s for help, %s to %s" "'$(pqq h)'" "'$(pqq q)'" "$quit")
+        local for_help=$"Use %s for help, %s to %s"
+        p2=$(printf "$for_help" "'$(pqq h)'" "'$(pqq q)'" "$quit")
     else
         # Use <q> to <go back to main menu>
-        p2=$(printf $"Use %s to %s" "'$(pqq q)'" "$quit")
+        local use_x=$"Use %s to %s"
+        p2=$(printf "$use_x" "'$(pqq q)'" "$quit")
     fi
 
     echo
@@ -668,7 +671,8 @@ my_select_2() {
         val=$(echo -e "$data" | sed -n "s/^$input://p")
 
         if [ -z "$val" ]; then
-            err_msg=$(printf $"The number '%s' is out of range" "$(pqe $input)")
+            local out_of_range=$"The number '%s' is out of range"
+            err_msg=$(printf "$out_of_range" "$(pqe $input)")
             continue
         fi
         # FIXME!  is this always right?
@@ -1304,7 +1308,8 @@ Widths
 
     local fmt="$version_co%-${w1}s $date_co%s$nc_co\n"
     local hfmt="$head_co%s %s$nc_co\n"
-    local data="$P_IFS$(printf "$hfmt" "$(rpad $w1 $"Version")" $"Date")\n"
+    local file=$"File"  version=$"Version"  date=$"Date"
+    local data="$P_IFS$(printf "$hfmt" "$(rpad $w1 "$version")" "$date")\n"
 
     local payload
     while read f1 f2 f3; do
@@ -1343,7 +1348,7 @@ Widths
 
     local fmt="$fname_co%-${file_w}s $version_co%-${ver_w}s $date_co%-s$nc_co"
     local hfmt="$head_co%s %s %-s$nc_co\n"
-    local data="$P_IFS$(printf "$hfmt" "$(rpad $"File")" "$(rpad $"Version")" $"Date")\n"
+    local data="$P_IFS$(printf "$hfmt" "$(rpad "$file")" "$(rpad "$version")" "$date")\n"
     local payload
     while read f1 f2 f3; do
         [ ${#f1} -gt 0 ] || continue
@@ -1376,9 +1381,10 @@ show_kernel_2() {
 $(echo "$list")
 Widths
 
+    local file=$"File"  version=$"Version"  date=$"Date"
     local  fmt=" $version_co%-${w1}s $date_co%s$nc_co\n"
     local hfmt=" $head_co%s %s$nc_co\n"
-    printf "$hfmt" "$(rpad $w1 $"Version")" $"Date"
+    printf "$hfmt" "$(rpad $w1 "$version")" "$date"
     while read  f1 f2 f3; do
         [ ${#f1} -gt 0 ] || continue
         printf "$fmt" "$f1" "$f3"
@@ -1412,7 +1418,7 @@ Widths
 
     local fmt=" $fname_co%-${file_w}s $version_co%-${ver_w}s $date_co%-s$nc_co\n"
     local hfmt=" $head_co%s %s %-s$nc_co\n"
-    printf "$hfmt" "$(rpad $file_w $"File")" "$(rpad $ver_w $"Version")" $"Date"
+    printf "$hfmt" "$(rpad $file_w "$file")" "$(rpad $ver_w "$version")" "$date"
     while read f1 f2 f3; do
         [ ${#f1} -gt 0 ] || continue
         printf "$fmt" "$f2" "$f1" "$f3"
@@ -1992,7 +1998,8 @@ msg_elapsed_t() {
     fi
 
     sec=$(printf "%03d" $dt | sed -r 's/(..)$/.\1/')
-    msg "%s took %s seconds" "$(pq $label)" "$(nq $sec)"
+    # <something> took <15> seconds
+    msg $"%s took %s seconds" "$label" "$(nq $sec)"
 }
 
 #------------------------------------------------------------------------------
@@ -2976,8 +2983,8 @@ Graphic_Select_2
     local enter=$"Enter"
 
     # Press <Enter> to select the highlighted <entry>
-    local p2 def_prompt=$(printf $"Press %s to select the highlighted %s" \
-        "<$(pqq "$enter")>" "$def_str" )
+    local press_enter=$"Press %s to select the highlighted %s"
+    local p2 def_prompt=$(printf "$press_enter" "<$(pqq "$enter")>" "$def_str" )
 
     # Sometimes we want to use 'q' to go back to another menu instead of exiting
     # the program.  We change the printed instructions and we also change the
@@ -2989,11 +2996,12 @@ Graphic_Select_2
     # the instructions and the behavior
     if [ "$HAVE_MAN" ]; then
         # Use <h> for help, <r> to redraw, <q> to <go back to main menu>
-        p2=$(printf $"Use %s for help, %s to redraw, %s to %s" \
-            "'$(pqq h)'"   "'$(pqq r)'"   "'$(pqq q)'"  "$quit")
+        local use_help=$"Use %s for help, %s to redraw, %s to %s"
+        p2=$(printf "$use_help" "'$(pqq h)'"   "'$(pqq r)'"   "'$(pqq q)'"  "$quit")
     else
         # Use <r> to redraw, <q> to <go back to main menu>
-        p2=$(printf $"Use %s to redraw, %s to %s"   "'$(pqq r)'"   "'$(pqq q)'"  "$quit")
+        local use_x=$"Use %s to redraw, %s to %s"
+        p2=$(printf "$use_x" "'$(pqq r)'"   "'$(pqq q)'"  "$quit")
     fi
 
     # Okay, here we go into semi-graphical mode
