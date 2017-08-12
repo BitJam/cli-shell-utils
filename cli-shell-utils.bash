@@ -51,7 +51,7 @@ LIB_DATE="Tue Aug  8 12:06:15 MDT 2017"
 : ${CP_ARGS:=--no-dereference --preserve=mode,links --recursive}
 
 # Make sure these start out empty.  See lib_clean_up()
-unset ORIG_DIRTY_BYTES ORIG_DIRTY_RATIO COPY_PPID COPY_PID
+unset ORIG_DIRTY_BYTES ORIG_DIRTY_RATIO COPY_PPID COPY_PID SUSPENDED_AUTOMOUNT
 
 FORCE_UMOUNT=true
 
@@ -2886,12 +2886,14 @@ luks_close() {
 suspend_automount() {
     pkill -STOP udevil
     pkill -STOP devmon
+    SUSPENDED_AUTOMOUNT=true
 }
 
 #------------------------------------------------------------------------------
 # Note: these work on antiX-17 but are not universal
 #------------------------------------------------------------------------------
 resume_automount() {
+    [ "$SUSPENDED_AUTOMOUNT" ] || return
     pkill -CONT devmon
     pkill -CONT udevil
 }
