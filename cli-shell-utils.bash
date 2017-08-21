@@ -2333,7 +2333,7 @@ is_usb_or_removable() {
 #------------------------------------------------------------------------------
 my_mount() {
     local dev=$1  dir=$2 ; shift 2
-    wait_for_file "$dev"
+    cmd wait_for_file "$dev"
     is_mountpoint "$dir"              && fatal "Directory '%s' is already a mountpoint" "$dir"
     always_cmd mkdir -p "$dir"        || fatal "Failed to create directory '%s'" "$dir"
     always_cmd mount "$@" $dev "$dir" || fatal "Could not mount %s at %s" "$dev" "$dir"
