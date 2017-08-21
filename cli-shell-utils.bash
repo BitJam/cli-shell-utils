@@ -2333,10 +2333,29 @@ is_usb_or_removable() {
 #------------------------------------------------------------------------------
 my_mount() {
     local dev=$1  dir=$2 ; shift 2
+    wait_for_file "$dev"
     is_mountpoint "$dir"              && fatal "Directory '%s' is already a mountpoint" "$dir"
     always_cmd mkdir -p "$dir"        || fatal "Failed to create directory '%s'" "$dir"
     always_cmd mount "$@" $dev "$dir" || fatal "Could not mount %s at %s" "$dev" "$dir"
     is_mountpoint "$dir"              || fatal "Failed to mount %s at %s" "$dev" "$dir"
+}
+#------------------------------------------------------------------------------
+# There were some problems early in testing when the nearly partitioned devs
+# seemed to appear and then disappear and then reappear.  This seems to have
+# fixed them.
+#------------------------------------------------------------------------------
+wait_for_file() {
+    local file=$1  name=${2:-Device}  delay=${3:-.05}  total=${4:-40}
+    [ -z "$file" ] && return
+
+    local i  cnt=0  max=3
+    for i in $(seq 1 $total); do
+        sleep $delay
+        test -e $file || cnt=0
+        cnt=$((cnt + 1))
+        test $cnt -ge $max && return 0
+    done
+    fatal "%s does not exist!" "$name $file"
 }
 
 #------------------------------------------------------------------------------
