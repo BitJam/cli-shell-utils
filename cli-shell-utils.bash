@@ -176,7 +176,7 @@ need() {
     need_q "$1" || return 1
     local cmd=$1  xlat=${2:-$1}
     log_it echo &>/dev/null
-    Msg "$(bq "=>") $xlat"
+    Msg "$(bq ">>") $xlat"
     #echo -e "@ $(date +"%Y-%m-%d %H:%M:%S")\n" >> $LOG_FILE
 
     return 0
