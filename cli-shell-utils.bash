@@ -2819,6 +2819,93 @@ percent_progress() {
 }
 
 #------------------------------------------------------------------------------
+# Make a dd live-usb from a file.  Include a progress bar.  Example:
+#
+# dd_like_usb  some.iso  sdd  yad --progress
+#
+# DANGER: this routine will gladly erase data on any drive.  Do your checks
+# first!
+#------------------------------------------------------------------------------
+dd_live_usb() {
+    local file=$1  dev=${2##*/}  ; shift 2
+    test -e "$file" || fatal "Could not find file %s" "$(pqw "$file")"
+    test -r "$file" || fatal "Can not read file %s" "$(pqw "$file")"
+
+    local device=/dev/$dev
+
+    test -b "$device" || fatal "%s is not a block device" "$(pqw "$device")"
+
+    hide_cursor
+    local file_size=$(sector_size "$file")
+    local start_size=$(sectors_written $dev)
+
+    ORIG_DIRTY_RATIO=$(sysctl -n vm.dirty_ratio)
+    ORIG_DIRTY_BYTES=$(sysctl -n vm.dirty_bytes)
+    sysctl vm.dirty_bytes=$USB_DIRTY_BYTES >> $LOG_FILE
+
+    (dd if="$file" of=$device status=none bs=1M || fatal "dd command failed") &
+    COPY_PPID=$!
+    sleep 0.01
+    COPY_PID=$(pgrep -P $COPY_PPID)
+
+    echo "copy pids: $(echo $COPY_PPID $COPY_PID)" >> $LOG_FILE
+
+    local cur_size=$start_size  cur_pct=0  last_pct=0
+
+    while true; do
+        if ! test -d /proc/$COPY_PPID; then
+            echo $PROGRESS_SCALE
+            break
+        fi
+        sleep 0.1
+
+        cur_size=$(sectors_written $dev)
+        cur_pct=$(((cur_size - start_size) * PROGRESS_SCALE / file_size))
+        [ $cur_pct -gt $last_pct ] || continue
+        echo $cur_pct
+        last_pct=$cur_pct
+
+    done | "$@"
+    echo
+
+    local final_size=$(sectors_written $dev)
+    local fmt="%12s %s"
+    #msg "$fmt" "file size" $file_size
+    #msg "$fmt" "xferred"   $((final_size - start_size))
+
+    wait $COPY_PPID
+    restore_cursor
+    sync ; sync
+
+    sysctl vm.dirty_bytes=$ORIG_DIRTY_BYTES >> $LOG_FILE
+    sysctl vm.dirty_ratio=$ORIG_DIRTY_RATIO >> $LOG_FILE
+
+    unset ORIG_DIRTY_BYTES ORIG_DIRTY_RATIO
+
+    # Use ERR_FILE as a semaphore from (...)& process
+    #test -e "$ERR_FILE" && exit 2
+
+    test -d /proc/$COPY_PPID && wait $COPY_PPID
+    unset COPY_PPID COPY_PID
+}
+
+#------------------------------------------------------------------------------
+# Measure a file in 512-byte sectors
+#------------------------------------------------------------------------------
+sector_size() { du -sc --block-size=512 "$@" 2>/dev/null | tail -n1 | cut -f1 ; }
+
+
+#------------------------------------------------------------------------------
+# Get the total number of 512-byte sectors written to a device
+# It is always 512-bytes regardless of physical or logical sectors.
+#------------------------------------------------------------------------------
+sectors_written() {
+    local dev=$1
+    awk '{print $7}' /sys/block/$dev/stat
+}
+
+
+#------------------------------------------------------------------------------
 # Replace "file" with "command".
 #------------------------------------------------------------------------------
 my_type() {
