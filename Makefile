@@ -19,7 +19,7 @@ SCRIPTS_ALL := $(addsuffix -all, $(SCRIPTS))
 
 ALL_DIRS   := $(LIB_DIR) $(BIN_DIR) $(LOCALE_DIR) $(DESK_DIR) $(MAN_DIR)
 
-.PHONY: $(SCRIPTS) help all lib $(SCRIPTS_ALL) debian clean locales
+.PHONY: $(SCRIPTS) dd-live-usb help all lib $(SCRIPTS_ALL) debian clean locales
 
 help:
 	@echo "make help                show this help"
@@ -35,7 +35,7 @@ help:
 	@#echo ""
 	@#echo ""
 
-all: $(SCRIPTS) lib locales
+all: $(SCRIPTS) dd-live-usb lib locales
 
 debian:
 	mkdir -p $(DEB_ROOT)
@@ -50,6 +50,9 @@ lib: | $(LIB_DIR) $(LOCALE_DIR)
 
 locales: | $(LOCALE_DIR)
 	cp -r locale/* $(LOCALE_DIR)
+
+dd-live-usb: | $(BIN_DIR)
+	cp ../live-usb-maker/dd-live-usb $(BIN_DIR)
 
 $(SCRIPTS): | $(BIN_DIR) $(DESK_DIR) $(MAN_DIR)
 	cp ../$@/$@ $(BIN_DIR)
