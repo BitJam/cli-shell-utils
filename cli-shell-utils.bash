@@ -1841,10 +1841,14 @@ fatal() {
 # Convenience routines to throw a fatal error or warning if a variable is
 # zero-length or numerically 0.
 #------------------------------------------------------------------------------
-fatal_z() { [ ${#1} -gt 0 ] && return;  shift;  fatal "$@" ;}
-fatal_0() { [ $1    -ne 0 ] && return;  shift;  fatal "$@" ;}
-warn_z()  { [ ${#1} -gt 0 ] && return;  shift;  warn  "$@" ;}
-warn_0()  { [ $1    -ne 0 ] && return;  shift;  warn  "$@" ;}
+fatal_z()  { [ ${#1} -gt 0 ] && return;  shift;  fatal "$@" ;}
+fatal_0()  { [ $1    -ne 0 ] && return;  shift;  fatal "$@" ;}
+warn_z()   { [ ${#1} -gt 0 ] && return;  shift;  warn  "$@" ;}
+warn_0()   { [ $1    -ne 0 ] && return;  shift;  warn  "$@" ;}
+fatal_nz() { [ ${#1} -eq 0 ] && return;  shift;  fatal "$@" ;}
+fatal_n0() { [ $1    -eq 0 ] && return;  shift;  fatal "$@" ;}
+warn_nz()  { [ ${#1} -eq 0 ] && return;  shift;  warn  "$@" ;}
+warn_n0()  { [ $1    -eq 0 ] && return;  shift;  warn  "$@" ;}
 
 #------------------------------------------------------------------------------
 # Used mostly for internal errors when a case statement doesn't have a match
