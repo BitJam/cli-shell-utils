@@ -10,6 +10,7 @@ str_file="$out_dir/strings"
 
 files="
 ../live-usb-maker/live-usb-maker
+../live-usb-maker/dd-live-usb
 ../live-kernel-updater/live-kernel-updater
 ../cli-shell-utils/cli-shell-utils.bash"
 
