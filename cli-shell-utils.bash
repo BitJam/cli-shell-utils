@@ -177,6 +177,7 @@ need() {
     need_q "$1" || return 1
     local cmd=$1  xlat=${2:-$1}
     log_it echo &>/dev/null
+    set_window_title "$ME: $1"
     Msg "$(bq ">>") $xlat"
     #echo -e "@ $(date +"%Y-%m-%d %H:%M:%S")\n" >> $LOG_FILE
 
@@ -1540,6 +1541,22 @@ $(echo -e "$list")
 Print
 
     IFS=$orig_ifs
+}
+
+#------------------------------------------------------------------------------
+# set the window title bar (if there is one)
+#------------------------------------------------------------------------------
+set_window_title() {
+    local fmt=${1:-$ME} ; shift
+    printf "\e]0;$fmt \a" "$@"
+    SET_WINDOW_TITLE=true
+}
+
+#------------------------------------------------------------------------------
+# clear the window title bar (if there is one)
+#------------------------------------------------------------------------------
+clear_window_title() {
+    [ "%SET_WINDOW_TITLE" ] && printf "\e]0; \a"
 }
 
 #------------------------------------------------------------------------------
@@ -2961,6 +2978,8 @@ lib_clean_up() {
     [ "$ORIG_DIRTY_RATIO" ] && sysctl vm.dirty_ratio=$ORIG_DIRTY_RATIO >> $LOG_FILE
 
     resume_automount
+
+    clear_window_title
 }
 
 #------------------------------------------------------------------------------
