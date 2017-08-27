@@ -93,6 +93,7 @@ read_early_params() {
 # This will read all command line parameters.  Ones that start with "-" are
 # evaluated one at a time by eval_arguments().  All others are evaluated by
 # assign_parameter() which is given a count and a value.
+# The amount you should shift to get remaining parameters is in SHIFT_2.
 #------------------------------------------------------------------------------
 read_all_cmdline_mingled() {
 
