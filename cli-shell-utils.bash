@@ -2538,6 +2538,53 @@ get_distro_name()  {
 }
 
 #------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+this_distro_() {
+    local var=${1:-PRETTY_NAME}  name  file
+    [ -z "$var" ] && return
+
+    for name in antix-release initrd-release lsb-release os-release /etc/*-release; do
+        file=/etc/${name#/etc/}
+        test -r $file || continue
+        grep -q "^\s*$var=" $file  || continue
+        sed -n -e "s/^\s*$var=//p" $file | sed  "s/[\"']//g" | head -n1
+        return
+    done
+    echo "No distro version found"
+}
+
+#------------------------------------------------------------------------------
+# Start logging by appending a simple header
+#------------------------------------------------------------------------------
+start_log() {
+    local file=$1  args=$2
+
+    LOG_FILE=$file
+    # Try to compensate for old calls that don't tell us the log file
+    case $LOG_FILE in
+        /dev/null|*.log)             ;;
+        *) LOG_FILE=/var/log/$ME.log ;;
+    esac
+
+    test -e $LOG_FILE && echo >> $LOG_FILE
+
+    cat <<Start_Log >> $LOG_FILE
+=====================================================================
+$0 $args
+        program: $ME
+        started: $(date)
+        version: $VERSION ($VERSION_DATE)
+         kernel: $(uname -r)
+             OS: $(this_distro_ 'PRETTY_NAME')
+      found lib: $FOUND_LIB
+    lib version: $LIB_VERSION ($LIB_DATE)
+---------------------------------------------------------------------
+
+Start_Log
+}
+
+#------------------------------------------------------------------------------
 # Make a partition label of length less than or equal to $max by combinining
 # the parts with $sep as glue.
 #------------------------------------------------------------------------------
