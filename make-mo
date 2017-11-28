@@ -7,7 +7,7 @@ main() {
     for name in $NAMES; do
         local lc_name=$(echo $name | tr 'A-Z' 'a-z')
         from_dir="../translations/antix-development.$lc_name"
-        echo -n "$name:"
+        printf "%25s:" "$name"
 
         local from_file
         for from_file in $from_dir/*.po; do
