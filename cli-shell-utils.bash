@@ -52,7 +52,9 @@ LIB_DATE="Wed Dec 20 22:39:51 MST 2017"
 
 # Make sure these start out empty.  See lib_clean_up()
 unset ORIG_DIRTY_BYTES ORIG_DIRTY_RATIO COPY_PPID COPY_PID SUSPENDED_AUTOMOUNT
+unset ULTRA_FIT_DETECTED
 
+SANDISK_ULTRA_FIT="SanDisk Ultra Fit"
 FORCE_UMOUNT=true
 
 export TEXTDOMAIN="cli-shell-utils"
@@ -1192,20 +1194,55 @@ cli_drive_menu() {
     local dev_width=$(get_lsblk_field_width name $opts)
 
     local fmt="%s$P_IFS$dev_co%-${dev_width}s$num_co %6s $m_co%s$nc_co\n"
-    local NAME SIZE MODEL VENDOR dev
+    local NAME SIZE MODEL VENDOR dev model
     while read line; do
         [ ${#line} -eq 0 ] && continue
+        unset NAME SIZE MODEL VENDOR model
+
         eval "$line"
         dev=/dev/$NAME
+        model=$(echo $VENDOR $MODEL)
 
-        force usb || is_usb_or_removable "$dev" || continue
+        force usb      || is_usb_or_removable "$dev" || continue
+
         [ "$NAME" = "$exclude"   ] && continue
         [ "$NAME" = "$exclude_2" ] && continue
 
-        printf "$fmt" "$NAME" "$NAME" "$SIZE" "$(echo $VENDOR $MODEL)"
+        # Must do this after all other tests
+        force ultra-fit || ! is_ultra_fit_model "$model"    || continue
+
+        printf "$fmt" "$NAME" "$NAME" "$SIZE" "$model"
     done<<Ls_Blk
 $(lsblk -no name,size,model,vendor --pairs $opts)
 Ls_Blk
+}
+
+#------------------------------------------------------------------------------
+# See if the "vendor model" matches "SanDisk Ultra Fit".  If so we also set
+# a flag
+#------------------------------------------------------------------------------
+is_ultra_fit_model() {
+    local model=$*
+    [ "$model" != "$SANDISK_ULTRA_FIT" ] && return 1
+    touch $WORK_DIR/ultra-fit-detected
+    return 0
+}
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+is_ultra_fit_dev() {
+    local dev=/dev/${1#/dev/}
+    is_ultra_fit_model $(lsblk -no vendor,model $dev)
+    return $?
+}
+
+#------------------------------------------------------------------------------
+# Has an ultra fit device been detected when building the menu?
+#------------------------------------------------------------------------------
+ultra_fit_detected() {
+    test -e $WORK_DIR/ultra-fit-detected
+    return $?
 }
 
 #------------------------------------------------------------------------------
