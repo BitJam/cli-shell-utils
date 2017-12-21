@@ -739,9 +739,7 @@ final_quit() {
     echo
     [ "$input" = 'q' ] || return
 
-    # Don't pause on exit after 'q' 'q'
-    PAUSE=$(echo "$PAUSE" | sed -r "s/(^|,)exit(,|$)/,/")
-    exit 0
+    _final_quit
 }
 
 #------------------------------------------------------------------------------
@@ -3355,9 +3353,19 @@ gs_final_quit() {
 
     restore_cursor
     echo
+    
+    _final_quit
+}
+
+#------------------------------------------------------------------------------
+# Common code for 'q' 'q' quit
+#------------------------------------------------------------------------------
+_final_quit() {
+    echo "User quit" >> $LOG_FILE
+
+    # Don't pause on exit after 'q' 'q'
     PAUSE=$(echo "$PAUSE" | sed -r "s/(^|,)exit(,|$)/,/")
     exit 0
-    printf "\e[1A\r" ; printf "\e[1A\r%${OUT_WIDTH}s" ""
 }
 
 #------------------------------------------------------------------------------
