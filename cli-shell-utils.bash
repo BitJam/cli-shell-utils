@@ -340,6 +340,16 @@ cmd() {
 }
 
 verbose_cmd() { local BE_VERBOSE=true ; cmd "$@" ;}
+
+#------------------------------------------------------------------------------
+# A little convenience routine to run "dd" with no normal output and a fatal
+# error if there is an error. Try to capture the error message in the log
+# file.
+#------------------------------------------------------------------------------
+cmd_dd() {
+    cmd dd status=none "$@" 2>&1 | tee -a $LOG_FILE || fatal "Command 'dd $*' failed"
+}
+
 #==============================================================================
 # BASIC TEXT UI ELEMENTS
 #
