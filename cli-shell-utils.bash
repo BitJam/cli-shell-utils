@@ -3371,7 +3371,7 @@ gs_final_quit() {
 
     restore_cursor
     echo
-    
+
     _final_quit
 }
 
