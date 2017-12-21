@@ -1209,6 +1209,17 @@ Ls_Blk
 }
 
 #------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+device_info() {
+    local dev=/dev/${1#/dev/}
+    local SIZE MODEL VENDOR
+    local line=$(lsblk --pairs --nodeps -no size,vendor,model $dev)
+    eval $line
+    printf "$num_co%s $m_co%s$nc_co" "$SIZE" "$(echo $VENDOR $MODEL)"
+}
+
+#------------------------------------------------------------------------------
 # Offer to check the md5sum if $file.md5 exists.
 #------------------------------------------------------------------------------
 check_md5() {
