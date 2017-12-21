@@ -2781,9 +2781,7 @@ copy_with_progress() {
 
     local cur_size=$base_size  cur_pct=0  last_pct=0
 
-    ORIG_DIRTY_RATIO=$(sysctl -n vm.dirty_ratio)
-    ORIG_DIRTY_BYTES=$(sysctl -n vm.dirty_bytes)
-    sysctl vm.dirty_bytes=$USB_DIRTY_BYTES >> $LOG_FILE
+    set_dirty_bytes
 
     (cp $CP_ARGS $from/* $to/ || fatal "$err_msg") &
     COPY_PPID=$!
@@ -2813,17 +2811,32 @@ copy_with_progress() {
     restore_cursor
     sync ; sync
 
-
-    sysctl vm.dirty_bytes=$ORIG_DIRTY_BYTES >> $LOG_FILE
-    sysctl vm.dirty_ratio=$ORIG_DIRTY_RATIO >> $LOG_FILE
-
-    unset ORIG_DIRTY_BYTES ORIG_DIRTY_RATIO
+    restore_dirty_bytes_and_ratio
 
     # Use ERR_FILE as a semaphore from (...)& process
     test -e "$ERR_FILE" && exit 2
 
     test -d /proc/$COPY_PPID && wait $COPY_PPID
     unset COPY_PPID COPY_PID
+}
+
+#------------------------------------------------------------------------------
+# This makes the transfers a bit faster and makes the progress bars work.
+#------------------------------------------------------------------------------
+set_dirty_bytes() {
+    local bytes=${1:-$USB_DIRTY_BYTES}
+    ORIG_DIRTY_RATIO=$(sysctl -n vm.dirty_ratio)
+    ORIG_DIRTY_BYTES=$(sysctl -n vm.dirty_bytes)
+    sysctl vm.dirty_bytes=$bytes >> $LOG_FILE
+}
+
+#------------------------------------------------------------------------------
+# Restore to the original values
+#------------------------------------------------------------------------------
+restore_dirty_bytes_and_ratio() {
+    [ -n "$ORIG_DIRTY_BYTES" ] && sysctl vm.dirty_bytes=$ORIG_DIRTY_BYTES >> $LOG_FILE
+    [ -n "$ORIG_DIRTY_RATIO" ] && sysctl vm.dirty_ratio=$ORIG_DIRTY_RATIO >> $LOG_FILE
+    unset ORIG_DIRTY_BYTES ORIG_DIRTY_RATIO
 }
 
 #------------------------------------------------------------------------------
@@ -2922,9 +2935,7 @@ dd_live_usb() {
     local file_size=$(sector_size "$file")
     local start_size=$(sectors_written $dev)
 
-    ORIG_DIRTY_RATIO=$(sysctl -n vm.dirty_ratio)
-    ORIG_DIRTY_BYTES=$(sysctl -n vm.dirty_bytes)
-    sysctl vm.dirty_bytes=$USB_DIRTY_BYTES >> $LOG_FILE
+    set_dirty_bytes
 
     (dd if="$file" of=$device status=none bs=1M || fatal "dd command failed") &
     COPY_PPID=$!
@@ -2960,10 +2971,7 @@ dd_live_usb() {
     restore_cursor
     sync ; sync
 
-    sysctl vm.dirty_bytes=$ORIG_DIRTY_BYTES >> $LOG_FILE
-    sysctl vm.dirty_ratio=$ORIG_DIRTY_RATIO >> $LOG_FILE
-
-    unset ORIG_DIRTY_BYTES ORIG_DIRTY_RATIO
+    restore_dirty_bytes_and_ratio
 
     # Use ERR_FILE as a semaphore from (...)& process
     #test -e "$ERR_FILE" && exit 2
@@ -3040,8 +3048,7 @@ lib_clean_up() {
     # Kill off background copy process
     kill_pids $COPY_PPID $COPY_PID
 
-    [ "$ORIG_DIRTY_BYTES" ] && sysctl vm.dirty_bytes=$ORIG_DIRTY_BYTES >> $LOG_FILE
-    [ "$ORIG_DIRTY_RATIO" ] && sysctl vm.dirty_ratio=$ORIG_DIRTY_RATIO >> $LOG_FILE
+    restore_dirty_bytes_and_ratio
 
     resume_automount
 
