@@ -2509,6 +2509,7 @@ its_alive_usb() {
     its_alive || return 1
     local dir=$LIVE_MP
     test -d $dir || return 1
+    is_mountpoint $dir || return 1
     is_writable "$dir"
     return $?
 }
