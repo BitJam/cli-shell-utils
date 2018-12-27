@@ -2398,10 +2398,15 @@ is_usb_or_removable() {
     test -b $dev || return 1
     local drive=$(get_drive $dev)
     local dir=/sys/block/${drive##*/} flag
-    read flag 2>/dev/null < $dir/removable
-    [ "$flag" = 1 ] && return 0
+    #read flag 2>/dev/null < $dir/removable
+    #[ "$flag" = 1 ] && return 0
     local devpath=$(readlink -f $dir/device)
     [ "$devpath" ] || return 1
+#  fehlix  sdmmc patch for pci_sdmmc SDcards
+    [ -z "${devpath##*sdmmc*}" ] &&  return 0
+    read flag 2>/dev/null < $dir/removable
+    [ "$flag" = 1 ] && return 0
+    [ -z "${devpath##*/usb*}"  ] &&  return 0
     echo $devpath | grep -q /usb
     return $?
 }
@@ -2663,8 +2668,8 @@ make_label() {
 get_drive() {
     local drive part=$1
     case $part in
-        mmcblk*) echo ${part%p[0-9]}                       ;;
-              *) drive=${part%[0-9]} ; echo ${drive%[0-9]} ;;
+        *mmcblk*) echo ${part%p[0-9]}                      ;;
+                      *) drive=${part%[0-9]} ; echo ${drive%[0-9]} ;;
     esac
 }
 
