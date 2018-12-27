@@ -1125,7 +1125,9 @@ cli_live_usb_src_menu() {
     if its_alive; then
         live_dev=$(get_live_dev)
         # [A clone is different from a copy, with clone we make a fresh new system]
-        is_mountpoint $LIVE_MP && printf "clone$P_IFS%s (%s)\n" $"Clone this live system" "$(pq $live_dev)"
+        is_mountpoint $LIVE_MP && [ -n "$live_dev" ] && \
+            printf "clone$P_IFS%s (%s)\n" $"Clone this live system" "$(pq $live_dev)"
+
     fi
 
     printf "iso-file$P_IFS%s\n" $"Copy from an ISO file"
