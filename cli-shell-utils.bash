@@ -1124,6 +1124,7 @@ cli_live_usb_src_menu() {
     local live_dev
     if its_alive; then
         live_dev=$(get_live_dev)
+        # Don't display clone option if there is no mounted live media
         # [A clone is different from a copy, with clone we make a fresh new system]
         is_mountpoint $LIVE_MP && [ -n "$live_dev" ] && \
             printf "clone$P_IFS%s (%s)\n" $"Clone this live system" "$(pq $live_dev)"
