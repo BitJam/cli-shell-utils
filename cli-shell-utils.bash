@@ -2613,7 +2613,8 @@ this_distro_() {
         file=/etc/${name#/etc/}
         test -r $file || continue
         grep -q "^\s*$var=" $file  || continue
-        sed -n -e "s/^\s*$var=//p" $file | sed  "s/[\"']//g" | head -n1
+        sed -n -e "s/^\s*$var=//p" $file | sed  "s/[\x22']//g" | head -n1
+
         return
     done
     echo "No distro version found"
