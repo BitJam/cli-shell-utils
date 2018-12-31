@@ -2840,7 +2840,10 @@ copy_with_progress() {
 
     set_dirty_bytes
 
-    (cp $CP_ARGS $from/* $to/ || fatal "$err_msg") &
+    # copy the big file last or the bootloader gets unhappy
+    local files=$(cd $from && ls -Sr $(find . -type f))
+    #(cp $CP_ARGS $from/* $to/ || fatal "$err_msg") &
+    (echo "$files" | cpio -pdm --quiet -D $from $to/ || fatal "$err_msg") &
     COPY_PPID=$!
     sleep 0.01
     COPY_PID=$(pgrep -P $COPY_PPID)
