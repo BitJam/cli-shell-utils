@@ -2479,10 +2479,20 @@ mount_iso_file() {
     test -e "$file" || fatal $"Could not find iso file %s" "$file"
     test -r "$file" || fatal $"Could not read iso file %s" "$file"
 
+    is_mountpoint "$dir" && \
+        fatal "Can't mount %s.  Mountpoint %s is already being used" \
+        "$file" "$dir"
+
+    local prog=fuseiso
+    if which  $prog &>/dev/null; then
+        $prog "$file" "$dir"
+        is_mountpoint "$dir" && return 0
+    fi
+
     local type
     for type in iso9660 udf; do
         mount -t $type -o loop,ro "$file" $dir 2>/dev/null
-        is_mountpoint $dir && return 0
+        is_mountpoint "$dir" && return 0
     done
 
     fatal $"Could not mount iso file %s" "$file"
