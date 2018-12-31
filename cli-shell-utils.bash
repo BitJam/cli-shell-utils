@@ -2485,6 +2485,7 @@ mount_iso_file() {
 
     local prog=fuseiso
     if which  $prog &>/dev/null; then
+        printf "Mount %s with %s\n" "$file" "$prog" >> $LOG_FILE
         $prog "$file" "$dir"
         is_mountpoint "$dir" && return 0
     fi
