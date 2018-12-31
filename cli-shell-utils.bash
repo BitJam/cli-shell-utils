@@ -2745,7 +2745,6 @@ my_mkdir() {
 #------------------------------------------------------------------------------
 du_size() { du -scm "$@" 2>/dev/null | tail -n1 | cut -f1 ; }
 
-
 #------------------------------------------------------------------------------
 # Report the APPARENT size of all the directories and files give in MiB.
 # This includes the space allocated by not used by sparse files.
@@ -2834,8 +2833,8 @@ copy_with_progress() {
         return 0
     fi
 
-    local final_size=$(du_size $from/*)
-    local base_size=$(du_size $to)
+    local final_size=$(du_ap_size $from/*)
+    local base_size=$(du_ap_size $to)
 
     local cur_size=$base_size  cur_pct=0  last_pct=0
 
@@ -2855,7 +2854,7 @@ copy_with_progress() {
         fi
         sleep 0.1
 
-        cur_size=$(du_size $to)
+        cur_size=$(du_ap_size $to)
         cur_pct=$((cur_size * $PROGRESS_SCALE / final_size))
         [ $cur_pct -gt $last_pct ] || continue
         echo $cur_pct
