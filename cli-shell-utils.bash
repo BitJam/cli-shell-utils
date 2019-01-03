@@ -1792,8 +1792,7 @@ lpad() {
 # This is NOT a general purpose routine for removing all ANSI escapes.
 #------------------------------------------------------------------------------
 strip_color() {
-    local e=$(printf "\e")
-    sed -r -e "s/$e\[[0-9;]+[mK]//g"
+    sed -r -e "s/\x1B\[[0-9;]+[mK]//g"
 }
 
 #==============================================================================
@@ -2840,10 +2839,18 @@ copy_with_progress() {
 
     set_dirty_bytes
 
-    # copy the big file last or the bootloader gets unhappy
-    local files=$(cd $from && ls -Sr $(find . -type f))
     #(cp $CP_ARGS $from/* $to/ || fatal "$err_msg") &
-    (echo "$files" | cpio -pdm --quiet -D $from $to/ || fatal "$err_msg") &
+
+    # Copy legacy bootloader files first (though it may not matter)
+    # Using cpio seems to fix problems with fuseiso and legacy boot regardless
+    # of order.
+
+    local files=$(cd $from && find . -type f | grep -v delete_this_file)
+    local regex="/boot/syslinux|vmlinuz|initrd.gz"
+    files="$(echo "$files" | grep -E "$regex")\n$(echo "$files" | grep -Ev "$regex")"
+
+    (cd $from && echo -e "$files" | cpio -pdm --quiet $to/ || fatal "$err_msg") &
+
     COPY_PPID=$!
     sleep 0.01
     COPY_PID=$(pgrep -P $COPY_PPID)
