@@ -2849,12 +2849,11 @@ copy_with_progress() {
 
     #(cp $CP_ARGS $from/* $to/ || fatal "$err_msg") &
 
-    # Copy legacy bootloader files first (though it may not matter)
+    # Copy all bootloader files and vmlinuz first (though it may not matter)
     # Using cpio seems to fix problems with fuseiso and legacy boot regardless
     # of order.
-
     local files=$(cd $from && find . -type f | grep -v delete_this_file)
-    local regex="/boot/syslinux|vmlinuz|initrd.gz"
+    local regex="/boot/|vmlinuz"
     files="$(echo "$files" | grep -E "$regex")\n$(echo "$files" | grep -Ev "$regex")"
 
     (cd $from && echo -e "$files" | cpio -pdm --quiet $to/ || fatal "$err_msg") &
