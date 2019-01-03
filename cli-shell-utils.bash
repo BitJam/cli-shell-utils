@@ -333,7 +333,7 @@ cmd() {
     if [ "$BE_VERBOSE" ]; then
         "$@" 2>&1 | tee -a $LOG_FILE
     else
-        "$@" 2>&1 | tee -a $LOG_FILE &>/dev/null
+        "$@" 2>&1 | strip_ansi | tee -a $LOG_FILE &>/dev/null
     fi
     # Warning: Bashism
     local ret=${PIPESTATUS[0]}
@@ -1793,6 +1793,14 @@ lpad() {
 #------------------------------------------------------------------------------
 strip_color() {
     sed -r -e "s/\x1B\[[0-9;]+[mK]//g"
+}
+
+#------------------------------------------------------------------------------
+# Remove most/all ANSI escape sequences and backspace
+# This cleans out most special chars and sequences from the log file
+#------------------------------------------------------------------------------
+strip_ansi() {
+    sed -r -e "s/\x1B\[[0-9;]+[fhHmlpKABCDj]|\x1B\[[suK]|\x08//g"
 }
 
 #==============================================================================
