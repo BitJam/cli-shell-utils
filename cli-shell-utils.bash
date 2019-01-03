@@ -2989,6 +2989,24 @@ percent_progress() {
 }
 
 #------------------------------------------------------------------------------
+# Defrag the vmlinuz file(s) if able
+# If given do_all flag then defrag the entire directory
+#------------------------------------------------------------------------------
+do_defrag() {
+    iso_dir=$1  do_all=$2  prog=e4defrag  opts="-v"
+    if ! which $prog &>/dev/null; then
+        warn $"Could not find program %s.  Not defragging." $prog
+        return
+    fi
+
+    if [ "$do_all" ]; then
+        cmd $prog $opts $iso_dir/
+    else
+        cmd $prog $opts $iso_dir/$DEF_BOOT_DIR/vmlinuz*
+    fi
+}
+
+#------------------------------------------------------------------------------
 # Make a dd live-usb from a file.  Include a progress bar.  Example:
 #
 # dd_like_usb  some.iso  sdd  yad --progress
