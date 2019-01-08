@@ -3,7 +3,7 @@
 # An integrated collection of utilites for shell scripting.
 # The .bash version uses $"..." for translation and another bashism in cmd().
 #
-# (C) 2016 -- 2018 Paul Banham <antiX@operamail.com>
+# (C) 2016 -- 2019 Paul Banham <antiX@operamail.com>
 # License: GPLv3 or later
 #
 # Note regarding reading command-line arguments and options:
