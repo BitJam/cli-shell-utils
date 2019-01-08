@@ -3304,7 +3304,7 @@ Graphic_Select_2
 
     # This counts how many rows we need to jump up in the screen in order
     # to redraw the menu.
-    local retrace_lines=$((MENU_SIZE + 2 + $(echo "$title" | wc -l) ))
+    local retrace_lines=$((MENU_SIZE + 2 + $(echo -e "$title" | wc -l) ))
     [ "$p2" ] && retrace_lines=$((retrace_lines + 1))
 
     # We draw/redraw then entire menu each time through this loop.
