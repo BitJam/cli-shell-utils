@@ -1,0 +1,251 @@
+#!/bin/sh
+
+ME=${0##*/}
+
+TRY_CMDS="/bin/bash /bin/sh"
+TO_UMOUNT=
+TO_RMDIR=
+
+usage() {
+    cat<<Usage
+Usage: $ME <directory>  [<command> [<args>]]
+Bind Mount /sys /proc and /dev file and under <directory>.  Mount 
+run/ as tmpfs and then chroot into that directory using a command.
+
+If <command> is given we try to find that command under the directory
+and run it in the chroot.  Otherwise we look for /bin/bash and then
+/bin/sh and run the first one that is found.
+
+Options:
+  -h --help           Show this help
+  -p --pretend        Don't actually execute commands
+  -q --quiet          Only print error messages
+  -v --verbose        Show commands that get executed
+
+Usage
+
+    exit 0
+}
+
+#------------------------------------------------------------------------------
+# callback routine for evaluating command line args
+#------------------------------------------------------------------------------
+eval_argument() {
+    local arg=$1 val=$2
+        case $arg in
+              -help|h) usage                           ;;
+           -pretend|p) PRETEND=true                    ;;
+             -quiet|q) QUIET=true                      ;;
+           -verbose|v) VERBOSE=true                    ;;
+                    *) fatal "Unknown parameter -$arg" ;;
+    esac
+}
+
+#------------------------------------------------------------------------------
+# callback routine for saying which cli args take a parameter
+#------------------------------------------------------------------------------
+takes_param() {
+    return 1
+    case $1 in
+        -command|c) return 0 ;;
+    esac
+    return 1
+}
+
+main() {
+    [ $# -eq 0 ] && usage
+    local SHIFT SHORT_STACK="chpv"
+
+    read_params "$@"
+    shift $SHIFT
+    
+    [ $# -eq 0 ] && fatal "Expected a directory name"
+    local dir=$1 ; shift
+
+    test -d "$dir" || fatal "%s is not a directory" "$(wq $dir)"
+ 
+    [ $UID -eq 0 ] || fatal "The %s program must be run as root" "$(wq $ME)"
+
+    local cmd
+    if [ $# -gt 0 ]; then
+        cmd=$1
+        shift
+    fi
+
+    # Figure out which cmd to use
+    if [ -n "$cmd" ] ; then
+        # find absolute path to command
+        if [ -n "${cmd##/*}" ]; then
+            local pdir found
+            for pdir in ${PATH//:/ }; do
+                test -x "$dir$pdir/$cmd" || continue
+                cmd="$pdir/$cmd"
+                found=true
+                break
+            done
+            [ -z "$found" ] && fatal "Could not find command %s under %s" "$(wq $cmd)" "$(wq $dir)"
+        fi
+    else
+        local try_cmd
+        for try_cmd in $TRY_CMDS; do
+            test -x "$dir/$try_cmd" || continue
+            cmd=$try_cmd
+            break
+        done
+        [ -z "$cmd" ] && fatal "Could not find commands: %s" "$(wq $TRY_CMDS)"
+
+    fi 
+
+    local full_cmd="$dir/$cmd"
+    test -e "$full_cmd"  || fatal "Could not find command: %s" "$(wq $full_cmd)"
+    test -x "$full_cmd"  || fatal "%s is not an executable"    "$(wq $full_cmd)"
+
+    trap clean_up EXIT
+
+    local s subdir 
+    for s in sys proc dev run; do
+        subdir="$dir/$s"
+        test -d "$subdir" && continue
+        TO_RMDIR="$TO_RMDIR$subdir\n"
+        cmd mkdir "$subdir" || fatal "Could not make directory %s" "$(wq $subdir)"
+    done
+
+    local targ
+    for s in sys proc dev run; do
+        targ="$dir/$s"
+        is_mountpoint "$targ" && continue
+        TO_UMOUNT="$TO_UMOUNT$targ\n"
+        if [ "$s" = run ]; then
+            cmd mount -t tmpfs -o size=10m,nodev,mode=755 tmpfs "$targ"
+        else
+            cmd mount --bind /$s "$targ"
+        fi
+    done
+
+    qsay "Chrooting to %s with command %s" "$(pq $dir)" "$(pq $cmd)"
+    cmd chroot "$dir" "$cmd" "$@" || fatal "Could not chroot to %s" "$(wq $dir)"
+
+    exit 0
+}
+
+clean_up()  {
+    local targ
+    while read targ; do
+        [ -z "$targ" ] && continue
+        cmd umount "$targ"
+    done<<Umount
+$(echo -e "$TO_UMOUNT")
+Umount
+
+    while read targ; do
+        [ -z "$targ" ] && continue
+        cmd rmdir "$targ"
+    done<<Rmdir
+$(echo -e "$TO_RMIDR")
+Rmdir
+}
+
+cmd() {
+    [ "$VERBOSE$PRETEND" ] && echo "$*"
+    [ "$PRETEND" ] && return 0
+    "$@"
+}
+
+#------------------------------------------------------------------------------
+# The normal mountpoint command can fail on symlinks and in other situations.
+# This is intended to be more robust. (sorry Jerry and Gaer Boy!)
+#------------------------------------------------------------------------------
+is_mountpoint() {
+    local file=$1
+    cut -d" " -f2 /proc/mounts | grep -q "^$(readlink -f $file 2>/dev/null)$"
+    return $?
+}
+
+qsay() {
+    [ "$QUIET" ] && return
+    local fmt=$1
+    shift
+    printf "$m_co$fmt$nc_co\n" "$@"
+}
+
+fatal() {
+    local fmt=$1 ; shift
+    printf "$ME$err_co Error:$warn_co $fmt$nc_co\n" "$@" >&2
+    exit 3
+}
+
+#-------------------------------------------------------------------------------
+# Send "$@".  Expects
+#
+#   SHORT_STACK               variable, list of single chars that stack
+#   fatal(msg)                routine,  fatal("error message")
+#   takes_param(arg)          routine,  true if arg takes a value
+#   eval_argument(arg, [val]) routine,  do whatever you want with $arg and $val
+#
+# Sets "global" variable SHIFT to the number of arguments that have been read.
+#-------------------------------------------------------------------------------
+read_params() {
+    # Most of this code is boiler-plate for parsing cmdline args
+    SHIFT=0
+    # These are the single-char options that can stack
+
+    local arg val
+
+    # Loop through the cmdline args
+    while [ $# -gt 0 -a ${#1} -gt 0 -a -z "${1##-*}" ]; do
+        arg=${1#-}
+        shift
+        SHIFT=$((SHIFT + 1))
+
+        # Expand stacked single-char arguments
+        case $arg in
+            [$SHORT_STACK][$SHORT_STACK]*)
+                if echo "$arg" | grep -q "^[$SHORT_STACK]\+$"; then
+                    local old_cnt=$#
+                    set -- $(echo $arg | sed -r 's/([a-zA-Z])/ -\1 /g') "$@"
+                    SHIFT=$((SHIFT - $# + old_cnt))
+                    continue
+                fi;;
+        esac
+
+        # Deal with all options that take a parameter
+        if takes_param "$arg"; then
+            [ $# -lt 1 ] && fatal "Expected a parameter after: -$arg"
+            val=$1
+            [ -n "$val" -a -z "${val##-*}" ] \
+                && fatal "Suspicious argument after -$arg: $val"
+            SHIFT=$((SHIFT + 1))
+            shift
+        else
+            case $arg in
+                *=*)  val=${arg#*=} ;;
+                  *)  val="???"     ;;
+            esac
+        fi
+
+        eval_argument "$arg" "$val"
+    done
+}
+
+pq()  { echo "$hi_co$*$m_co"      ;}
+wq()  { echo "$m_co$*$warn_co"    ;}
+
+set_colors() {
+   local e=$(printf "\e")
+
+         black="$e[0;30m" ;    blue="$e[0;34m" ;    green="$e[0;32m" ;    cyan="$e[0;36m" ;
+           red="$e[0;31m" ;  purple="$e[0;35m" ;    brown="$e[0;33m" ; lt_gray="$e[0;37m" ;
+       dk_gray="$e[1;30m" ; lt_blue="$e[1;34m" ; lt_green="$e[1;32m" ; lt_cyan="$e[1;36m" ;
+        lt_red="$e[1;31m" ; magenta="$e[1;35m" ;   yellow="$e[1;33m" ;   white="$e[1;37m" ;
+         nc_co="$e[0m"    ;   brown="$e[0;33m" ;
+
+           m_co=$cyan
+          hi_co=$white
+          err_co=$red
+         bold_co=$yellow
+         warn_co=$yellow
+}
+
+set_colors
+
+main "$@"
