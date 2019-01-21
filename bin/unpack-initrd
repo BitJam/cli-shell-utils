@@ -1,14 +1,31 @@
 #!/bin/bash
+#------------------------------------------------------------------------------
+# unpack-initrd
+#
+# Copyright 2016 -- 2019  Paul Banham <antiX@operamail.com>
+#
+# Thanks to fehlix for help with the microcode!
+#
+# See (in Linux source tree):
+#  Documentation/x86/boot.txt
+#  Documentation/x86/microcode.txt
+#------------------------------------------------------------------------------
 
-# See Documentation/x86/boot.txt in Linux source
+     VERSION="2.00"
+VERSION_DATE="Fri Jan 18 22:50:45 MST 2019"
 
 ME=${0##*/}
 
-INITRD_FILE=/live/boot-dev/antiX/initrd.gz
-INITRD_DIR=./initrd
+INITRD_FILE="/live/boot-dev/antiX/initrd.gz"
+INITRD_DIR="./initrd"
 REPACK_ARGS="-o -H newc --owner root:root --quiet"
 UNPACK_ARGS="-idum --quiet"
 
+GZIP_ARGS=""
+
+GZIP_MAGIC="8b1f"
+CPIO_MAGIC="3730"
+MICROCODE_FNAME=".microcode"
 
 usage() {
     local ret=${1:-0}
@@ -16,17 +33,21 @@ usage() {
     cat <<Usage
 Usage:  $ME [options]
 
-Unpack and repack the live initrd.gz for antiX and MX.
+Unpack and repack the live initrd.gz for antiX and MX.  Also
+unpack and repack Debian initramfs files.
 
 Options:
   -c  --clear          Delete directory before unpacking
   -d  --dir=<dir>      Unpack in <dir> instead of $INITRD_DIR
   -f  --from=<file>    Unpack <file> instead of $INITRD_FILE
+  -g  --gzip=<N>       Gzip compression: 1 (fastest) -- 9 (best)
   -h  --help           Show this usage
+  -n  --no-microcode   Do not repack microcode
   -p  --pretend        Show commands without running them
   -r  --repack         Repack the initrd
   -q  --quiet          Don't say anything
-  -v  --verbose        Show commands in addition to running them
+  -V  --verbose        Show commands in addition to running them
+  -v  --version        Show the version then exit
 Usage
 
     exit $ret
@@ -35,16 +56,20 @@ Usage
 eval_argument() {
     local arg=$1 val=$2
         case $arg in
-             -clear|c) CLEAR=true                      ;;
+             -clear|c) DO_CLEAR=true                   ;;
                -dir|d) INITRD_DIR=$val                 ;;
                -dir=*) INITRD_DIR=$val                 ;;
+              -gzip|g) GZIP_COMP=$val                  ;;
+              -gzip=*) GZIP_COMP=$val                  ;;
               -help|h) usage                           ;;
               -from|f) INITRD_FILE=$val                ;;
               -from=*) INITRD_FILE=$val                ;;
+      -no-microcode|n) NO_MICROCODE=true               ;;
            -pretend|p) PRETEND=true                    ;;
             -repack|r) REPACK=true                     ;;
              -quiet|q) QUIET=true                      ;;
-           -verbose|v) VERBOSE=true                    ;;
+           -verbose|V) VERBOSE=true                    ;;
+           -version|v) show_version                    ;;
                     *) fatal "Unknown parameter -$arg" ;;
     esac
 }
@@ -53,12 +78,13 @@ takes_param() {
     case $1 in
         -dir|[d]) return 0 ;;
        -from|[f]) return 0 ;;
+         -gzip|g) return 0 ;;
     esac
     return 1
 }
 
 main() {
-    local SHIFT SHORT_STACK="cdhir"
+    local SHIFT SHORT_STACK="cdghfnprqvV"
 
     #[ $# -eq 0 ] && usage
 
@@ -66,6 +92,14 @@ main() {
     read_params "$@"
     shift $SHIFT
     [ $# -gt 0 ] && fatal "Unexpected arguments: %s" "$*"
+
+    if [ -n "$GZIP_COMP" ]; then
+        case $GZIP_COMP in
+            [0-9]) ;;
+            *) fatal "Gzip compression must be 0 -- 9";;
+        esac
+        GZIP_ARGS="-$GZIP_COMP"
+    fi
 
     if [ "$REPACK" ]; then
         qsay "Repack: %s ---> %s" "$(pq ${INITRD_DIR%/}/)" "$(pq $INITRD_FILE)"
@@ -85,8 +119,9 @@ unpack_initrd() {
     test -r "$file" || fatal "Cannot read file %s" "$file"
 
     if test -d "$dir"; then
-        if ! empty_dir "$dir"; then
-            if [ "$CLEAR" ]; then
+        if ! is_empty_dir "$dir"; then
+            if [ "$DO_CLEAR" ]; then
+                qsay "Clearing %s" "$(pq $dir)"
                 cmd rm -r "$dir"
             else
                 fatal "The target directory %s is not empty" "$dir"
@@ -96,8 +131,49 @@ unpack_initrd() {
         test -e "$dir"  && fatal "%s is not a directory" "$dir"
     fi
 
+    local magic=$(get_magic_num $file)
+
+    case $magic in
+        $GZIP_MAGIC) qsay "Found gzipped archive" ;;
+        $CPIO_MAGIC) qsay "Found ASCII cpio archive" ;;
+                  *) fatal "Unknown file format %s" $magic ;;
+    esac
+
     cmd mkdir -p "$dir" || fatal "Could not make directory %s" "$dir"
 
+    case $magic in
+        $GZIP_MAGIC) simple_unzip "$file" "$dir" ;;
+        $CPIO_MAGIC) microcode_and_unzip "$file" "$dir" ;;
+    esac
+}
+
+microcode_and_unzip() {
+    local file=$1  dir=$2
+    local cpio_blocks=$(cpio -t < $file 7>&1 1>/dev/null 2>&7 | grep -o "^[0-9]\+")
+    [ -z "$cpio_blocks" ] && fatal "Unable to get length of ASCII cpio archive"
+
+    # size checks
+    local total_size=$(stat -c %s "$file")
+    local cpio_size=$((cpio_blocks * 512))
+
+    [ "$cpio_size" -gt "$total_size" ] && warn "The ASCII cpio arcive is incomplete"
+
+    if [ "$cpio_size" -lt "$total_size" ]; then
+        local magic_2=$(get_magic_num "$file" "$cpio_size")
+        if [ "$magic_2" = "$GZIP_MAGIC" ]; then
+            cmd_dd if="$file" bs=512 skip=$cpio_blocks | simple_unzip - "$dir"
+        else
+            warn "Remaining part of file is not a gzipped archive"
+        fi
+    fi
+
+    local mc_file="$dir/$MICROCODE_FNAME"
+    qsay "Microcode ---> %s" "$(pq $mc_file)"
+    cmd_dd if="$file" bs=512 count=$cpio_blocks of="$mc_file"
+}
+
+simple_unzip() {
+    local file=$1  dir=$2
     cmd gunzip -c "$file" | (cd "$dir" && cmd cpio $UNPACK_ARGS) || fatal "Unpack failed"
 }
 
@@ -108,33 +184,62 @@ repack_initrd() {
 
     local targ_dir=$(dirname "$file")
     cmd mkdir -p "$targ_dir"
+    local mc_file="$dir/$MICROCODE_FNAME";
+    if [ -z "$NO_MICROCODE" -a -e "$mc_file" ]; then
+        cmd cp "$mc_file" "$file"
+    else
+        cmd rm -f "$file"
+    fi
 
     (cd "$dir" && cmd find . | grep -v "^\./\." | cmd cpio $REPACK_ARGS) \
-        | gzip -9 | cmd write_file "$file"
+        | cmd gzip $GZIP_ARGS | cmd append_file "$file"
 
     local fname=$(basename $file)
     (cd "$targ_dir" && cmd md5sum "$(basename "$fname")" | cmd write_file "$fname.md5")
 }
 
-empty_dir() {
+#------------------------------------------------------------------------------
+# Display first 2 bytes of a file as hex with an optional offset
+#------------------------------------------------------------------------------
+get_magic_num() {
+    local file=$1 offset=${2:-0}
+    cmd_dd if=$file bs=1 count=2 skip=$offset | hexdump -x | head -n1 |  awk '{print $2}'
+}
+
+is_empty_dir() {
     local dir=$1
     local cnt=$(ls "$dir" | grep -v "^lost+found$" | wc -l)
     [ $cnt -eq 0 ]
     return $?
 }
 
+cmd_dd() {
+    cmd dd status=none "$@"
+}
+
 cmd() {
-    if [ "$PRETEND" ]; then
-        echo "$@" >&2
-        return 0
-    fi
-    [ "$VERBOSE" ] && echo "$@" >&2
+    [ "$PRETEND$VERBOSE" ] && echo "$@" >&6
+    [ "$PRETEND" ] && return 0
     "$@"
 }
 
 write_file() {
     local file=$1
     cat > "$file"
+}
+
+append_file() {
+    local file=$1
+    cat >> "$file"
+}
+
+#------------------------------------------------------------------------------
+# Show version information and then exit
+#------------------------------------------------------------------------------
+show_version() {
+    local fmt="%20s version %s (%s)\n"
+    printf "$fmt" "$ME"        "$VERSION"      "$VERSION_DATE"
+    exit 0
 }
 
 #-------------------------------------------------------------------------------
@@ -203,6 +308,11 @@ fatal() {
     exit 2
 }
 
+warn() {
+    local fmt=$1; shift
+    printf "$ME$warn_co warning:$m_co $fmt\n" "$@" >&2
+}
+
 pq()  { echo "$hi_co$*$m_co"      ;}
 
 set_colors() {
@@ -222,5 +332,5 @@ set_colors() {
 }
 
 set_colors
-main "$@"
+main "$@" 6>&1
 
