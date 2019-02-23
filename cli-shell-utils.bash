@@ -52,7 +52,7 @@ LIB_DATE="Mon Jan  7 20:46:14 MST 2019"
 
 # Make sure these start out empty.  See lib_clean_up()
 unset ORIG_DIRTY_BYTES ORIG_DIRTY_RATIO COPY_PPID COPY_PID SUSPENDED_AUTOMOUNT
-unset ULTRA_FIT_DETECTED
+unset ULTRA_FIT_DETECTED ADD_DMESG_TO_FATAL
 
 SANDISK_ULTRA_FIT="SanDisk Ultra Fit"
 FORCE_UMOUNT=true
@@ -63,6 +63,8 @@ test -d "$domain_dir" && export TEXTDOMAINDIR=$domain_dir
 
  BAR_80="==============================================================================="
 SBAR_80="-------------------------------------------------------------------------------"
+RBAR_80=">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+LBAR_80="<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
 
 #------------------------------------------------------------------------------
 # Sometimes it's useful to process some arguments (-h --help, for example)
@@ -1913,12 +1915,28 @@ fatal() {
         [ -n "$FATAL_QUESTION" ] && echo "Q:$FATAL_QUESTION" >> $ERR_FILE
     fi
 
+    [ "$ADD_DMESG_TO_FATAL" ] && tail_dmesg >> $LOG_FILE
+
     case $(type -t my_exit) in
         function) my_exit ${EXIT_NUM:-100} ;;
     esac
 
     exit ${EXIT_NUM:-100}
 }
+
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+tail_dmesg() {
+    local lines=${1:-20}
+    printf "Last %s lines of the dmesg output:\n" "$lines"
+    printf "%s\n" "$RBAR_80"
+    dmesg | tail -n$lines
+    printf "%s\n" "$LBAR_80"
+}
+
+add_dmesg_to_fatal() { ADD_DMESG_TO_FATAL=true ; }
+no_dmesg_to_fatal() { ADD_DMESG_TO_FATAL=      ; }
 
 #------------------------------------------------------------------------------
 # Convenience routines to throw a fatal error or warning if a variable is
