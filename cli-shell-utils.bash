@@ -2709,8 +2709,8 @@ make_label() {
 get_drive() {
     local drive part=$1
     case $part in
-        *mmcblk*) echo ${part%p[0-9]}                      ;;
-                      *) drive=${part%[0-9]} ; echo ${drive%[0-9]} ;;
+        *mmcblk*) echo ${part%p[0-9]}                       ;;
+               *) drive=${part%[0-9]} ; echo ${drive%[0-9]} ;;
     esac
 }
 
