@@ -2873,7 +2873,7 @@ copy_with_progress() {
     local regex="/boot/|vmlinuz"
     files="$(echo "$files" | grep -E "$regex")\n$(echo "$files" | grep -Ev "$regex")"
 
-    (cd $from && echo -e "$files" | cpio -pdm --quiet $to/ || fatal "$err_msg") &
+    (cd $from && echo -e "$files" | cmd cpio -pdm --quiet $to/ || fatal "$err_msg") &
 
     COPY_PPID=$!
     sleep 0.01
