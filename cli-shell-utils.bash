@@ -2849,7 +2849,6 @@ copy_with_progress() {
 
     local pre=" >"
     [ "$PRETEND_MODE" ] && pre="p>"
-    echo $pre cp $CP_ARGS $from/* $to/               >> $LOG_FILE
 
     if [ "$PRETEND_MODE" ]; then
         pretend_progress "$@" 2>/dev/null
