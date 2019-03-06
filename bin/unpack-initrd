@@ -192,27 +192,26 @@ unpack_initrd() {
 # Assumes an uncompressed cpio archive starts at $offset_blocks + 1.
 #------------------------------------------------------------------------------
 microcode_and_unpack() {
-    local file=$1  dir=$2  offset_blocks=${3:-0}
+    local file=$1  dir=$2  offset_blocks=${3:-0}  depth=${4:-1}
+
+    # Limit recursion in case something goes horribly wrong
+    [ "$depth" -ge "$MAX_PREAMBS" ] && fatal "Exceeded the maximum number of preambles %s" "$(pqw $MAX_PREAMBS)"
 
     local cpio_blocks=$(get_cpio_blocks "$file" $offset_blocks)
-    [ -z "$cpio_blocks" ] && fatal "Unable to get length of ASCII cpio archive"
+    [ -z "$cpio_blocks"    ] && fatal "Unable to get length of cpio archive"
+    [ "$cpio_blocks" = '0' ] && fatal "Stuck at zero length cpio archive"
 
     local preamb_offset=$((offset_blocks + cpio_blocks))
 
     # size checks
     local total_size=$(stat -c %s "$file")
-    local cpio_size=$((cpio_blocks * 512))  human_size
-
-    if [ $cpio_size -le $(( 4 * 1024 * 1024)) ]; then
-        human_size="$((cpio_size / 1024))K"
-    else
-        human_size="$((cpio_size / 1024 / 1024))M"
-    fi
+    local cpio_size=$((cpio_blocks * 512))
+    local human_size=$(get_human_size "$cpio_size")
 
     local preamb_size=$(( (offset_blocks + cpio_blocks) * 512 ))
 
     if [ "$preamb_size" -gt "$total_size" ]; then
-        warn "The ASCII cpio arcive is incomplete"
+        warn "The cpio archive is incomplete"
         return
 
     elif [ "$preamb_size" -eq "$total_size" ]; then
@@ -372,6 +371,20 @@ append_file() {
 need_prog() {
     local prog=$1
     which $prog &>/dev/null || fatal "Could not find program %s" "$prog"
+}
+
+get_human_size() {
+    local n=$1  meg=$((1024 * 1024))
+
+    if [ $n -le $meg ]; then
+        echo "$((n / 1024))K"
+
+    elif [ $n -le $(( 10 * meg)) ]; then
+        echo "$(awk "BEGIN{printf \"%2.1f\", ($n / $meg)}")M"
+
+    else
+        echo "$((n / meg))M"
+    fi
 }
 
 #------------------------------------------------------------------------------
