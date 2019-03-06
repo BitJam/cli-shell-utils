@@ -251,7 +251,7 @@ microcode_and_unpack() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Unpack a compressed cpio archive
 #------------------------------------------------------------------------------
 simple_unpack() {
     local file=$1  dir=$2  prog=$3  args="--stdout --decompress"
@@ -268,7 +268,8 @@ simple_unpack() {
 }
 
 #------------------------------------------------------------------------------
-#
+#  Repack a cpio archive, prepend with .microcode file and use compression in
+# the .compress file (unless overridden).
 #------------------------------------------------------------------------------
 repack_initrd() {
     local file=$1  dir=$2
@@ -319,9 +320,8 @@ repack_initrd() {
 
 #------------------------------------------------------------------------------
 # Get then number of cpio blocks from cpio archive, that may be offset in the
-# original file by $offset blocks.
+# original file by $offset blocks.  Thanks fehlix!
 #------------------------------------------------------------------------------
-
 get_cpio_blocks() {
     local file=$1  offset=${2:-0}
 
@@ -336,8 +336,12 @@ get_magic_num() {
     dd status=none if=$file bs=1 count=2 skip=$offset | hexdump -x | head -n1 |  awk '{print $2}'
 }
 
+#------------------------------------------------------------------------------
+# Look for non-hidden files in the directory
+#------------------------------------------------------------------------------
 is_empty_dir() {
     local dir=$1
+    test -d "$dir" || return 1
     local cnt=$(ls "$dir" | grep -v "^lost+found$" | wc -l)
     [ $cnt -eq 0 ]
     return $?
