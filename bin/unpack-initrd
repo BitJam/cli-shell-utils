@@ -21,11 +21,19 @@ INITRD_DIR="./initrd"
 REPACK_ARGS="-o -H newc --owner root:root --quiet"
 UNPACK_ARGS="-idum --quiet"
 
-GZIP_ARGS=""
-
+ BZ2_MAGIC="5a42"
 GZIP_MAGIC="8b1f"
+ LZ4_MAGIC="2204"
+LZIP_MAGIC="5a4c"
+LZMA_MAGIC="005d"
+  XZ_MAGIC="37fd"
+
 CPIO_MAGIC="3730"
+
 MICROCODE_FNAME=".microcode"
+ COMPRESS_FNAME=".compress"
+
+ DEFAULT_COMPRESS="gzip"
 
 usage() {
     local ret=${1:-0}
@@ -33,21 +41,28 @@ usage() {
     cat <<Usage
 Usage:  $ME [options]
 
-Unpack and repack the live initrd.gz for antiX and MX.  Also
-unpack and repack Debian initramfs files.
+Unpack and repack the live initrd.gz for antiX and MX.  Also unpack
+and repack Debian initramfs files.  Supports the following forms of
+compression: bz2, gzip, lz4, lzip, lzma, xz (assuming the associated
+(de)compression tool is available.  Also supports microcode
+preambles.
 
 Options:
-  -c  --clear          Delete directory before unpacking
-  -d  --dir=<dir>      Unpack in <dir> instead of $INITRD_DIR
-  -f  --from=<file>    Unpack <file> instead of $INITRD_FILE
-  -g  --gzip=<N>       Gzip compression: 1 (fastest) -- 9 (best)
-  -h  --help           Show this usage
-  -n  --no-microcode   Do not repack microcode
-  -p  --pretend        Show commands without running them
-  -r  --repack         Repack the initrd
-  -q  --quiet          Don't say anything
-  -V  --verbose        Show commands in addition to running them
-  -v  --version        Show the version then exit
+  -C  --clear            Delete directory before unpacking
+  -c  --compress=<prog>  Use <prog> to recompress the initrd
+  -d  --dir=<dir>        Unpack in <dir> instead of $INITRD_DIR
+  -f  --file=<file>      Unpack <file> instead of $INITRD_FILE
+      --from=<file>      Same as --file
+
+  -l  --level=<N>        Set compression level: 1 (fastest) -- 9 (best)
+  -h  --help             Show this usage
+  -n  --no-md5           Don't make a .md5 file in --repack mode
+  -N  --no-microcode     Do not repack microcode
+  -p  --pretend          Show commands without running them
+  -r  --repack           Repack the initrd
+  -q  --quiet            Don't say anything
+  -V  --verbose          Show commands in addition to running them
+  -v  --version          Show the version then exit
 Usage
 
     exit $ret
@@ -56,15 +71,20 @@ Usage
 eval_argument() {
     local arg=$1 val=$2
         case $arg in
-             -clear|c) DO_CLEAR=true                   ;;
+             -clear|C) DO_CLEAR=true                   ;;
+          -compress|c) COMPRESS_PROG=$val              ;;
+          -compress=*) COMPRESS_PROG=$val              ;;
                -dir|d) INITRD_DIR=$val                 ;;
                -dir=*) INITRD_DIR=$val                 ;;
-              -gzip|g) GZIP_COMP=$val                  ;;
-              -gzip=*) GZIP_COMP=$val                  ;;
               -help|h) usage                           ;;
+             -level|l) COMP_LEVEL=$val                 ;;
+             -level=*) COMP_LEVEL=$val                 ;;
+              -file|f) INITRD_FILE=$val                ;;
+              -file=*) INITRD_FILE=$val                ;;
               -from|f) INITRD_FILE=$val                ;;
               -from=*) INITRD_FILE=$val                ;;
-      -no-microcode|n) NO_MICROCODE=true               ;;
+      -no-microcode|N) NO_MICROCODE=true               ;;
+            -no-md5|n) NO_MD5=true                     ;;
            -pretend|p) PRETEND=true                    ;;
             -repack|r) REPACK=true                     ;;
              -quiet|q) QUIET=true                      ;;
@@ -76,29 +96,29 @@ eval_argument() {
 
 takes_param() {
     case $1 in
+     -compress|c) return 0 ;;
         -dir|[d]) return 0 ;;
        -from|[f]) return 0 ;;
-         -gzip|g) return 0 ;;
+        -level|l) return 0 ;;
     esac
     return 1
 }
 
 main() {
-    local SHIFT SHORT_STACK="cdghfnprqvV"
+    local SHIFT  SHORT_STACK="ccdhlfnNprqvV"
 
-    #[ $# -eq 0 ] && usage
+    local COMPRESS_PROG COMP_LEVEL DO_CLEAR NO_MD5 NO_MICROCODE
+    local PRETEND QUIET REPACK VERBOSE
 
-    # This loop allows complete intermingling of filenames and options
     read_params "$@"
     shift $SHIFT
     [ $# -gt 0 ] && fatal "Unexpected arguments: %s" "$*"
 
-    if [ -n "$GZIP_COMP" ]; then
-        case $GZIP_COMP in
+    if [ -n "$COMP_LEVEL" ]; then
+        case $COMP_LEVEL in
             [0-9]) ;;
-            *) fatal "Gzip compression must be 0 -- 9";;
+            *) fatal "Compression level must be 0 -- 9";;
         esac
-        GZIP_ARGS="-$GZIP_COMP"
     fi
 
     if [ "$REPACK" ]; then
@@ -112,6 +132,9 @@ main() {
     exit 0
 }
 
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
 unpack_initrd() {
     local file=$1  dir=$2
 
@@ -123,6 +146,8 @@ unpack_initrd() {
             if [ "$DO_CLEAR" ]; then
                 qsay "Clearing %s" "$(pq $dir)"
                 cmd rm -r "$dir"
+            elif [ "$PRETEND" ]; then
+                :
             else
                 fatal "The target directory %s is not empty" "$dir"
             fi
@@ -132,23 +157,35 @@ unpack_initrd() {
     fi
 
     local magic=$(get_magic_num $file)
+    local compress
 
     case $magic in
-        $GZIP_MAGIC) qsay "Found gzipped archive" ;;
-        $CPIO_MAGIC) qsay "Found ASCII cpio archive" ;;
+         $BZ2_MAGIC) compress=bzip2        ;;
+        $GZIP_MAGIC) compress=gzip         ;;
+         $LZ4_MAGIC) compress=lz4          ;;
+        $LZIP_MAGIC) compress=lzip         ;;
+        $LZMA_MAGIC) compress=lzma         ;;
+          $XZ_MAGIC) compress=xz           ;;
+
+        $CPIO_MAGIC) compress=cpio         ;;
                   *) fatal "Unknown file format %s" $magic ;;
     esac
 
+
     cmd mkdir -p "$dir" || fatal "Could not make directory %s" "$dir"
 
-    case $magic in
-        $GZIP_MAGIC) simple_unzip "$file" "$dir" ;;
-        $CPIO_MAGIC) microcode_and_unzip "$file" "$dir" ;;
+    case $compress in
+        cpio) microcode_and_unpack "$file" "$dir"             ;;
+           *) simple_unpack        "$file" "$dir" "$compress" ;;
     esac
 }
 
-microcode_and_unzip() {
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+microcode_and_unpack() {
     local file=$1  dir=$2
+
     local cpio_blocks=$(cpio -t < $file 7>&1 1>/dev/null 2>&7 | grep -o "^[0-9]\+")
     [ -z "$cpio_blocks" ] && fatal "Unable to get length of ASCII cpio archive"
 
@@ -160,11 +197,20 @@ microcode_and_unzip() {
 
     if [ "$cpio_size" -lt "$total_size" ]; then
         local magic_2=$(get_magic_num "$file" "$cpio_size")
-        if [ "$magic_2" = "$GZIP_MAGIC" ]; then
-            cmd_dd if="$file" bs=512 skip=$cpio_blocks | simple_unzip - "$dir"
-        else
-            warn "Remaining part of file is not a gzipped archive"
-        fi
+
+        case $magic_2 in
+
+         $BZ2_MAGIC) compress=bzip2        ;;
+        $GZIP_MAGIC) compress=gzip         ;;
+         $LZ4_MAGIC) compress=lz4          ;;
+        $LZIP_MAGIC) compress=lzip         ;;
+        $LZMA_MAGIC) compress=lzma         ;;
+          $XZ_MAGIC) compress=xz           ;;
+        $CPIO_MAGIC) compress=cpio         ;;
+                  *) fatal "Unknown file format %s" $magic_2 ;;
+        esac
+
+        cmd_dd if="$file" bs=512 skip=$cpio_blocks | simple_unpack - "$dir" "$compress"
     fi
 
     local mc_file="$dir/$MICROCODE_FNAME"
@@ -172,27 +218,68 @@ microcode_and_unzip() {
     cmd_dd if="$file" bs=512 count=$cpio_blocks of="$mc_file"
 }
 
-simple_unzip() {
-    local file=$1  dir=$2
-    cmd gunzip -c "$file" | (cd "$dir" && cmd cpio $UNPACK_ARGS) || fatal "Unpack failed"
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+simple_unpack() {
+    local file=$1  dir=$2  prog=$3  args="--stdout --decompress"
+
+    qsay "Found %s archive" "$(pq $prog)"
+    need_prog "$prog"
+
+    case $prog in
+        cpio) prog=cat;  args= ;;
+    esac
+
+    cmd $prog $args "$file" | (cmd cd "$dir" && cmd cpio $UNPACK_ARGS) || fatal "Unpack failed"
+    echo "$prog" | cmd write_file $dir/$COMPRESS_FNAME
 }
 
+#------------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
 repack_initrd() {
     local file=$1  dir=$2
     test -e "$dir" || fatal "The directory %s does not exist" "$dir"
     test -d "$dir" || fatal "%s is not a directory" "$dir"
 
+    local mc_file="$dir/$MICROCODE_FNAME";
+    local prog=$COMPRESS_PROG
+    : ${prog:=$(cat "$dir/$COMPRESS_FNAME" 2>/dev/null)}
+
+    if [ -z "$prog" ]; then
+        prog=$DEFAULT_COMPRESS
+        qsay "Did not find file %s.  Will use %s compression" "$(pq $COMPRESS_FNAME)" "$(pq $prog)"
+    else
+        qsay "Using %s compression" "$(pq $prog)"
+    fi
+
+    local args="-c"
+
+    case $prog in
+        gzip|bzip2|lz4|lzma) args="$args -$COMP_LEVEL"  ;;
+                    xz|lzip)                            ;;
+                        cat) args=                      ;;
+        *) fatal "Refusing to run unrecognized program %s" "$prog"
+    esac
+
+    need_prog "$prog"
+
     local targ_dir=$(dirname "$file")
     cmd mkdir -p "$targ_dir"
-    local mc_file="$dir/$MICROCODE_FNAME";
+
     if [ -z "$NO_MICROCODE" -a -e "$mc_file" ]; then
+        qsay "Found %s archive" "$(pq 'microcode')"
         cmd cp "$mc_file" "$file"
     else
+        # Because we always append
         cmd rm -f "$file"
     fi
 
-    (cd "$dir" && cmd find . | grep -v "^\./\." | cmd cpio $REPACK_ARGS) \
-        | cmd gzip $GZIP_ARGS | cmd append_file "$file"
+    (cd "$dir" && cmd find . | grep -E -v "^\./\.(compress|microcode)$" | cmd cpio $REPACK_ARGS) \
+        | cmd $prog $args | cmd append_file "$file"
+
+    [ "$NO_MD5" ] && return
 
     local fname=$(basename $file)
     (cd "$targ_dir" && cmd md5sum "$(basename "$fname")" | cmd write_file "$fname.md5")
@@ -203,7 +290,7 @@ repack_initrd() {
 #------------------------------------------------------------------------------
 get_magic_num() {
     local file=$1 offset=${2:-0}
-    cmd_dd if=$file bs=1 count=2 skip=$offset | hexdump -x | head -n1 |  awk '{print $2}'
+    dd status=none if=$file bs=1 count=2 skip=$offset | hexdump -x | head -n1 |  awk '{print $2}'
 }
 
 is_empty_dir() {
@@ -231,6 +318,11 @@ write_file() {
 append_file() {
     local file=$1
     cat >> "$file"
+}
+
+need_prog() {
+    local prog=$1
+    which $prog &>/dev/null || fatal "Could not find program %s" "$prog"
 }
 
 #------------------------------------------------------------------------------
