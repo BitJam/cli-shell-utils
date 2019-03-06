@@ -95,6 +95,9 @@ eval_argument() {
     esac
 }
 
+#------------------------------------------------------------------------------
+# Which options need to be followed by a parameter
+#------------------------------------------------------------------------------
 takes_param() {
     case $1 in
      -compress|c) return 0 ;;
