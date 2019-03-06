@@ -288,12 +288,14 @@ repack_initrd() {
     fi
 
     local args="-c"
+    [ -n "$COMP_LEVEL" ] & args="$args -$COMP_LEVEL"
 
     case $prog in
-        gzip|bzip2|lz4|lzma) args="$args -$COMP_LEVEL"  ;;
-                    xz|lzip)                            ;;
-                        cat) args=                      ;;
-        *) fatal "Refusing to run unrecognized program %s" "$prog"
+        gzip|bzip2|lz4)          ;;
+          lzma|xz|lzip)          ;;
+                   cat) args=    ;;
+
+        *) fatal "Refusing to run unrecognized program %s" "$prog"  ;;
     esac
 
     need_prog "$prog"
