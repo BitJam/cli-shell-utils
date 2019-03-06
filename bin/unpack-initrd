@@ -291,8 +291,7 @@ repack_initrd() {
     test -d "$dir" || fatal "%s is not a directory" "$dir"
 
     local mc_file="$dir/$MICROCODE_FNAME";
-    local prog=$COMPRESS_PROG
-    : ${prog:=$(cat "$dir/$COMPRESS_FNAME" 2>/dev/null)}
+    local prog=${COMPRESS_PROG:-$(cat "$dir/$COMPRESS_FNAME" 2>/dev/null)}
 
     if [ -z "$prog" ]; then
         prog=$DEFAULT_COMPRESS
