@@ -63,7 +63,8 @@ Options:
   -N  --no-microcode     Do not repack microcode
   -p  --pretend          Show commands without running them
   -r  --repack           Repack the initrd file
-  -q  --quiet            Don't say anything
+  -s  --silent           Only show error messages
+  -q  --quiet            Say very little
   -V  --verbose          Show commands in addition to running them
   -v  --version          Show the version then exit
 Usage
@@ -90,6 +91,7 @@ eval_argument() {
             -no-md5|n) NO_MD5=true                     ;;
            -pretend|p) PRETEND=true                    ;;
             -repack|r) REPACK=true                     ;;
+            -silent|s) SILENT=true                     ;;
              -quiet|q) QUIET=true                      ;;
            -verbose|V) VERBOSE=true                    ;;
            -version|v) show_version                    ;;
@@ -111,10 +113,10 @@ takes_param() {
 }
 
 main() {
-    local SHIFT  SHORT_STACK="CcdhlfNnprqVv"
+    local SHIFT  SHORT_STACK="CcdhlfNnprsqVv"
 
     local COMPRESS_PROG COMP_LEVEL DO_CLEAR NO_MD5 NO_MICROCODE
-    local PRETEND QUIET REPACK VERBOSE
+    local PRETEND QUIET REPACK VERBOSE SILENT
 
     read_params "$@"
     shift $SHIFT
@@ -128,10 +130,10 @@ main() {
     fi
 
     if [ "$REPACK" ]; then
-        qsay "Repack: %s ---> %s" "$(pq ${INITRD_DIR%/}/)" "$(pq $INITRD_FILE)"
+        ssay "Repack: %s ---> %s" "$(pq ${INITRD_DIR%/}/)" "$(pq $INITRD_FILE)"
         repack_initrd "$INITRD_FILE" "$INITRD_DIR"
     else
-        qsay "Unpack: %s ---> %s" "$(pq $INITRD_FILE)" "$(pq ${INITRD_DIR%/}/)"
+        ssay "Unpack: %s ---> %s" "$(pq $INITRD_FILE)" "$(pq ${INITRD_DIR%/}/)"
         unpack_initrd "$INITRD_FILE" "$INITRD_DIR"
     fi
 
@@ -434,10 +436,16 @@ read_params() {
     done
 }
 
+ssay() {
+    [ "$SILENT" ] && return
+    local fmt=$1; shift
+    printf "$m_co$fmt$nc_co\n" "$@"
+}
+
+
 qsay() {
-    [ "$QUIET" ] && return
-    local fmt=$1
-    shift
+    [ "$QUIET$SILENT" ] && return
+    local fmt=$1; shift
     printf "$m_co$fmt$nc_co\n" "$@"
 }
 
