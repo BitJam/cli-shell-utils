@@ -185,41 +185,68 @@ unpack_initrd() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Will be called recursively if there is more than one microcode preamble
+# $offset_blocks is how many cpio blocks we have already processed.
+# Assumes an uncompressed cpio archive starts at $offset_blocks + 1.
 #------------------------------------------------------------------------------
 microcode_and_unpack() {
-    local file=$1  dir=$2
+    local file=$1  dir=$2  offset_blocks=${3:-0}
 
-    local cpio_blocks=$(cpio -t < $file 7>&1 1>/dev/null 2>&7 | grep -o "^[0-9]\+")
+    local cpio_blocks=$(get_cpio_blocks "$file" $offset_blocks)
     [ -z "$cpio_blocks" ] && fatal "Unable to get length of ASCII cpio archive"
+
+    local preamb_offset=$((offset_blocks + cpio_blocks))
 
     # size checks
     local total_size=$(stat -c %s "$file")
-    local cpio_size=$((cpio_blocks * 512))
+    local cpio_size=$((cpio_blocks * 512))  human_size
 
-    [ "$cpio_size" -gt "$total_size" ] && warn "The ASCII cpio arcive is incomplete"
-
-    if [ "$cpio_size" -lt "$total_size" ]; then
-        local magic_2=$(get_magic_num "$file" "$cpio_size")
-
-        case $magic_2 in
-
-         $BZ2_MAGIC) compress=bzip2        ;;
-        $GZIP_MAGIC) compress=gzip         ;;
-         $LZ4_MAGIC) compress=lz4          ;;
-        $LZIP_MAGIC) compress=lzip         ;;
-        $LZMA_MAGIC) compress=lzma         ;;
-          $XZ_MAGIC) compress=xz           ;;
-        $CPIO_MAGIC) compress=cpio         ;;
-                  *) fatal "Unknown file format %s" $magic_2 ;;
-        esac
-
-        cmd_dd if="$file" bs=512 skip=$cpio_blocks | simple_unpack - "$dir" "$compress"
+    if [ $cpio_size -le $(( 4 * 1024 * 1024)) ]; then
+        human_size="$((cpio_size / 1024))K"
+    else
+        human_size="$((cpio_size / 1024 / 1024))M"
     fi
 
+    local preamb_size=$(( (offset_blocks + cpio_blocks) * 512 ))
+
+    if [ "$preamb_size" -gt "$total_size" ]; then
+        warn "The ASCII cpio arcive is incomplete"
+        return
+
+    elif [ "$preamb_size" -eq "$total_size" ]; then
+        # This is the final chunk and it is not compressed
+        cmd_dd if="$file" bs=512 skip=$offset_blocks | simple_unpack - "$dir" "cpio"
+        return
+    fi
+
+    #-- must be: [ "$preamb_size" -lt "$total_size" ]
+    # so we save this preamble and look for what follows it
+
     local mc_file="$dir/$MICROCODE_FNAME"
-    qsay "Microcode ---> %s" "$(pq $mc_file)"
-    cmd_dd if="$file" bs=512 count=$cpio_blocks of="$mc_file"
+
+    qsay "Microcode (%s) ---> %s"  "$(nq $human_size)"  "$(pq $MICROCODE_FNAME)"
+
+    # Append this cpio archive to the .microcode file
+    dd_append "$file" "$offset_blocks" "$mc_file"
+
+    local magic_2=$(get_magic_num "$file" "$preamb_size")
+
+    local compress
+    case $magic_2 in
+                 # Recurse to strip off and save multiple preambles
+    $CPIO_MAGIC) microcode_and_unpack "$file" "$dir" "$preamb_offset"
+                 return                ;;
+
+     $BZ2_MAGIC) compress=bzip2        ;;
+    $GZIP_MAGIC) compress=gzip         ;;
+     $LZ4_MAGIC) compress=lz4          ;;
+    $LZIP_MAGIC) compress=lzip         ;;
+    $LZMA_MAGIC) compress=lzma         ;;
+      $XZ_MAGIC) compress=xz           ;;
+              *) fatal "Unknown file format %s" $magic_2 ;;
+    esac
+
+    cmd_dd if="$file" bs=512 skip=$preamb_offset | simple_unpack - "$dir" "$compress"
 }
 
 #------------------------------------------------------------------------------
@@ -290,6 +317,17 @@ repack_initrd() {
 }
 
 #------------------------------------------------------------------------------
+# Get then number of cpio blocks from cpio archive, that may be offset in the
+# original file by $offset blocks.
+#------------------------------------------------------------------------------
+
+get_cpio_blocks() {
+    local file=$1  offset=${2:-0}
+
+    cmd_dd if="$file" bs=512 skip=$offset | cpio -t 7>&1 1>/dev/null 2>&7 | grep -o "^[0-9]\+"
+}
+
+#------------------------------------------------------------------------------
 # Display first 2 bytes of a file as hex with an optional offset
 #------------------------------------------------------------------------------
 get_magic_num() {
@@ -306,6 +344,11 @@ is_empty_dir() {
 
 cmd_dd() {
     cmd dd status=none "$@"
+}
+
+dd_append() {
+    local from=$1 offset=$2  to=$3
+    cmd_dd if="$from" bs=512 skip=$offset count=$cpio_blocks oflag=append conv=notrunc of="$to"
 }
 
 cmd() {
@@ -410,6 +453,7 @@ warn() {
 }
 
 pq()  { echo "$hi_co$*$m_co"      ;}
+nq()  { echo "$num_co$*$m_co"     ;}
 
 set_colors() {
    local e=$(printf "\e")
@@ -425,6 +469,7 @@ set_colors() {
           err_co=$red
          bold_co=$yellow
          warn_co=$yellow
+          num_co=$magenta
 }
 
 set_colors
