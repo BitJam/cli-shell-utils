@@ -237,14 +237,14 @@ microcode_and_unpack() {
 
                  # Recurse to strip off and save multiple preambles
     $CPIO_MAGIC) microcode_and_unpack "$file" "$dir" "$preamb_offset" $((depth + 1))
-                 return                ;;
+                 return            ;;
 
-     $BZ2_MAGIC) compress=bzip2        ;;
-    $GZIP_MAGIC) compress=gzip         ;;
-     $LZ4_MAGIC) compress=lz4          ;;
-    $LZIP_MAGIC) compress=lzip         ;;
-    $LZMA_MAGIC) compress=lzma         ;;
-      $XZ_MAGIC) compress=xz           ;;
+     $BZ2_MAGIC) compress=bzip2    ;;
+    $GZIP_MAGIC) compress=gzip     ;;
+     $LZ4_MAGIC) compress=lz4      ;;
+    $LZIP_MAGIC) compress=lzip     ;;
+    $LZMA_MAGIC) compress=lzma     ;;
+      $XZ_MAGIC) compress=xz       ;;
               *) fatal "Unknown file format %s" $magic_2 ;;
     esac
 
