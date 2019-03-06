@@ -236,12 +236,12 @@ microcode_and_unpack() {
 
     local mc_file="$dir/$MICROCODE_FNAME"
 
-    qsay "Microcode %s (%s) ---> %s"  "$depth"  "$(nq $human_size)"  "$(pq $MICROCODE_FNAME)"
+    qsay "Microcode %s (%s) -->> %s"  "$depth"  "$(nq $human_size)"  "$(pq $MICROCODE_FNAME)"
 
     # Append this cpio archive to the .microcode file
-    dd_append "$file" "$offset_blocks" "$mc_file"
+    dd_append "$file" "$offset_blocks" "$cpio_blocks" "$mc_file"
 
-    # What's next?
+    # What's the next archive?
     local magic_2=$(get_magic_num "$file" "$preamb_size")
 
     local compress
