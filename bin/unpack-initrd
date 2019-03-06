@@ -234,9 +234,10 @@ microcode_and_unpack() {
 
     local compress
     case $magic_2 in
-                     # Recurse to strip off and save multiple preambles
-        $CPIO_MAGIC) microcode_and_unpack "$file" "$dir" "$preamb_offset" $((depth + 1))
-                     return                ;;
+
+                 # Recurse to strip off and save multiple preambles
+    $CPIO_MAGIC) microcode_and_unpack "$file" "$dir" "$preamb_offset" $((depth + 1))
+                 return                ;;
 
      $BZ2_MAGIC) compress=bzip2        ;;
     $GZIP_MAGIC) compress=gzip         ;;
