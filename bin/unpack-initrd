@@ -33,7 +33,9 @@ CPIO_MAGIC="3730"
 MICROCODE_FNAME=".microcode"
  COMPRESS_FNAME=".compress"
 
- DEFAULT_COMPRESS="gzip"
+DEFAULT_COMPRESS="gzip"
+
+MAX_PREAMBS=10
 
 usage() {
     local ret=${1:-0}
@@ -170,11 +172,9 @@ unpack_initrd() {
         $LZIP_MAGIC) compress=lzip         ;;
         $LZMA_MAGIC) compress=lzma         ;;
           $XZ_MAGIC) compress=xz           ;;
-
         $CPIO_MAGIC) compress=cpio         ;;
                   *) fatal "Unknown file format %s" $magic ;;
     esac
-
 
     cmd mkdir -p "$dir" || fatal "Could not make directory %s" "$dir"
 
@@ -224,7 +224,7 @@ microcode_and_unpack() {
 
     local mc_file="$dir/$MICROCODE_FNAME"
 
-    qsay "Microcode (%s) ---> %s"  "$(nq $human_size)"  "$(pq $MICROCODE_FNAME)"
+    qsay "Microcode %s (%s) ---> %s"  "$depth"  "$(nq $human_size)"  "$(pq $MICROCODE_FNAME)"
 
     # Append this cpio archive to the .microcode file
     dd_append "$file" "$offset_blocks" "$mc_file"
@@ -233,9 +233,9 @@ microcode_and_unpack() {
 
     local compress
     case $magic_2 in
-                 # Recurse to strip off and save multiple preambles
-    $CPIO_MAGIC) microcode_and_unpack "$file" "$dir" "$preamb_offset"
-                 return                ;;
+                     # Recurse to strip off and save multiple preambles
+        $CPIO_MAGIC) microcode_and_unpack "$file" "$dir" "$preamb_offset" $((depth + 1))
+                     return                ;;
 
      $BZ2_MAGIC) compress=bzip2        ;;
     $GZIP_MAGIC) compress=gzip         ;;
