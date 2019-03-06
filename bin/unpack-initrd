@@ -113,7 +113,7 @@ takes_param() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Start reading here
 #------------------------------------------------------------------------------
 main() {
     local SHIFT  SHORT_STACK="CcdhlfNnprsqVv"
@@ -144,7 +144,8 @@ main() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Unpack an initrd file.  If there are multiple microcode preambles then we
+# call microcode_and_unpack() recursively.
 #------------------------------------------------------------------------------
 unpack_initrd() {
     local file=$1  dir=$2
@@ -190,9 +191,11 @@ unpack_initrd() {
 }
 
 #------------------------------------------------------------------------------
-# Will be called recursively if there is more than one microcode preamble
-# $offset_blocks is how many cpio blocks we have already processed.
-# Assumes an uncompressed cpio archive starts at $offset_blocks + 1.
+# Will be called recursively if there is more than one microcode preamble.
+#
+# $offset_blocks is how many cpio blocks we have already processed.  Assumes an
+# uncompressed cpio archive starts at $offset_blocks + 1.  Every uncompressed
+# archive, except the last archive in the file, will be treated as microcode.
 #------------------------------------------------------------------------------
 microcode_and_unpack() {
     local file=$1  dir=$2  offset_blocks=${3:-0}  depth=${4:-1}
@@ -206,20 +209,24 @@ microcode_and_unpack() {
 
     local preamb_offset=$((offset_blocks + cpio_blocks))
 
-    # size checks
+    # size checks and display
     local total_size=$(stat -c %s "$file")
-    local cpio_size=$((cpio_blocks * 512))
+    local cpio_size=$((cpio_blocks * $BLOCK_SIZE))
     local human_size=$(get_human_size "$cpio_size")
 
-    local preamb_size=$(( (offset_blocks + cpio_blocks) * 512 ))
+    # Total number of bytes until the next archive.  Use bytes so we can
+    # compare with "stat" output.
+    local preamb_size=$(( (offset_blocks + cpio_blocks) * $BLOCK_SIZE ))
 
     if [ "$preamb_size" -gt "$total_size" ]; then
         warn "The cpio archive is incomplete"
         return
 
     elif [ "$preamb_size" -eq "$total_size" ]; then
-        # This is the final chunk and it is not compressed
-        cmd_dd if="$file" bs=512 skip=$offset_blocks | simple_unpack - "$dir" "cpio"
+
+        # This is the final archive and it is not compressed so we unpack it
+        # anyway as per the spec.
+        cmd_dd if="$file" bs=$BLOCK_SIZE skip=$offset_blocks | simple_unpack - "$dir" "cpio"
         return
     fi
 
@@ -252,16 +259,17 @@ microcode_and_unpack() {
               *) fatal "Unknown file format %s" $magic_2 ;;
     esac
 
-    cmd_dd if="$file" bs=512 skip=$preamb_offset | simple_unpack - "$dir" "$compress"
+    cmd_dd if="$file" bs=$BLOCK_SIZE skip=$preamb_offset | simple_unpack - "$dir" "$compress"
 }
 
 #------------------------------------------------------------------------------
-# Unpack a compressed cpio archive
+# Unpack a (usually) compressed cpio archive.  Use "cat" if there was no
+# compression.
 #------------------------------------------------------------------------------
 simple_unpack() {
     local file=$1  dir=$2  prog=$3  args="--stdout --decompress"
 
-    qsay "Found %s archive" "$(pq $prog)"
+    qsay "Unpack %s archive" "$(pq $prog)"
     need_prog "$prog"
 
     case $prog in
@@ -312,15 +320,17 @@ repack_initrd() {
         qsay "Found %s archive" "$(pq 'microcode')"
         cmd cp "$mc_file" "$file"
     else
-        # Because we always append
+        # Since we always append we must erase an existing file
         cmd rm -f "$file"
     fi
 
+    # Create the cpio archive, ignore our two meta-data files and then compress
     (cd "$dir" && cmd find . | grep -E -v "^\./\.(compress|microcode)$" | cmd cpio $REPACK_ARGS) \
         | cmd $prog $args | cmd append_file "$file"
 
     [ "$NO_MD5" ] && return
 
+    # Create .md5 file
     local fname=$(basename $file)
     (cd "$targ_dir" && cmd md5sum "$(basename "$fname")" | cmd write_file "$fname.md5")
 }
@@ -378,17 +388,17 @@ cmd() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Used instead of ">" so we can use cmd() to enable pretend mode
 #------------------------------------------------------------------------------
 write_file() { cat > "$1" ; }
 
 #------------------------------------------------------------------------------
-#
+# Used instead of ">>" so we can use cmd() to enable pretend mode
 #------------------------------------------------------------------------------
 append_file() {  cat >> "$1" ; }
 
 #------------------------------------------------------------------------------
-#
+# Error out of $prog is not on the PATH
 #------------------------------------------------------------------------------
 need_prog() {
     local prog=$1
@@ -396,7 +406,8 @@ need_prog() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Convert bytes to a more human-readable form.  Assumes reasonable limits for
+# microcode preambles.
 #------------------------------------------------------------------------------
 get_human_size() {
     local n=$1  meg=$((1024 * 1024))
@@ -475,7 +486,7 @@ read_params() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Display the message unless --silent
 #------------------------------------------------------------------------------
 ssay() {
     [ "$SILENT" ] && return
@@ -484,7 +495,7 @@ ssay() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Display the message unless --silent or --quiet
 #------------------------------------------------------------------------------
 qsay() {
     [ "$QUIET$SILENT" ] && return
@@ -493,7 +504,7 @@ qsay() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Display error message on stderr and exit
 #------------------------------------------------------------------------------
 fatal() {
     local fmt=$1; shift
@@ -502,7 +513,7 @@ fatal() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Display warning on stderr but don't exit
 #------------------------------------------------------------------------------
 warn() {
     local fmt=$1; shift
@@ -510,13 +521,14 @@ warn() {
 }
 
 #------------------------------------------------------------------------------
-#
+# Convenience routines for "quoting" text using color
 #------------------------------------------------------------------------------
 pq()  { echo "$hi_co$*$m_co"      ;}
 nq()  { echo "$num_co$*$m_co"     ;}
 
 #------------------------------------------------------------------------------
-#
+# Define color variables.  These are globals but are lower case in order to
+# be less obtrusive.
 #------------------------------------------------------------------------------
 set_colors() {
    local e=$(printf "\e")
