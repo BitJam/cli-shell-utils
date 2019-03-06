@@ -51,15 +51,16 @@ Options:
   -C  --clear            Delete directory before unpacking
   -c  --compress=<prog>  Use <prog> to recompress the initrd
   -d  --dir=<dir>        Unpack in <dir> instead of $INITRD_DIR
-  -f  --file=<file>      Unpack <file> instead of $INITRD_FILE
+  -f  --file=<file>      Unpack <file> instead of:
+                            $INITRD_FILE
       --from=<file>      Same as --file
-
   -l  --level=<N>        Set compression level: 1 (fastest) -- 9 (best)
+                         (only applies to certain compression methods)
   -h  --help             Show this usage
   -n  --no-md5           Don't make a .md5 file in --repack mode
   -N  --no-microcode     Do not repack microcode
   -p  --pretend          Show commands without running them
-  -r  --repack           Repack the initrd
+  -r  --repack           Repack the initrd file
   -q  --quiet            Don't say anything
   -V  --verbose          Show commands in addition to running them
   -v  --version          Show the version then exit
