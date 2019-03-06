@@ -127,12 +127,11 @@ main() {
     shift $SHIFT
     [ $# -gt 0 ] && fatal "Unexpected arguments: %s" "$*"
 
-    if [ -n "$COMP_LEVEL" ]; then
-        case $COMP_LEVEL in
-            [0-9]) ;;
+    case $COMP_LEVEL in
+           "") ;;
+        [0-9]) COMP_LEVEL="-$COMP_LEVEL" ;;
             *) fatal "Compression level must be 0 -- 9";;
-        esac
-    fi
+    esac
 
     if [ "$REPACK" ]; then
         ssay "Repack: %s ---> %s" "$(pq ${INITRD_DIR%/}/)" "$(pq $INITRD_FILE)"
@@ -302,9 +301,10 @@ repack_initrd() {
         qsay "Using %s compression" "$(pq $prog)"
     fi
 
-    local args="-c"
-    [ -n "$COMP_LEVEL" ] & args="$args -$COMP_LEVEL"
+    local args="-c $COMP_LEVEL"
 
+    # Don't let user run just any program that was in .compress file
+    # And clear out compression args if "cat" is used.
     case $prog in
         gzip|bzip2|lz4)          ;;
           lzma|xz|lzip)          ;;
