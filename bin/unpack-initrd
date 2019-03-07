@@ -110,8 +110,8 @@ eval_argument() {
 takes_param() {
     case $1 in
      -compress|c) return 0 ;;
-        -dir|[d]) return 0 ;;
-       -from|[f]) return 0 ;;
+          -dir|d) return 0 ;;
+         -from|f) return 0 ;;
         -level|l) return 0 ;;
     esac
     return 1
