@@ -74,6 +74,9 @@ Usage
     exit $ret
 }
 
+#------------------------------------------------------------------------------
+# Process a single command line argument with possibly a parameter
+#------------------------------------------------------------------------------
 eval_argument() {
     local arg=$1 val=$2
         case $arg in
