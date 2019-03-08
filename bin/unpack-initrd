@@ -137,10 +137,10 @@ main() {
     esac
 
     if [ "$REPACK" ]; then
-        ssay "Repack: %s ---> %s" "$(pq ${INITRD_DIR%/}/)" "$(pq $INITRD_FILE)"
+        ssay "Repack: %s --> %s" "$(pq ${INITRD_DIR%/}/)" "$(pq $INITRD_FILE)"
         repack_initrd "$INITRD_FILE" "$INITRD_DIR"
     else
-        ssay "Unpack: %s ---> %s" "$(pq $INITRD_FILE)" "$(pq ${INITRD_DIR%/}/)"
+        ssay "Unpack: %s --> %s" "$(pq $INITRD_FILE)" "$(pq ${INITRD_DIR%/}/)"
         unpack_initrd "$INITRD_FILE" "$INITRD_DIR"
     fi
 
