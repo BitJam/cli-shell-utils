@@ -354,7 +354,7 @@ get_cpio_blocks() {
 #------------------------------------------------------------------------------
 get_magic_num() {
     local file=$1 offset=${2:-0}
-    dd status=none if=$file bs=1 count=2 skip=$offset | hexdump -x | head -n1 |  awk '{print $2}'
+    dd status=none if=$file bs=1 count=2 skip=$offset | od -An -x | tr -d ' '
 }
 
 #------------------------------------------------------------------------------
