@@ -244,7 +244,6 @@ pause() {
     press_enter
 }
 
-
 #------------------------------------------------------------------------------
 # Wait until user presses <Enter>
 #------------------------------------------------------------------------------
@@ -439,34 +438,6 @@ _yes_no() {
        no) return 1 ;;
      quit) return 1 ;;
         *) internal_error _yes_no "$anwer"
-    esac
-}
-
-
-old_yes_no() {
-    local answer ret=$1  question=$2  def_entry=$(($1 + 1))
-
-    [ "$AUTO_MODE" ] && return $ret
-
-    local yes=$"yes"  no=$"no"  quit=$"quit"  default=$"default"
-    quit="$quit_co$quit"
-
-    local menu def_entry
-    case $def_entry in
-        1) menu=$(printf "  1) $yes ($default)\n  2) $no\n") ;;
-        2) menu=$(printf "  1) $yes\n  2) $no ($default)\n") ;;
-        *) fatal "Internal error in _yes_no()"               ;;
-    esac
-
-    local data=$(printf "1:1\n2:2\n0:0")
-    my_select_2 answer "$quest_co$question$nc_co" $def_entry "$data" "$menu\n"
-
-    case $answer in
-        1) return 0 ;;
-        2) return 1 ;;
-     quit) return 1 ;;
-        0) exit 0   ;;
-        *) fatal "Should never get here 111" ;;
     esac
 }
 
@@ -1061,7 +1032,6 @@ select_file_menu() {
     printf "%s$P_IFS%s\n" "depth"  "Change search depth"
     printf "%s$P_IFS%s\n" "spec"   "Change file specification"
 }
-
 
 #------------------------------------------------------------------------------
 # Simple input of strings
@@ -1988,7 +1958,6 @@ quest() {
     printf "$quest_co$fmt$nc_co" "$@"
 }
 
-
 #------------------------------------------------------------------------------
 # Same as quest() but with trailing \n
 #------------------------------------------------------------------------------
@@ -2007,7 +1976,6 @@ prog_log_echo()  {
     printf "$fmt\n" "$@"
     prog_log "$fmt" "$@"
 }
-
 
 #------------------------------------------------------------------------------
 # Printf a string to the log file and maybe to the progress file.
@@ -3094,7 +3062,6 @@ dd_live_usb() {
 #------------------------------------------------------------------------------
 sector_size() { du -sc --block-size=512 "$@" 2>/dev/null | tail -n1 | cut -f1 ; }
 
-
 #------------------------------------------------------------------------------
 # Get the total number of 512-byte sectors written to a device
 # It is always 512-bytes regardless of physical or logical sectors.
@@ -3103,7 +3070,6 @@ sectors_written() {
     local dev=$1
     awk '{print $7}' /sys/block/$dev/stat
 }
-
 
 #------------------------------------------------------------------------------
 # Replace "file" with "command".
