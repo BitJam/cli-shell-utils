@@ -50,9 +50,11 @@ LIB_DATE="Mon Mar  4 01:51:26 MST 2019"
 : ${INITRD_CONFIG:=/live/config/initrd.out}
 : ${CP_ARGS:=--no-dereference --preserve=mode,links --recursive}
 
+FUSE_ISO_PROGS="fuseiso fuseiso9660"
+
 # Make sure these start out empty.  See lib_clean_up()
 unset ORIG_DIRTY_BYTES ORIG_DIRTY_RATIO COPY_PPID COPY_PID SUSPENDED_AUTOMOUNT
-unset ULTRA_FIT_DETECTED ADD_DMESG_TO_FATAL
+unset ULTRA_FIT_DETECTED ADD_DMESG_TO_FATAL DID_WARN_DEFRAG
 
 SANDISK_ULTRA_FIT="SanDisk Ultra Fit"
 FORCE_UMOUNT=true
@@ -2476,12 +2478,15 @@ mount_iso_file() {
         fatal "Can't mount %s.  Mountpoint %s is already being used" \
         "$file" "$dir"
 
-    local prog=fuseiso
-    if ! force nofuse && which $prog &>/dev/null; then
-        printf "Mount %s with %s\n" "$file" "$prog" >> $LOG_FILE
+    local prog  progs="$FUSE_ISO_PROGS"
+    force nofuse && progs=""
+    for prog in $progs; do
+        which $prog &>/dev/null || continue
+        msg "Mount %s with %s\n" "$(pq "$file")" "$(pq $prog)"
         $prog "$file" "$dir"
         is_mountpoint "$dir" && return 0
-    fi
+    done
+
 
     local type
     for type in iso9660 udf; do
