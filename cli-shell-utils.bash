@@ -2843,8 +2843,23 @@ copy_with_progress() {
     # Using cpio seems to fix problems with fuseiso and legacy boot regardless
     # of order.
     local files=$(cd $from && find . -type f | grep -v delete_this_file)
-    local regex="/boot/|vmlinuz"
-    files="$(echo "$files" | grep -E "$regex")\n$(echo "$files" | grep -Ev "$regex")"
+
+    local vmlinuz_files=$(echo "$files" | grep "/vmlinuz[1-9]\?$")
+    local   initrd_file=$(echo "$files" | grep "/initrd.gz$")
+
+    msg "copy %s" "$(pq $(echo $vmlinuz_files))"
+    (cd $from && echo -e "$vmlinuz_files" | cmd cpio -pdm --quiet $to/) || fatal "$err_msg"
+    defrag_files "$to" $vmlinuz_files
+
+    msg "copy %s" "$(pq $(echo $initrd_file))"
+    (cd $from && echo -e "$initrd_file"   | cmd cpio -pdm --quiet $to/) || fatal "$err_msg"
+    defrag_files "$to" $initrd_file
+
+    msg "Copy remaining files ..."
+
+    local regex="/vmlinuz[1-9]?$|/initrd.gz$"
+
+    files="$(echo "$files" | grep -Ev "$regex")"
 
     (cd $from && echo -e "$files" | cmd cpio -pdm --quiet $to/ || fatal "$err_msg") &
 
@@ -2996,6 +3011,30 @@ do_defrag() {
     fi
 }
 
+#------------------------------------------------------------------------------
+# Defrag one files or one directories
+#------------------------------------------------------------------------------
+defrag_files() {
+    local dir=$1 ; shift
+    local prog=e4defrag  opts="-v"
+
+    # Always sync even if we can't defrag
+    sync
+
+    [ "$DID_WARN_DEFRAG" ] && return
+    if ! which $prog &>/dev/null; then
+        DID_WARN_DEFRAG=true
+        warn $"Could not find program %s.  Not defragging." $prog
+        return
+    fi
+
+    local fname  file
+    for fname; do
+        file="$dir/$fname"
+        test -e "$file" || continue
+        (cd "$dir" && cmd $prog $opts "$fname")
+    done
+}
 #------------------------------------------------------------------------------
 # Make a dd live-usb from a file.  Include a progress bar.  Example:
 #
