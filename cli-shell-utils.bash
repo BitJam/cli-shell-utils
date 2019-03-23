@@ -50,7 +50,7 @@ LIB_DATE="Fri Mar 22 15:13:14 MDT 2019"
 : ${INITRD_CONFIG:=/live/config/initrd.out}
 : ${CP_ARGS:=--no-dereference --preserve=mode,links --recursive}
 
-FUSE_ISO_PROGS="fuseiso fuseiso9660"
+FUSE_ISO_PROGS="fuseiso"
 
 # Make sure these start out empty.  See lib_clean_up()
 unset ORIG_DIRTY_BYTES ORIG_DIRTY_RATIO COPY_PPID COPY_PID SUSPENDED_AUTOMOUNT
@@ -2486,7 +2486,6 @@ mount_iso_file() {
         $prog "$file" "$dir"
         is_mountpoint "$dir" && return 0
     done
-
 
     local type
     for type in iso9660 udf; do
