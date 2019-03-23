@@ -2846,13 +2846,21 @@ copy_with_progress() {
     local vmlinuz_files=$(echo "$files" | grep "/vmlinuz[1-9]\?$")
     local   initrd_file=$(echo "$files" | grep "/initrd.gz$")
 
-    msg "copy %s" "$(pq $(echo $vmlinuz_files))"
-    (cd $from && echo -e "$vmlinuz_files" | cmd cpio -pdm --quiet $to/) || fatal "$err_msg"
-    defrag_files "$to" $vmlinuz_files
+    if [ -n "$vmlinuz_files" ]; then
+        msg "copy %s" "$(pq $(echo $vmlinuz_files))"
+        (cd $from && echo -e "$vmlinuz_files" | cmd cpio -pdm --quiet $to/) || fatal "$err_msg"
+        defrag_files "$to" $vmlinuz_files
+    else
+        warn "Could not find a %s file!" "$(pqh vmlinuz)"
+    fi
 
-    msg "copy %s" "$(pq $(echo $initrd_file))"
-    (cd $from && echo -e "$initrd_file"   | cmd cpio -pdm --quiet $to/) || fatal "$err_msg"
-    defrag_files "$to" $initrd_file
+    if [ -n "$initrd_file" ]; then
+        msg "copy %s" "$(pq $(echo $initrd_file))"
+        (cd $from && echo -e "$initrd_file"   | cmd cpio -pdm --quiet $to/) || fatal "$err_msg"
+        defrag_files "$to" $initrd_file
+    else
+        warn "Could not find a %s file!" "$(pqh initrd)"
+    fi
 
     msg "Copy remaining files ..."
 
