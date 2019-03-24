@@ -2813,11 +2813,15 @@ free_space() { df -Pm "$1" | awk '{size=$4}END{print size}' ;}
 # So that program can draw a progress bar.
 #------------------------------------------------------------------------------
 copy_with_progress() {
-    local from=$1  to=$2  err_msg=$3  prog=$4 ; shift 3
+    local from=$1  to=$2  err_msg=$3 ; shift 3
 
     hide_cursor
 
-    printf "Using progress %s: $*\n" "$(my_type $1)" >> $LOG_FILE
+    if [ $# -gt 0 ]; then
+        printf "Using progress %s: $*\n" "$(my_type $1)" >> $LOG_FILE
+        local prog=${1:-":"}
+        [ $# -gt 0 ] && shift
+    fi
 
     local pre=" >"
     [ "$PRETEND_MODE" ] && pre="p>"
@@ -2889,7 +2893,7 @@ copy_with_progress() {
         echo $cur_pct
         last_pct=$cur_pct
 
-    done | "$@"
+    done | "${prog:-":"}" "$@"
 
     echo
 
