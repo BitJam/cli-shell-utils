@@ -2478,18 +2478,20 @@ mount_iso_file() {
         fatal "Can't mount %s.  Mountpoint %s is already being used" \
         "$file" "$dir"
 
+    local type types="iso9660 udf"
+    force fuse && types=""
+
+    for type in iso9660 udf; do
+        mount -t $type -o loop,ro "$file" $dir 2>/dev/null
+        is_mountpoint "$dir" && return 0
+    done
+
     local prog  progs="$FUSE_ISO_PROGS"
     force nofuse && progs=""
     for prog in $progs; do
         which $prog &>/dev/null || continue
         msg "Mount %s with %s\n" "$(pq "$file")" "$(pq $prog)"
         $prog "$file" "$dir"
-        is_mountpoint "$dir" && return 0
-    done
-
-    local type
-    for type in iso9660 udf; do
-        mount -t $type -o loop,ro "$file" $dir 2>/dev/null
         is_mountpoint "$dir" && return 0
     done
 
