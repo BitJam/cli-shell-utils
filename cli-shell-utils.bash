@@ -2481,7 +2481,7 @@ mount_iso_file() {
     local type types="iso9660 udf"
     force fuse && types=""
 
-    for type in iso9660 udf; do
+    for type in $types; do
         mount -t $type -o loop,ro "$file" $dir 2>/dev/null
         is_mountpoint "$dir" && return 0
     done
@@ -2492,11 +2492,16 @@ mount_iso_file() {
         which $prog &>/dev/null || continue
         msg "Mount %s with %s\n" "$(pq "$file")" "$(pq $prog)"
         $prog "$file" "$dir"
-        is_mountpoint "$dir" && return 0
+        is_mountpoint "$dir" && break
     done
 
-    fatal $"Could not mount iso file %s" "$file"
+    is_mountpoint "$dir" || fatal $"Could not mount iso file %s" "$file"
+
+    # Seen if fuseiso got files too big to handle. Strange but true
+    local too_big=$(find "$dir/" -type f | sort | uniq -d)
+    [ -n "$too_big" ] && fatal "There are files too big for %s to handle" "$(pqw $prog)"
 }
+
 
 #------------------------------------------------------------------------------
 # Returns true on a live antiX/MX system, returns false otherwise.  May work
