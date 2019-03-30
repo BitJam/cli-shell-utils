@@ -2511,7 +2511,7 @@ mount_iso_file() {
     LARGE_ISO_FILES=$(large_iso_files "$file")
 
     [ -z "$LARGE_ISO_FILES" ] && return
-
+    echo "Large files:" $LARGE_ISO_FILES >> $LOG_FILE
     fatal "The %s file system cannot handle files over %s in size" "$(pqw $prog)" "$(pqw 4 GiB)"
 }
 
