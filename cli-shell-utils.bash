@@ -51,6 +51,7 @@ LIB_DATE="Thu Mar 28 21:57:51 MDT 2019"
 : ${CP_ARGS:=--no-dereference --preserve=mode,links --recursive}
 
 FUSE_ISO_PROGS="fuseiso"
+FOUR_GIG=$((1024 * 1024 * 1024 * 4))
 
 # Make sure these start out empty.  See lib_clean_up()
 unset ORIG_DIRTY_BYTES ORIG_DIRTY_RATIO COPY_PPID COPY_PID SUSPENDED_AUTOMOUNT
@@ -2467,6 +2468,7 @@ cleanup_mp() { CLEANUP_MPS="$*${CLEANUP_MPS:+ }$CLEANUP_MPS" ;}
 
 #------------------------------------------------------------------------------
 # Mount an iso file
+# Try "mount" first.  Then try "fuseiso" but then try to fix things
 #------------------------------------------------------------------------------
 mount_iso_file() {
     local file=$1  dir=$2
@@ -2497,11 +2499,21 @@ mount_iso_file() {
 
     is_mountpoint "$dir" || fatal $"Could not mount iso file %s" "$file"
 
-    # Seen if fuseiso got files too big to handle. Strange but true
-    local too_big=$(find "$dir/" -type f | sort | uniq -d)
-    [ -n "$too_big" ] && fatal "There are files too big for %s to handle" "$(pqw $prog)"
-}
+    # Don't check for large files inside a not-large iso file
+    local iso_size=$(stat -c %s "$file")
+    [ $iso_size -lt "$FOUR_GIG" ] && return
 
+    if ! which xorriso &>/dev/null; then
+        warn "Please install %s" "$(pqw xorriso)"
+        fatal "The %s program is required for large iso files mounted with %s" "$(pqw xorriso)" "$(pqw $prog)"
+    fi
+
+    LARGE_ISO_FILES=$(large_iso_files "$file")
+
+    [ -z "$LARGE_ISO_FILES" ] && return
+
+    fatal "The %s file system cannot handle files over %s in size" "$(pqw $prog)" "$(pqw 4 GiB)"
+}
 
 #------------------------------------------------------------------------------
 # Returns true on a live antiX/MX system, returns false otherwise.  May work
@@ -2934,6 +2946,26 @@ restore_dirty_bytes_and_ratio() {
     [ -n "$ORIG_DIRTY_BYTES" ] && sysctl vm.dirty_bytes=$ORIG_DIRTY_BYTES >> $LOG_FILE
     [ -n "$ORIG_DIRTY_RATIO" ] && sysctl vm.dirty_ratio=$ORIG_DIRTY_RATIO >> $LOG_FILE
     unset ORIG_DIRTY_BYTES ORIG_DIRTY_RATIO
+}
+
+
+#------------------------------------------------------------------------------
+# Use xorriso to find all files in an iso file with size >= 4 Gig
+# Thank you fehlix!!
+#------------------------------------------------------------------------------
+large_iso_files() {
+    local iso=$1
+    test -f "$iso" || fatal "%s is not a file" "$iso"
+
+    local size file
+    while read size file; do
+        [ -z "$size" ] && continue
+        [ $size -lt $FOUR_GIG ] && break
+        echo "$file"
+    done << Read_File
+$(xorriso -indev "$iso" -find / -exec lsdl -- 2>/dev/null \
+    | awk '{print $5 " " $9}' | sort -nr | sed "s/'//g")
+Read_File
 }
 
 #------------------------------------------------------------------------------
