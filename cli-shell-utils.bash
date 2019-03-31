@@ -400,7 +400,7 @@ yes_NO_fatal() {
     shift 4
     local msg=$(printf "$fmt" "$@")
 
-    q_mode qui && fatal "$msg"
+    q_mode gui && fatal "$msg"
 
     [ -n "$continuation" -a -z "${continuation##*%s*}" ] \
         && continuation=$(printf "$continuation" "$(pq "--force=$code")")
