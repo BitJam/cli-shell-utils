@@ -53,9 +53,13 @@ LIB_DATE="Fri Mar 29 22:43:10 MDT 2019"
 FUSE_ISO_PROGS="fuseiso"
 FOUR_GIG=$((1024 * 1024 * 1024 * 4))
 
+# For testing!!
+# FOUR_GIG=$((1024 * 1024 * 10))
+
 # Make sure these start out empty.  See lib_clean_up()
 unset ORIG_DIRTY_BYTES ORIG_DIRTY_RATIO COPY_PPID COPY_PID SUSPENDED_AUTOMOUNT
 unset ULTRA_FIT_DETECTED ADD_DMESG_TO_FATAL DID_WARN_DEFRAG
+unset XORRISO_LARGE_FILES XORRISO_SIZE  XORRISO_FILE
 
 SANDISK_ULTRA_FIT="SanDisk Ultra Fit"
 FORCE_UMOUNT=true
@@ -346,6 +350,29 @@ cmd() {
 }
 
 verbose_cmd() { local BE_VERBOSE=true ; cmd "$@" ;}
+
+#------------------------------------------------------------------------------
+# Throw away stderr  *sigh*
+#------------------------------------------------------------------------------
+cmd_ne() {
+    local pre=" >"
+    [ "$PRETEND_MODE" ] && pre="p>"
+    echo "$pre $*" >> $LOG_FILE
+    [ "$VERY_VERBOSE" ] && echo "$pre" "$@" | sed "s|$WORK_DIR|.|g"
+    [ "$PRETEND_MODE" ] && return 0
+    if [ "$BE_VERBOSE" ]; then
+        "$@" 2>/dev/null | tee -a $LOG_FILE
+    else
+        "$@" 2>/dev/null | strip_ansi | tee -a $LOG_FILE &>/dev/null
+    fi
+    # Warning: Bashism
+    local ret=${PIPESTATUS[0]}
+    test -e "$ERR_FILE" && exit 3
+    return $ret
+}
+
+verbose_cmd() { local BE_VERBOSE=true ; cmd "$@" ;}
+
 
 #------------------------------------------------------------------------------
 # A little convenience routine to run "dd" with no normal output and a fatal
@@ -2499,7 +2526,7 @@ mount_iso_file() {
 
     is_mountpoint "$dir" || fatal $"Could not mount iso file %s" "$file"
 
-    # Don't check for large files inside a not-large iso file
+     # Don't check for large files inside a not-large iso file
     local iso_size=$(stat -c %s "$file")
     [ $iso_size -lt "$FOUR_GIG" ] && return
 
@@ -2508,11 +2535,16 @@ mount_iso_file() {
         fatal "The %s program is required for large iso files mounted with %s" "$(pqw xorriso)" "$(pqw $prog)"
     fi
 
-    LARGE_ISO_FILES=$(large_iso_files "$file")
+    # Get the total size in MiB now while we know where the iso file is
+    XORRISO_SIZE=$(xorriso_size "$file")
+    XORRISO_FILE=$file
 
-    [ -z "$LARGE_ISO_FILES" ] && return
-    echo "Large files:" $LARGE_ISO_FILES >> $LOG_FILE
-    fatal "The %s file system cannot handle files over %s in size" "$(pqw $prog)" "$(pqw 4 GiB)"
+    XORRISO_LARGE_FILES=$(xorriso_large_files "$file")
+
+    [ -z "$XORRISO_LARGE_FILES" ] && return
+
+    echo "Large files:" $XORRISO_LARGE_FILES >> $LOG_FILE
+    #fatal "The %s file system cannot handle files over %s in size" "$(pqw $prog)" "$(pqw 4 GiB)"
 }
 
 #------------------------------------------------------------------------------
@@ -2769,6 +2801,107 @@ du_ap_size() {
     du --apparent-size -scm "$@" 2>/dev/null | tail -n 1 | cut -f1
 }
 
+#==============================================================================
+# xorriso specific routines (to bail out fuseiso limitations)
+#==============================================================================
+
+#------------------------------------------------------------------------------
+# Use xorriso to find all files in an iso file with size >= 4 Gig
+# Thank you fehlix!!
+#------------------------------------------------------------------------------
+xorriso_large_files() {
+    local iso=$1
+    test -f "$iso" || fatal "%s is not a file" "$iso"
+
+    local size file
+    while read size file; do
+        [ -z "$size" ] && continue
+        [ $size -lt $FOUR_GIG ] && break
+        echo "$file"
+    done << Read_File
+$(xorriso -indev "$iso" -find / -exec lsdl -- 2>/dev/null \
+    | awk '{print $5 " " $9}' | sort -nr | sed "s/'//g")
+Read_File
+}
+
+#------------------------------------------------------------------------------
+# The size of the files inside an iso file in megabytes
+#------------------------------------------------------------------------------
+xorriso_size() {
+    xorriso -indev "$1" -find / -exec lsdl -- 2>/dev/null \
+        | awk '{sum+= $5} END {printf "%d\n", sum/1024/1024}'
+}
+
+#------------------------------------------------------------------------------
+# The size of one file in the iso in MiB
+#------------------------------------------------------------------------------
+xorriso_file_size() {
+    local file=$1  iso=$XORRISO_FILE
+    xorriso -indev "$iso" -find "$file" -exec lsdl -- 2>/dev/null \
+        | awk '{printf "%d\n", $5/1024/1024}'
+}
+#------------------------------------------------------------------------------
+# Copy a file directly out of an iso file to a directory
+#------------------------------------------------------------------------------
+xorriso_copy() {
+    local file=$1  dir=$2  iso=$XORRISO_FILE
+    msg "copy large file %s" "$(pq $file)"
+    cmd_ne xorriso -indev "$iso" -osirrox on -extract "$file" "$dir/$file"
+}
+
+#------------------------------------------------------------------------------
+# Copy a file directly out of an iso file to a directory with progress!
+#------------------------------------------------------------------------------
+xorriso_progress_copy() {
+    local file=$1  to_dir=$2  err_msg=$3  ; shift 3
+    local iso=$XORRISO_FILE
+    msg "copy large file %s" "$(pq $file)"
+
+    local file_size=$(xorriso_file_size "$file")
+    fatal_z "$file_size" "failed to get file size"
+
+    local base_size=$(du_ap_size $to_dir)
+    local cur_size=$base_size  cur_pct=0  last_pct=0
+
+    $(xorriso -indev "$iso" -osirrox on -extract "$file" "$to_dir$file" 2>/dev/null || fatal "$err_msg")&
+
+    COPY_PPPID=$!
+    sleep 0.01
+    COPY_PPID=$(pgrep -P $COPY_PPPID)
+    COPY_PID=$(pgrep -P $COPY_PPID)
+
+    echo "copy pids: $(echo $COPY_PPPID) || $(echo $COPY_PPID) ||  $(echo $COPY_PID)" >> $LOG_FILE
+    #psg $COPY_PPID >> $LOG_FILE
+    #psg xorriso >> $LOG_FILE
+
+    # Increase progress bar as needed and bail out if the xorriso process is done
+    while true; do
+        if ! test -d /proc/$COPY_PID; then
+            echo $PROGRESS_SCALE
+            break
+        fi
+        sleep 0.1
+
+        cur_size=$(du_ap_size $to)
+        cur_pct=$(((cur_size - base_size) * $PROGRESS_SCALE / (file_size) ))
+        [ $cur_pct -gt $last_pct ] || continue
+        echo $cur_pct
+        last_pct=$cur_pct
+
+    done | "$prog" "$@"
+
+    echo
+
+    # Unfortunately the "wait" command errors out here
+    while test -d /proc/$COPY_PID; do
+        sleep 0.1
+    done
+
+    sync ; sync
+
+}
+
+
 #------------------------------------------------------------------------------
 # Find apparent sizes based on a directory name and a single variable that
 # allows file globs, etc.
@@ -2832,14 +2965,13 @@ free_space() { df -Pm "$1" | awk '{size=$4}END{print size}' ;}
 # So that program can draw a progress bar.
 #------------------------------------------------------------------------------
 copy_with_progress() {
-    local from=$1  to=$2  err_msg=$3 ; shift 3
+    local from=$1  to=$2  err_msg=$3  prog=${4:-":"} ; shift 3
 
     hide_cursor
 
     if [ $# -gt 0 ]; then
-        printf "Using progress %s: $*\n" "$(my_type $1)" >> $LOG_FILE
-        local prog=${1:-":"}
-        [ $# -gt 0 ] && shift
+        printf "Using progress %s: $*\n" "$(my_type $prog)" >> $LOG_FILE
+        shift
     fi
 
     local pre=" >"
@@ -2852,11 +2984,6 @@ copy_with_progress() {
         return 0
     fi
 
-    local final_size=$(du_ap_size $from/*)
-    local base_size=$(du_ap_size $to)
-
-    local cur_size=$base_size  cur_pct=0  last_pct=0
-
     set_dirty_bytes
 
     #(cp $CP_ARGS $from/* $to/ || fatal "$err_msg") &
@@ -2866,26 +2993,37 @@ copy_with_progress() {
     # of order.
     local files=$(cd $from && find . -type f | grep -v delete_this_file)
 
+    # Strip out large files from the list
+    if [ -n "$XORRISO_LARGE_FILES" ]; then
+        local lg_regex=$(echo -n $XORRISO_LARGE_FILES | sed "s/ \+/\\\\|/g")
+        files=$(echo "$files" | grep -v "^\.\($lg_regex\)$")
+    fi
+
     local vmlinuz_files=$(echo "$files" | grep "/vmlinuz[1-9]\?$")
     local   initrd_file=$(echo "$files" | grep "/initrd.gz$")
 
-    if [ -n "$vmlinuz_files" ]; then
-        msg "copy %s" "$(pq $(echo $vmlinuz_files))"
-        (cd $from && echo -e "$vmlinuz_files" | cmd cpio -pdm --quiet $to/) || fatal "$err_msg"
-        defrag_files "$to" $vmlinuz_files
-    else
-        warn "Could not find a %s file!" "$(pqh vmlinuz)"
-    fi
+    warn_z "$vmlinuz_files"  "Could not find a %s file!" "$(pqh vmlinuz)"
+    warn_z "$initrd_file"    "Could not find a %s file!" "$(pqh initrd)"
 
-    if [ -n "$initrd_file" ]; then
-        msg "copy %s" "$(pq $(echo $initrd_file))"
-        (cd $from && echo -e "$initrd_file"   | cmd cpio -pdm --quiet $to/) || fatal "$err_msg"
-        defrag_files "$to" $initrd_file
-    else
-        warn "Could not find a %s file!" "$(pqh initrd)"
-    fi
+    local file
+    for file in $vmlinuz_files $initrd_file; do
+        msg "copy %s" "$(pq $(echo ${file#.}))"
+        (cd $from && echo -e "$file" | cmd cpio -pdm --quiet $to/) || fatal "$err_msg"
+        defrag_files "$to" $file
+    done
 
-    msg "Copy remaining files ..."
+    for file in $XORRISO_LARGE_FILES; do
+        xorriso_progress_copy $file "$to" "$prog" "$err_msg" "$@"
+    done
+
+    msg "copy remaining files ..."
+
+    # Use XORRISO_SIZE if it is available
+    local final_size=${XORRISO_SIZE:-$(du_ap_size $from/*)}
+
+    local base_size=$(du_ap_size $to)
+
+    local cur_size=$base_size  cur_pct=0  last_pct=0
 
     local regex="/vmlinuz[1-9]?$|/initrd.gz$"
 
@@ -2907,12 +3045,12 @@ copy_with_progress() {
         sleep 0.1
 
         cur_size=$(du_ap_size $to)
-        cur_pct=$((cur_size * $PROGRESS_SCALE / final_size))
+        cur_pct=$(((cur_size - base_size) * $PROGRESS_SCALE / (final_size - base_size) ))
         [ $cur_pct -gt $last_pct ] || continue
         echo $cur_pct
         last_pct=$cur_pct
 
-    done | "${prog:-":"}" "$@"
+    done | "$prog" "$@"
 
     echo
 
@@ -2946,26 +3084,6 @@ restore_dirty_bytes_and_ratio() {
     [ -n "$ORIG_DIRTY_BYTES" ] && sysctl vm.dirty_bytes=$ORIG_DIRTY_BYTES >> $LOG_FILE
     [ -n "$ORIG_DIRTY_RATIO" ] && sysctl vm.dirty_ratio=$ORIG_DIRTY_RATIO >> $LOG_FILE
     unset ORIG_DIRTY_BYTES ORIG_DIRTY_RATIO
-}
-
-
-#------------------------------------------------------------------------------
-# Use xorriso to find all files in an iso file with size >= 4 Gig
-# Thank you fehlix!!
-#------------------------------------------------------------------------------
-large_iso_files() {
-    local iso=$1
-    test -f "$iso" || fatal "%s is not a file" "$iso"
-
-    local size file
-    while read size file; do
-        [ -z "$size" ] && continue
-        [ $size -lt $FOUR_GIG ] && break
-        echo "$file"
-    done << Read_File
-$(xorriso -indev "$iso" -find / -exec lsdl -- 2>/dev/null \
-    | awk '{print $5 " " $9}' | sort -nr | sed "s/'//g")
-Read_File
 }
 
 #------------------------------------------------------------------------------
