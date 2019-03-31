@@ -2865,20 +2865,20 @@ xorriso_progress_copy() {
     local base_size=$(du_ap_size $to_dir)
     local cur_size=$base_size  cur_pct=0  last_pct=0
 
-    $(xorriso -indev "$iso" -osirrox on -extract "$file" "$to_dir$file" 2>/dev/null || fatal "$err_msg")&
+    $(cmd_ne xorriso -indev "$iso" -osirrox on -extract "$file" "$to_dir$file" || fatal "$err_msg")&
 
     COPY_PPPID=$!
     sleep 0.01
-    COPY_PPID=$(pgrep -P $COPY_PPPID)
-    COPY_PID=$(pgrep -P $COPY_PPID)
+    COPY_PPID=$(echo $(pgrep -P $COPY_PPPID))
+    COPY_PID=$(echo $(pgrep -P $COPY_PPID))
 
-    echo "copy pids: $(echo $COPY_PPPID) || $(echo $COPY_PPID) ||  $(echo $COPY_PID)" >> $LOG_FILE
-    #psg $COPY_PPID >> $LOG_FILE
-    #psg xorriso >> $LOG_FILE
+    echo "copy pids: $COPY_PPPID|| $COPY_PPID || $COPY_PID || ${COPY_PID%% *} " >> $LOG_FILE
+
+    debug_ps "[x]orriso"
 
     # Increase progress bar as needed and bail out if the xorriso process is done
     while true; do
-        if ! test -d /proc/$COPY_PID; then
+        if ! test -d /proc/${COPY_PID%% *}; then
             echo $PROGRESS_SCALE
             break
         fi
@@ -2894,15 +2894,24 @@ xorriso_progress_copy() {
 
     echo
 
+    debug_ps "[x]orriso"
+
     # Unfortunately the "wait" command errors out here
-    while test -d /proc/$COPY_PID; do
+    while test -d /proc/${COPY_PID%% *}; do
         sleep 0.1
     done
 
     sync ; sync
-
 }
 
+debug_ps() {
+    while true; do
+        pstree -pgs --long $$
+        [ -n "$1" ] && ps aux | grep "$1"
+        echo
+        break
+    done >> $LOG_FILE
+}
 
 #------------------------------------------------------------------------------
 # Find apparent sizes based on a directory name and a single variable that
@@ -3040,6 +3049,8 @@ copy_with_progress() {
 
     echo "copy pids: $(echo $COPY_PPID $COPY_PID)" >> $LOG_FILE
 
+    debug_ps "[c]pio"
+
     while true; do
         if ! test -d /proc/$COPY_PPID; then
             echo $PROGRESS_SCALE
@@ -3056,6 +3067,8 @@ copy_with_progress() {
     done | "$prog" "$@"
 
     echo
+
+    debug_ps "[c]pio"
 
     wait $COPY_PPID
     restore_cursor
