@@ -2500,6 +2500,8 @@ cleanup_mp() { CLEANUP_MPS="$*${CLEANUP_MPS:+ }$CLEANUP_MPS" ;}
 mount_iso_file() {
     local file=$1  dir=$2
 
+    file=$(readlink -f "$file")
+
     test -e "$file" || fatal $"Could not find iso file %s" "$file"
     test -r "$file" || fatal $"Could not read iso file %s" "$file"
 
