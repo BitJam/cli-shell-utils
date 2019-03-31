@@ -2948,8 +2948,9 @@ need_root() {
 # Insert commas into number like: 123,456.  We colorize separately because
 # fixed width printf gets confused by ANSI escapes.
 #------------------------------------------------------------------------------
-add_commas()   { echo "$1" | sed ":a;s/\B[0-9]\{3\}\>/,&/;ta" ;}
-color_commas() { sed "s/,/$m_co,$num_co/g" ;}
+add_commas()       { echo "$1" | sed ":a;s/\B[0-9]\{3\}\>/,&/;ta" ;}
+color_commas()     { sed "s/,/$m_co,$num_co/g" ;}
+add_color_commas() { add_commas "$1" | color_commas ;}
 
 #------------------------------------------------------------------------------
 # Use awk to perform simple arithmetic
