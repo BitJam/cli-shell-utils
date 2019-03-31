@@ -2904,7 +2904,11 @@ xorriso_progress_copy() {
     sync ; sync
 }
 
+#------------------------------------------------------------------------------
+# Add some diagnostic information for process control
+#------------------------------------------------------------------------------
 debug_ps() {
+    force debug-copy || return
     while true; do
         pstree -pgs --long $$
         [ -n "$1" ] && ps aux | grep "$1"
