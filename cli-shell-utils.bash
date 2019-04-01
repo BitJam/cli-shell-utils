@@ -2890,6 +2890,13 @@ xorriso_progress_copy() {
     # Increase progress bar as needed and bail out if the xorriso process is done
     while true; do
         if ! test -d /proc/${COPY_PID%% *}; then
+
+            # Bail out if something went wrong. Tell progress to bail
+            if test -e "$ERR_FILE"; then
+                echo quit
+                break
+            fi
+
             echo $PROGRESS_SCALE
             break
         fi
@@ -3068,6 +3075,13 @@ copy_with_progress() {
 
     while true; do
         if ! test -d /proc/$COPY_PPID; then
+
+            # Bail out if something went wrong. Tell progress to bail
+            if test -e "$ERR_FILE"; then
+                echo quit
+                break
+            fi
+
             echo $PROGRESS_SCALE
             break
         fi
@@ -3155,6 +3169,7 @@ text_progress_bar() {
 
     local input cur_x last_x=0
     while read input; do
+        test -e "$ERR_FILE" && break
         case $input in
             [0-9]|[0-9][0-9]|[0-9][0-9][0-9]) ;;
                         [0-9][0-9][0-9][0-9]) ;;
