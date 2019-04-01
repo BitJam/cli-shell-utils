@@ -2865,7 +2865,14 @@ xorriso_progress_copy() {
     local base_size=$(du_ap_size $to_dir)
     local cur_size=$base_size  cur_pct=0  last_pct=0
 
-    $(cmd_ne xorriso -indev "$iso" -osirrox on -extract "$file" "$to_dir$file" || fatal "$err_msg")&
+    # This is really crappy but I have trouble running cmd or cmd_ne inside
+    # of the background process.
+    local cmd_1="xorriso -indev"  cmd_2="-osirrox on -extract"
+    local cmd=" > $cmd_1 $iso $cmd_2 $file $to_dir$file"
+    echo "$cmd" >> $LOG_FILE
+    [ "$VERY_VERBOSE" ] && echo "$cmd"
+
+    $($cmd_1 "$iso" $cmd_2 "$file" "$to_dir$file" 2>/dev/null || fatal "$err_msg")&
 
     COPY_PPPID=$!
     sleep 0.01
