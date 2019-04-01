@@ -1892,6 +1892,11 @@ log_it_q() {
 }
 
 #------------------------------------------------------------------------------
+# echo a new line before the fatal message
+#------------------------------------------------------------------------------
+fatal_nl() { echo >&2 ; fatal "$@" ;}
+
+#------------------------------------------------------------------------------
 # Throw a fatal error.  There is some funny business to include a question in
 # the error log that may need to be tweaked or changed.
 #------------------------------------------------------------------------------
