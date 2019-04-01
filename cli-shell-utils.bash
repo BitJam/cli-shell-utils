@@ -3050,7 +3050,7 @@ copy_with_progress() {
     done
 
     for file in $XORRISO_LARGE_FILES; do
-        xorriso_progress_copy $file "$to" "$prog" "$err_msg" "$@"
+        xorriso_progress_copy $file "$to" "$err_msg" "$prog" "$@"
     done
 
     msg "copy remaining files ..."
