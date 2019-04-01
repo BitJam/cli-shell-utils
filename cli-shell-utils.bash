@@ -2914,6 +2914,9 @@ xorriso_progress_copy() {
 
     debug_ps "[x]orriso"
 
+    # Use ERR_FILE as a semaphore from (...)& process
+    test -e "$ERR_FILE" && exit 2
+
     # Unfortunately the "wait" command errors out here
     while test -d /proc/${COPY_PID%% *}; do
         sleep 0.1
