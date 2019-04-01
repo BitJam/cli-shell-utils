@@ -336,7 +336,7 @@ cmd() {
     local pre=" >"
     [ "$PRETEND_MODE" ] && pre="p>"
     echo "$pre $*" >> $LOG_FILE
-    [ "$VERY_VERBOSE" ] && echo "$pre" "$@" | sed "s|$WORK_DIR|.|g"
+    [ "$VERY_VERBOSE" ] && printf "%s\n" "$pre $*" | sed "s|$WORK_DIR|.|g"
     [ "$PRETEND_MODE" ] && return 0
     if [ "$BE_VERBOSE" ]; then
         "$@" 2>&1 | tee -a $LOG_FILE
@@ -358,7 +358,7 @@ cmd_ne() {
     local pre=" >"
     [ "$PRETEND_MODE" ] && pre="p>"
     echo "$pre $*" >> $LOG_FILE
-    [ "$VERY_VERBOSE" ] && echo "$pre" "$@" | sed "s|$WORK_DIR|.|g"
+    [ "$VERY_VERBOSE" ] && printf "%s\n" "$pre $*" | sed "s|$WORK_DIR|.|g"
     [ "$PRETEND_MODE" ] && return 0
     if [ "$BE_VERBOSE" ]; then
         "$@" 2>/dev/null | tee -a $LOG_FILE
