@@ -1910,10 +1910,9 @@ fatal() {
     if echo "$1" | grep -q "^[a-z-]*$"; then
         code=$1 ; shift
     fi
-
     local fmt=$1 ; shift
 
-    prog_log_echo "${err_co}%s:$hi_co $fmt$nc_co"   $"Error" "$@" >&2
+    prog_log_echo "${err_co}%s:$hi_co $fmt$nc_co"  $"Error" "$@" >&2
     fmt=$(echo "$fmt" | sed 's/\\n/ /g')
     if [ -n "$ERR_FILE" ]; then
         printf "$code:$fmt\n" "$@" | strip_color >> $ERR_FILE
@@ -2877,7 +2876,7 @@ xorriso_progress_copy() {
     echo "$cmd" >> $LOG_FILE
     [ "$VERY_VERBOSE" ] && echo "$cmd"
 
-    $($cmd_1 "$iso" $cmd_2 "$file" "$to_dir$file" 2>/dev/null || fatal "$err_msg")&
+    $($cmd_1 "$iso" $cmd_2 "$file" "$to_dir$file" 2>/dev/null || fatal_nl "$err_msg")&
 
     COPY_PPPID=$!
     sleep 0.01
@@ -3057,7 +3056,7 @@ copy_with_progress() {
 
     files="$(echo "$files" | grep -Ev "$regex")"
 
-    (cd $from && echo -e "$files" | cmd cpio -pdm --quiet $to/ || fatal "$err_msg") &
+    (cd $from && echo -e "$files" | cmd cpio -pdm --quiet $to/ || fatal_nl "$err_msg") &
 
     COPY_PPID=$!
     sleep 0.01
