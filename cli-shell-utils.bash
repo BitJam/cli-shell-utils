@@ -1553,7 +1553,7 @@ usb_stats() {
 
     local list
     while [ $# -ge 4 ]; do
-        [ $2 -gt 0 ] && list="$list$1$IFS$2$IFS$3$IFS$4\n"
+        [ ${2:-0} -gt 0 ] && list="$list$1$IFS${2:-0}$IFS${3:-0}$IFS${4:-0}\n"
         shift 4
     done
 
