@@ -73,6 +73,13 @@ SBAR_80="-----------------------------------------------------------------------
 RBAR_80=">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 LBAR_80="<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
 
+# Make sure /usr/sbin and /sbin are on the PATH
+for p in /usr/sbin /sbin; do
+    test -d "$p" || continue
+    [ -z "${PATH##$p:*}" -o -z "${PATH##*:$p:*}" -o -z "${PATH##*:$p}" ] && continue
+    PATH="$PATH:$p"
+done
+
 #------------------------------------------------------------------------------
 # Sometimes it's useful to process some arguments (-h --help, for example)
 # before others.  This can let normal users get simple usage.
