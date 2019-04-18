@@ -1904,6 +1904,14 @@ log_it_q() {
 fatal_nl() { echo >&2 ; fatal "$@" ;}
 
 #------------------------------------------------------------------------------
+# Add last 20 lines of dmesg output to the log file
+#------------------------------------------------------------------------------
+dmesg_fatal() {
+    local ADD_DMESG_TO_FATAL=true
+    fatal "$@"
+}
+
+#------------------------------------------------------------------------------
 # Throw a fatal error.  There is some funny business to include a question in
 # the error log that may need to be tweaked or changed.
 #------------------------------------------------------------------------------
