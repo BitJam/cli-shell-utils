@@ -2982,7 +2982,8 @@ sub_user_home() {
 # Issue a simple fatal error if we are not running as root
 #------------------------------------------------------------------------------
 need_root() {
-    [ $UID -eq 0 ] || fatal 099 $"This script must be run as root"
+    [ $(id -u) -eq 0 ] || fatal 099 $"This script must be run as root"
+    HOME=/root
 }
 
 #------------------------------------------------------------------------------
