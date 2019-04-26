@@ -1571,9 +1571,9 @@ usb_stats() {
     # Get field widths
     local f1 f2 f3 f4
     while read f1 f2 f3 f4; do
-        f2=$(add_commas $f2)
-        f3=$(add_commas $f3)
-        f4=$(add_commas $f4)
+        f2=$(label_meg $f2)
+        f3=$(label_meg $f3)
+        f4=$(label_meg $f4)
 
         [ ${#f1} -gt 0 ] || continue
         [ $w1 -lt ${#f1} ] && w1=${#f1}
@@ -1585,7 +1585,7 @@ $(echo -e "$list")
 Widths
 
     local hfmt=" $head_co%s  %s  %s  %s$nc_co\n"
-    local  fmt=" $lab_co%s  $num_co%s  %s  %s$m_co  MiB$nc_co\n"
+    local  fmt=" $lab_co%s  $num_co%s $num_co%s  $num_co%s$nc_co\n"
     f1=$(lpad $w1 "")
     f2=$(lpad $w2 "$total")
     f3=$(lpad $w3 "$allocated")
@@ -1594,16 +1594,16 @@ Widths
     printf "$hfmt" "$f1" "$f2" "$f3" "$f4"
 
     while read f1 f2 f3 f4; do
-        f2=$(add_commas $f2)
-        f3=$(add_commas $f3)
-        f4=$(add_commas $f4)
+        f2=$(label_meg $f2)
+        f3=$(label_meg $f3)
+        f4=$(label_meg $f4)
 
         [ ${#f1} -gt 0 ] || continue
         f1=$(lpad $w1 "$f1")
         f2=$(lpad $w2 "$f2")
         f3=$(lpad $w3 "$f3")
         f4=$(lpad $w4 "$f4")
-        printf "$fmt" "$f1" "$f2" "$f3" "$f4" | color_commas
+        printf "$fmt" "$f1" "$f2" "$f3" "$f4" | sed -r "s/([MGTEP]iB)/$m_co\1$nc_co/g"
     done<<Print
 $(echo -e "$list")
 Print
@@ -1631,14 +1631,14 @@ clear_window_title() {
 # NOT USED.  See below.
 #------------------------------------------------------------------------------
 free_space_menu() {
-    local min_percent=$1  total_size=$2  comma_size=$(add_commas $2)
+    local min_percent=$1  total_size=$2
     local w2=${#comma_size}
-    local fmt="%s$P_IFS$hi_co %3s%%$num_co %${w2}s $m_co%s$nc_co\n"
+    local fmt="%s$P_IFS$hi_co %3s%%$num_co %8s$nc_co\n"
     local size=100 free_size free_percent
     while [ $size -ge $min_percent ]; do
         free_percent=$((100 - size))
         free_size=$((free_percent * total_size / 100))
-        printf "$fmt" "$size" "$free_percent" "$(add_commas $free_size)" MiB | color_commas
+        printf "$fmt" "$size" "$free_percent" "$(label_meg $free_size)"
         [ $size -eq $min_percent ] && break
         size=$((size - 5))
         [ $size -lt $min_percent ] && size=$min_percent
@@ -1646,16 +1646,16 @@ free_space_menu() {
 }
 
 #------------------------------------------------------------------------------
-# Create a menu of sizes if user wants to use lees than all of a usb device
+# Create a menu of sizes if user wants to use less than all of a usb device
 #------------------------------------------------------------------------------
 partition_size_menu() {
-    local min_percent=$1  total_size=$2  comma_size=$(add_commas $2)
+    local min_percent=$1  total_size=$2
     local w2=${#comma_size}
-    local fmt="%s$P_IFS$hi_co %3s%%$num_co %${w2}s $m_co%s$nc_co\n"
+    local fmt="%s$P_IFS$hi_co %3s%%$num_co %8s$nc_co\n"
     local percent=100 size
     while [ $percent -ge $min_percent ]; do
         size=$((percent * total_size / 100))
-        printf "$fmt" "$percent" "$percent" "$(add_commas $size)" MiB | color_commas
+        printf "$fmt" "$percent" "$percent" "$(lablel_meg $size)"
         [ $percent -eq $min_percent ] && break
         percent=$((percent - 5))
         [ $percent -lt $min_percent ] && percent=$min_percent
@@ -3001,6 +3001,42 @@ need_root() {
 add_commas()       { echo "$1" | sed ":a;s/\B[0-9]\{3\}\>/,&/;ta" ;}
 color_commas()     { sed "s/,/$m_co,$num_co/g" ;}
 add_color_commas() { add_commas "$1" | color_commas ;}
+
+
+#------------------------------------------------------------------------------
+# Label sizes given in Megs (MiB)
+#------------------------------------------------------------------------------
+label_meg() { label_any_size "$1" " " MiB GiB TiB PiB EiB; }
+
+#------------------------------------------------------------------------------
+# More compact horizontally, for tables
+#------------------------------------------------------------------------------
+size_label_m() { label_any_size "$1" "" M G T P E; }
+
+#------------------------------------------------------------------------------
+# Bite the bullet and do it "right"
+#------------------------------------------------------------------------------
+label_any_size() {
+    local size=$1  sep=$2  u0=$3  unit=$4  meg=$((1024 * 1024))  new_unit ; shift 4
+
+    for new_unit; do
+        [ $size -lt $meg ] && break
+        size=$((size / 1024))
+        unit=$new_unit
+    done
+
+    if [ $size -ge 102400 ]; then
+        awk "BEGIN {printf \"%d$sep$unit\n\", $size / 1024}"
+    elif [ $size -ge 10240 ]; then
+        awk "BEGIN {printf \"%0.1f$sep$unit\n\", $size / 1024}"
+    elif [ $size -ge 1024 ]; then
+        awk "BEGIN {printf \"%0.2f$sep$unit\n\", $size / 1024}"
+    else
+        awk "BEGIN {printf \"%d$sep$u0\n\", $size}"
+    fi
+}
+
+nq_label_meg() { nq $(label_meg $1); }
 
 #------------------------------------------------------------------------------
 # Use awk to perform simple arithmetic
