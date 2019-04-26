@@ -2357,10 +2357,11 @@ show_version() {
 #------------------------------------------------------------------------------
 # The normal mountpoint command can fail on symlinks and in other situations.
 # This is intended to be more robust. (sorry Jerry and Gaer Boy!)
+# NOTE: this fails if there is a space in the path to the directory!
 #------------------------------------------------------------------------------
 is_mountpoint() {
     local file=$1
-    cut -d" " -f2 /proc/mounts | grep -q "^$(readlink -f $file 2>/dev/null)$"
+    cut -d" " -f2 /proc/mounts | grep -q "^$(readlink -f "$file" 2>/dev/null)$"
     return $?
 }
 
