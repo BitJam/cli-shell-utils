@@ -1632,7 +1632,6 @@ clear_window_title() {
 #------------------------------------------------------------------------------
 free_space_menu() {
     local min_percent=$1  total_size=$2
-    local w2=${#comma_size}
     local fmt="%s$P_IFS$hi_co %3s%%$num_co %8s$nc_co\n"
     local size=100 free_size free_percent
     while [ $size -ge $min_percent ]; do
@@ -1649,13 +1648,15 @@ free_space_menu() {
 # Create a menu of sizes if user wants to use less than all of a usb device
 #------------------------------------------------------------------------------
 partition_size_menu() {
-    local min_percent=$1  total_size=$2
-    local w2=${#comma_size}
-    local fmt="%s$P_IFS$hi_co %3s%%$num_co %8s$nc_co\n"
-    local percent=100 size
+    local min_percent=$1  total_size=$2  max_percent=${3:-100}
+    local fmt="%s$P_IFS$hi_co %3s%%$num_co %8s     $green%8s$m_co %s$nc_co\n"
+    local percent=100 sizee
     while [ $percent -ge $min_percent ]; do
         size=$((percent * total_size / 100))
-        printf "$fmt" "$percent" "$percent" "$(lablel_meg $size)"
+        if [ $percent -le $max_percent ]; then
+            local remain=$((total_size - size))
+            printf "$fmt" "$percent" "$percent" "$(label_meg $size)" "$(label_meg $remain)" "remaining"
+        fi
         [ $percent -eq $min_percent ] && break
         percent=$((percent - 5))
         [ $percent -lt $min_percent ] && percent=$min_percent
