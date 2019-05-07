@@ -1134,6 +1134,7 @@ cli_live_usb_src_menu() {
     if its_alive; then
         live_dev=$(get_live_dev)
         # Don't display clone option if there is no mounted live media
+        :
         # [A clone is different from a copy, with clone we make a fresh new system]
         is_mountpoint $LIVE_MP && [ -n "$live_dev" ] && \
             printf "clone$P_IFS%s (%s)\n" $"Clone this live system" "$(pq $live_dev)"
@@ -3271,7 +3272,7 @@ percent_progress() {
 do_defrag() {
     iso_dir=$1  do_all=$2  prog=e4defrag  opts="-v"
     if ! which $prog &>/dev/null; then
-        warn $"Could not find program %s.  Not defragging." $prog
+        warn $"Could not find program %s.  Not defragmenting." $prog
         return
     fi
 
@@ -3295,7 +3296,7 @@ defrag_files() {
     [ "$DID_WARN_DEFRAG" ] && return
     if ! which $prog &>/dev/null; then
         DID_WARN_DEFRAG=true
-        warn $"Could not find program %s.  Not defragging." $prog
+        warn $"Could not find program %s.  Not defragmenting." $prog
         return
     fi
 
