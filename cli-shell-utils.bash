@@ -38,7 +38,7 @@ LIB_DATE="Fri Apr 26 02:35:42 MDT 2019"
 : ${MIN_ISO_SIZE:=180M}
 : ${MENU_PATH:=$MY_LIB_DIR/text-menus/:$LIB_DIR/text-menus}
 : ${MIN_LINUXFS_SIZE:=120M}
-: ${CONFIG_FILE:=/root/.config/$ME/$ME.conf}
+: ${CONFIG_FILE:=/etc/$ME/$ME.conf}
 : ${PROG_FILE:=/dev/null}
 : ${LOG_FILE:=/dev/null}
 : ${SCREEN_WIDTH:=$(stty size 2>/dev/null | cut -d" " -f2)}
@@ -2324,7 +2324,7 @@ reset_config() {
     mkdir -p $(dirname "$file") || fatal "Could not create directory for config file"
     (config_header "$file" "$ME" "$VERSION" "$VERSION_DATE"
     sed -rn "/^#=+\s*BEGIN_CONFIG/,/^#=+\s*END_CONFIG/p" "$0" \
-        | egrep -v "^#=+[ ]*(BEGIN|END)_CONFIG"
+        | egrep -v "^#=+[ ]*(BEGIN|END)_CONFIG" | sed -r "s/^(\s*[A-Z])/\# \1/"
         config_footer ) > $file
     return 0
 }
