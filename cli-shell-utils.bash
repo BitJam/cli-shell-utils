@@ -1650,13 +1650,23 @@ free_space_menu() {
 #------------------------------------------------------------------------------
 partition_size_menu() {
     local min_percent=$1  total_size=$2  max_percent=${3:-100}
-    local fmt="%s$P_IFS$hi_co %3s%%$num_co %8s     $green%8s$m_co %s$nc_co\n"
-    local percent=100 sizee
+
+    local w1=3  w2=8  w3=8
+    local h1="Live Percent"  h2="Live Size"  h3="Remaining"
+    [ "$DATA_FIRST" ] && h3="Data Size"
+    [ $w1 -lt ${#h1} ] && w1=${#h1}
+    [ $w2 -lt ${#h2} ] && w2=${#h2}
+
+    local hfmt="$P_IFS  $head_co%s  %s  %s$nc_co\n"
+    printf "$hfmt"  "$(lpad $w1 "$h1")"  "$(lpad $w2 "$h2")"  "$h3"
+
+    local fmt="%s$P_IFS$bold_co %${w1}s%%$num_co  %${w2}s  $green%s$nc_co\n"
+    local percent=100 size
     while [ $percent -ge $min_percent ]; do
         size=$((percent * total_size / 100))
         if [ $percent -le $max_percent ]; then
             local remain=$((total_size - size))
-            printf "$fmt" "$percent" "$percent" "$(label_meg $size)" "$(label_meg $remain)" "remaining"
+            printf "$fmt" "$percent" "$percent" "$(label_meg $size)" "$(label_meg $remain)"
         fi
         [ $percent -eq $min_percent ] && break
         percent=$((percent - 5))
