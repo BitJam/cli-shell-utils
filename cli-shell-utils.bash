@@ -2331,7 +2331,7 @@ reset_config() {
 
 #------------------------------------------------------------------------------
 # Do nothing if --ignore-config
-# Otherwise if --reset-config or no existing config then reset config and exit
+# Otherwise if --reset-config then reset config and exit
 # Otherwise source the existing config file (if readable)
 #------------------------------------------------------------------------------
 read_reset_config_file() {
@@ -2340,6 +2340,7 @@ read_reset_config_file() {
     [ "$IGNORE_CONFIG" ] && return
 
     if [ "$RESET_CONFIG" -o ! -e "$file" ]; then
+    if [ "$RESET_CONFIG" ]; then
         reset_config "$file" $"Creating new config file %s"
         [ "$RESET_CONFIG" ] || return
         pause exit $"Exit"
