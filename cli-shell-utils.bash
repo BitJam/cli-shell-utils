@@ -254,7 +254,7 @@ pause() {
                 *) return ;;
     esac
 
-    msg $"Paused at '%s'" $xlated_here
+    msg $"Paused at %s" $xlated_here
     press_enter
 }
 
@@ -506,6 +506,7 @@ YES_no_pretend() {
 #------------------------------------------------------------------------------
 # Announce to the world we are in pretend mode
 #------------------------------------------------------------------------------
+:
 shout_pretend() { [ "$PRETEND_MODE" ] && Shout $"PRETEND MODE ENABLED" ;}
 
 #------------------------------------------------------------------------------
@@ -695,7 +696,7 @@ my_select_2() {
         val=$(echo -e "$data" | sed -n "s/^$input://p")
 
         if [ -z "$val" ]; then
-            local out_of_range=$"The number '%s' is out of range"
+            local out_of_range=$"The number %s is out of range"
             err_msg=$(printf "$out_of_range" "$(pqe $input)")
             continue
         fi
@@ -745,7 +746,7 @@ find_man_page() {
 final_quit() {
     local input
     echo
-    quest $"Press '%s' again to quit" "$(pqq q)"
+    quest $"Press %s again to quit" "$(pqq q)"
     echo -n " "
     read -n1 input
     echo
@@ -935,7 +936,7 @@ cli_search_file() {
         else
             quest "Will search %s directories: %s\n"                        "$(pnq $dir_cnt)"   "$(pqq $dir_list)"
         fi
-            quest "for files matching '%s' with a size of %s or greater\n"  "$(pqq $spec)"      "$(pq $min_size)"
+            quest "for files matching %s with a size of %s or greater\n"  "$(pqq $spec)"      "$(pq $min_size)"
             quest "Will search down %s directories"                         "$(pqq $max_depth)"
         )
 
@@ -979,7 +980,7 @@ cli_search_file() {
         echo
 
         if [ $found_cnt -eq 0 ]; then
-            warn "No '%s' files were found.  Please try again" "$(pqw "$spec")"
+            warn "No %s files were found.  Please try again" "$(pqw "$spec")"
             invalid=true
             continue
         fi
@@ -2408,7 +2409,7 @@ need_prog() {
     local prog
     for prog; do
         which $prog &>/dev/null && continue
-        fatal $"Could not find required program '%s'" "$(pqh $prog)"
+        fatal $"Could not find required program %s" "$(pqh $prog)"
     done
 }
 
@@ -2430,10 +2431,10 @@ is_writable() {
 #------------------------------------------------------------------------------
 check_writable() {
     local dir=$1  type=$2
-    test -e "$dir"     || fatal  "The %s directory '%s' does not exist"     "$type" "$dir"
-    test -d "$dir"     || fatal  "The %s directory '%s' is not a directory" "$type" "$dir"
+    test -e "$dir"     || fatal  "The %s directory %s does not exist"     "$type" "$dir"
+    test -d "$dir"     || fatal  "The %s directory %s is not a directory" "$type" "$dir"
     # The <type> directory <dir-name> is not writable
-    is_writable "$dir" || fatal $"The %s directory '%s' is not writable"    "$type" "$dir"
+    is_writable "$dir" || fatal $"The %s directory %s is not writable"    "$type" "$dir"
 }
 
 #------------------------------------------------------------------------------
@@ -2475,8 +2476,8 @@ is_usb_or_removable() {
 my_mount() {
     local dev=$1  dir=$2 ; shift 2
     cmd wait_for_file "$dev"
-    is_mountpoint "$dir"              && fatal "Directory '%s' is already a mountpoint" "$dir"
-    always_cmd mkdir -p "$dir"        || fatal "Failed to create directory '%s'" "$dir"
+    is_mountpoint "$dir"              && fatal "Directory %s is already a mountpoint" "$dir"
+    always_cmd mkdir -p "$dir"        || fatal "Failed to create directory %s" "$dir"
     always_cmd mount "$@" $dev "$dir" || fatal "Could not mount %s at %s" "$dev" "$dir"
     is_mountpoint "$dir"              || fatal "Failed to mount %s at %s" "$dev" "$dir"
 }
@@ -2819,7 +2820,7 @@ device_str() {
 #------------------------------------------------------------------------------
 my_mkdir() {
     dir=$1
-    mkdir -p "$dir" || fatal "Could not make directory '%s'" "$dir"
+    mkdir -p "$dir" || fatal "Could not make directory %s" "$dir"
 }
 
 #------------------------------------------------------------------------------
@@ -3593,6 +3594,7 @@ Graphic_Select_2
     # Sometimes we want to use 'q' to go back to another menu instead of exiting
     # the program.  We change the printed instructions and we also change the
     # behavior based on a non-empty BACK_TO_MAIN string
+    :
     local quit=$"quit"
     [ -n "$BACK_TO_MAIN" ] && quit=$BACK_TO_MAIN
 
@@ -3763,7 +3765,7 @@ gs_must_skip() {
 # final_quit() routine in the old UI.
 #------------------------------------------------------------------------------
 gs_final_quit() {
-    quest $"Press '%s' again to quit" "$(pqq q)"
+    quest $"Press %s again to quit" "$(pqq q)"
 
     case $(get_key) in
         [qQ]|escape) ;;
