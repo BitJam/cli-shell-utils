@@ -49,6 +49,7 @@ LIB_DATE="Thu May  9 01:07:53 MDT 2019"
 : ${PROGRESS_SCALE:=100}
 : ${INITRD_CONFIG:=/live/config/initrd.out}
 : ${CP_ARGS:=--no-dereference --preserve=mode,links --recursive}
+: ${WORK_DIR:=/run/$ME}
 
 FUSE_ISO_PROGS="fuseiso"
 FOUR_GIG=$((1024 * 1024 * 1024 * 4))
