@@ -35,6 +35,7 @@ LIB_DATE="Fri May 17 18:14:41 MDT 2019"
 : ${MAJOR_SD_DEV_LIST:=3,8,22,179,259}
 : ${MAJOR_SR_DEV_LIST:=11}
 : ${LIVE_MP:=/live/boot-dev}
+: ${TORAM_MP:=/live/to-ram}
 : ${MIN_ISO_SIZE:=180M}
 : ${MENU_PATH:=$MY_LIB_DIR/text-menus/:$LIB_DIR/text-menus}
 : ${MIN_LINUXFS_SIZE:=120M}
@@ -1138,8 +1139,11 @@ cli_live_usb_src_menu() {
         # Don't display clone option if there is no mounted live media
         :
         # [A clone is different from a copy, with clone we make a fresh new system]
-        is_mountpoint $LIVE_MP && [ -n "$live_dev" ] && \
-            printf "clone$P_IFS%s (%s)\n" $"Clone this live system" "$(pq $live_dev)"
+        if is_mountpoint $LIVE_MP && [ -n "$live_dev" ]; then
+            menu_printf 'clone'  "%s (%s)" $"Clone this live system" "$(pq $live_dev)"
+        elif test -e /live/config/toram-all && is_mountpoint $TORAM_MP; then
+            menu_printf 'clone-toram'  "%s %s" $"Clone this live system" $"from RAM"
+        fi
 
     fi
 
