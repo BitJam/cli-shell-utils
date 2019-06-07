@@ -1142,7 +1142,7 @@ cli_live_usb_src_menu() {
         if is_mountpoint $LIVE_MP && [ -n "$live_dev" ]; then
             menu_printf 'clone'  "%s (%s)" $"Clone this live system" "$(pq $live_dev)"
         elif test -e /live/config/toram-all && is_mountpoint $TORAM_MP; then
-            menu_printf 'clone-toram'  "%s %s" $"Clone this live system" $"from RAM"
+            menu_printf 'clone-toram' $"Clone this live system from RAM"
         fi
 
     fi
