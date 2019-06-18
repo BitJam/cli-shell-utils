@@ -1282,7 +1282,7 @@ check_md5() {
     local file=$1 md5_file="$1.md5"
     test -f "$md5_file" || return
     q_mode gui && return
-    yes_NO $"Check md5 of the file %s?" "$(basename "$file")" || return
+    yes_NO "$(printf $"Check md5 of the file %s?" "$(basename "$file")")" || return
     Msg $"Checking md5 ..."
     (cd "$(dirname "$md5_file")" && md5sum -c "$(basename "$md5_file")") && return
     yes_NO $"Keep going anyway?" || my_exit 0
