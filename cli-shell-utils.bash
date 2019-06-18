@@ -197,7 +197,7 @@ need() {
     need_q "$1" || return 1
     local cmd=$1  xlat=${2:-$1}
     log_it echo &>/dev/null
-    set_window_title "$ME: $1"
+    set_window_title "$ME $VERSION: $1"
     Msg "$(bq ">>") $xlat"
     #echo -e "@ $(date +"%Y-%m-%d %H:%M:%S")\n" >> $LOG_FILE
 
@@ -1622,7 +1622,7 @@ Print
 # set the window title bar (if there is one)
 #------------------------------------------------------------------------------
 set_window_title() {
-    local fmt=${1:-$ME} ; shift
+    local fmt=${1:-$ME $VERSION} ; shift
     printf "\e]0;$fmt \a" "$@"
     SET_WINDOW_TITLE=true
 }
