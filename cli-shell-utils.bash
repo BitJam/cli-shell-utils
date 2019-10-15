@@ -210,6 +210,13 @@ need() {
 need_q() {
     local cmd=$1  cmd2=${1%%-*}
 
+    # The command "all" should not work for update-initrd or format-usb
+    case $cmd in
+        update-initrd|format-usb)
+            echo "$CMDS" | egrep -q "$cmd" && return 0
+            return 1 ;;
+    esac
+
     echo "$CMDS" | egrep -q "(^| )($cmd|$cmd2|all)( |$)" || return 1
     return 0
 }
