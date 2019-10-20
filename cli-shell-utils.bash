@@ -372,6 +372,19 @@ pcmd() {
     [ "$VERY_VERBOSE" ] && printf "%s\n" "$pre $*" | sed "s|$WORK_DIR|.|g"
 }
 
+#------------------------------------------------------------------------------
+# cd to the first argument and then execute the remaing args.
+# I do it in this funny way because (cmd cd xxx && yyy) does not work.
+#------------------------------------------------------------------------------
+cd_cmd() {
+    local dir=$1 ; shift
+    pcmd "$dir"
+    (cd "$dir" && cmd "$@")
+}
+
+#------------------------------------------------------------------------------
+# What it says on the tin
+#------------------------------------------------------------------------------
 verbose_cmd() { local BE_VERBOSE=true ; cmd "$@" ;}
 
 #------------------------------------------------------------------------------
