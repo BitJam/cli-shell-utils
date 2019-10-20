@@ -349,10 +349,7 @@ always_cmd() { local PRETEND_MODE=  ; cmd "$@" ;}
 # If PRETEND_MODE then don't actually run the command.
 #------------------------------------------------------------------------------
 cmd() {
-    local pre=" >"
-    [ "$PRETEND_MODE" ] && pre="p>"
-    echo "$pre $*" >> $LOG_FILE
-    [ "$VERY_VERBOSE" ] && printf "%s\n" "$pre $*" | sed "s|$WORK_DIR|.|g"
+    pcmd "$@"
     [ "$PRETEND_MODE" ] && return 0
     if [ "$BE_VERBOSE" ]; then
         "$@" 2>&1 | tee -a $LOG_FILE
@@ -363,6 +360,16 @@ cmd() {
     local ret=${PIPESTATUS[0]}
     test -e "$ERR_FILE" && exit 3
     return $ret
+}
+
+#------------------------------------------------------------------------------
+# Just do the printing out part because (cmd cd xxx && yyyy) fails to work
+#------------------------------------------------------------------------------
+pcmd() {
+    local pre=" >"
+    [ "$PRETEND_MODE" ] && pre="p>"
+    echo "$pre $*" >> $LOG_FILE
+    [ "$VERY_VERBOSE" ] && printf "%s\n" "$pre $*" | sed "s|$WORK_DIR|.|g"
 }
 
 verbose_cmd() { local BE_VERBOSE=true ; cmd "$@" ;}
