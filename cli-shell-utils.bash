@@ -2543,6 +2543,37 @@ get_mp() { grep "^$1 " /proc/mounts | head -n1 | cut -d" " -f2 ;}
 cleanup_mp() { CLEANUP_MPS="$*${CLEANUP_MPS:+ }$CLEANUP_MPS" ;}
 
 #------------------------------------------------------------------------------
+# Mount a device or know the reason why.  Should go in lib?
+# any 3rd arg means we are only going read so we can mount something that
+# is already mounted
+#------------------------------------------------------------------------------
+mount_device() {
+    local dev=$(expand_device "$1")  dir=$2
+    [ ${#dev} -gt 0 ]     || fatal $"Could not find device %s" "$1"
+    mkdir -p "$dir"       || fatal $"Failed to create mountpoint directory %s" "$dir"
+    is_mountpoint "$dir"  && fatal $"Directory %s is already a mountpoint"   "$dir"
+
+    [ -z "$3" ] && is_mounted "$dev" && fatal $"Device %s is already mounted" "$dev"
+
+    [ "$(stat -c %t "$dev")" = "b" ] && msg $"Please wait while we mount optical disc at %s" "$(pq $dev)"
+    always_cmd mount -o ro "$dev" "$dir"
+    is_mountpoint "$dir"  || fatal $"Failed to mount device %s at %s" "$dev"   "$dir"
+}
+
+#------------------------------------------------------------------------------
+# Just like above but with a file, not a device
+#------------------------------------------------------------------------------
+mount_file() {
+    local file=$1  dir=$2
+    test -f "$file"       || fatal $"Could not find file %s" "$1"
+    mkdir -p "$dir"       || fatal $"Failed to create mountpoint directory %s" "$dir"
+    is_mountpoint "$dir"  && fatal $"Directory %s is already a mountpoint"   "$dir"
+
+    always_cmd mount -o ro "$file" "$dir"
+    is_mountpoint "$dir"  || fatal $"Failed to mount file %s at %s" "$file"   "$dir"
+}
+
+#------------------------------------------------------------------------------
 # Mount an iso file
 # Try "mount" first.  Then try "fuseiso" but then try to fix things
 #------------------------------------------------------------------------------
