@@ -394,9 +394,6 @@ cmd_ne() {
     return $ret
 }
 
-verbose_cmd() { local BE_VERBOSE=true ; cmd "$@" ;}
-
-
 #------------------------------------------------------------------------------
 # A little convenience routine to run "dd" with no normal output and a fatal
 # error if there is an error. Try to capture the error message in the log
