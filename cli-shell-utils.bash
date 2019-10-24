@@ -1130,8 +1130,8 @@ cli_get_filename() {
 #------------------------------------------------------------------------------
 cli_live_usb_src_menu() {
     local exclude=$1
-    local dev_w=$(get_lsblk_field_width name  --include="$MAJOR_SD_DEV_LIST,$MAJOR_SR_DEV_LIST")
-    local lab_w=$(get_lsblk_field_width label --include="$MAJOR_SD_DEV_LIST,$MAJOR_SR_DEV_LIST")
+    local dev_w=$(get_lsblk_field_width NAME  --include="$MAJOR_SD_DEV_LIST,$MAJOR_SR_DEV_LIST")
+    local lab_w=$(get_lsblk_field_width LABEL --include="$MAJOR_SD_DEV_LIST,$MAJOR_SR_DEV_LIST")
     local size_w=6  fs_w=8
 
     # Japanese: Please don't translate these: Device, Size, Filesystem, Label, Model
@@ -1180,7 +1180,7 @@ cli_cdrom_menu() {
         [ ${#LABEL} -gt 0 ] || continue
         printf "$fmt" "$prefix$NAME" "$NAME" "$SIZE" "$FSTYPE" "$(rpad $lab_w "$LABEL")" "$model"
     done<<Cdrom_Menu
-$(lsblk -no name,size,fstype,label --pairs $opts)
+$(lsblk -no NAME,SIZE,FSTYPE,LABEL --pairs $opts)
 Cdrom_Menu
 }
 
@@ -1189,7 +1189,7 @@ Cdrom_Menu
 #------------------------------------------------------------------------------
 cli_partition_menu() {
     local fmt=$1  lab_w=$2  exclude=$(get_drive ${3##*/}) exclude2=$(get_drive ${4##*/})
-    local dev_list=$(lsblk -lno name --include="$MAJOR_SD_DEV_LIST")
+    local dev_list=$(lsblk -lno NAME --include="$MAJOR_SD_DEV_LIST")
     local range=1
     force partition && range=$(seq 1 20)
 
@@ -1197,14 +1197,14 @@ cli_partition_menu() {
     for dev in $dev_list; do
         [ "$dev" = "$exclude" -o "$dev" = "$exclude2" ] && continue
         force usb || is_usb_or_removable "$dev" || continue
-        local dev_info=$(lsblk -no vendor,model /dev/$dev)
+        local dev_info=$(lsblk -no VENDOR,MODEL /dev/$dev)
         for part_num in $range; do
             local part=$(get_partition "$dev" $part_num)
             local device=/dev/$part
             test -b $device || continue
-            local line=$(lsblk -no size,model,vendor,label,fstype --pairs $device)
+            local line=$(lsblk -no SIZE,MODEL,VENDOR,LABEL,FSTYPE --pairs $device)
             eval "$line"
-            label=$(lsblk -no label $device)
+            label=$(lsblk -no LABEL $device)
             printf "$fmt" "$part" "$part" "$SIZE" "$FSTYPE" "$(rpad $lab_w "$label")" "$(echo $dev_info)"
         done
     done
@@ -1217,7 +1217,7 @@ cli_drive_menu() {
     local exclude=$(get_drive ${1##*/}) exclude_2=$(get_drive ${2##*/})
 
     local opts="--nodeps --include=$MAJOR_SD_DEV_LIST"
-    local dev_width=$(get_lsblk_field_width name $opts)
+    local dev_width=$(get_lsblk_field_width NAME $opts)
 
     local fmt="%s$P_IFS$dev_co%-${dev_width}s$num_co %6s $m_co%s$nc_co\n"
     local NAME SIZE MODEL VENDOR dev model
@@ -1239,7 +1239,7 @@ cli_drive_menu() {
 
         printf "$fmt" "$NAME" "$NAME" "$SIZE" "$model"
     done<<Ls_Blk
-$(lsblk -no name,size,model,vendor --pairs $opts)
+$(lsblk -no NAME,SIZE,MODEL,VENDOR --pairs $opts)
 Ls_Blk
 }
 
@@ -1259,7 +1259,7 @@ is_ultra_fit_model() {
 #------------------------------------------------------------------------------
 is_ultra_fit_dev() {
     local dev=/dev/${1#/dev/}
-    is_ultra_fit_model $(lsblk -no vendor,model $dev)
+    is_ultra_fit_model $(lsblk -no VENDOR,MODEL $dev)
     return $?
 }
 
@@ -1277,7 +1277,7 @@ ultra_fit_detected() {
 device_info() {
     local dev=/dev/${1#/dev/}
     local SIZE MODEL VENDOR
-    local line=$(lsblk --pairs --nodeps -no size,vendor,model $dev)
+    local line=$(lsblk --pairs --nodeps -no SIZE,VENDOR,MODEL $dev)
     eval $line
     printf "$num_co%s $m_co%s$nc_co" "$SIZE" "$(echo $VENDOR $MODEL)"
 }
