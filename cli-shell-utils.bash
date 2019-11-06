@@ -3021,6 +3021,15 @@ need_root() {
 }
 
 #------------------------------------------------------------------------------
+# run ME as root (thanks fehlix!)
+#------------------------------------------------------------------------------
+run_me_as_root() {
+    [ $(id -u) -eq 0 ] && return
+    warn $"This script must be run as root"
+    exec sudo "$0" "$@" || need_root
+}
+
+#------------------------------------------------------------------------------
 # Insert commas into number like: 123,456.  We colorize separately because
 # fixed width printf gets confused by ANSI escapes.
 #------------------------------------------------------------------------------
