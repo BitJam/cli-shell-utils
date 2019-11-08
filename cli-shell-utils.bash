@@ -3025,7 +3025,7 @@ need_root() {
 #------------------------------------------------------------------------------
 run_me_as_root() {
     [ $(id -u) -eq 0 ] && return
-    warn $"This script must be run as root"
+    sudo -nv &>/dev/null || warn $"This script must be run as root"
     exec sudo "$0" "$@" || need_root
 }
 
